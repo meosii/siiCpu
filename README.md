@@ -1,10 +1,10 @@
 # siiCpu
 This is a project created by sii, a wonderful CPU would be generated.
 
-## Supported instrcutions
+## 1. Supported instrcutions
 Here, we describe a basic instruction set which is named RV32I base integer instruction set belongs to RISC-V. Following, we describe the source regiester as "rs", destination register as "rd", and immediates as "imm". RISC-V has four base instruction formats (R/I/S/U) and two variants (B/J).
 
-### Integer Computational Instructions
+### 1.1 Integer Computational Instructions
 
 - Integer Register-Immediate Instructions
 
@@ -25,7 +25,7 @@ Here, we describe a basic instruction set which is named RV32I base integer inst
 
 | imm[11:5] | imm[4:0] | rs1 | funct3 | rd | opcode |
 | :----: | :----: | :----: | :----: | :----: | :----: |
-| 31 ··· 25 | 24 ··· 20 | 19 ··· 15 | 14 ··· 12 | 11 ··· 7· | 6 ··· 0 |
+| 31 ··· 25 | 24 ··· 20 | 19 ··· 15 | 14 ··· 12 | 11 ··· 7 | 6 ··· 0 |
 | 7 | 5 | 5 | 3 | 5 | 7 |
 | 0000000 |   shamt[4:0] | scr | SLLI |  dest |  OP-IMM |
 | 0000000 |   shamt[4:0] | scr | SRLI |  dest | OP-IMM |
@@ -64,7 +64,7 @@ The operand to be shifted is in "rs1", and the shift amount is encoded in the lo
 
   > SUB: Performs the subtraction of rs2 from "rs1", ignore the overflows.
 
-  > SLU/SLTU: Perform signed and unsigned compares respectively, if "rs1" < rs2, writing 1 to "rd", otherwise set rd to zero.
+  > SLT/SLTU: Perform signed and unsigned compares respectively, if "rs1" < rs2, writing 1 to "rd", otherwise set rd to zero.
 
   > AND/OR/XOR: Perform bitwise logical operations.
 
@@ -79,7 +79,7 @@ The operand to be shifted is in "rs1", and the shift amount is encoded in the lo
 
  > ADDI x0,x0,0: The NOP instruction does not change any architecturally visible state, except for the advancing the pc.
 
-### Control Transfer Instructions
+### 1.2 Control Transfer Instructions
 
 RV32I provides two types of control transfer instructions: unconditional jumps and conditional branches. 
 
@@ -107,9 +107,9 @@ the least-significant bit of the result to zero.
 | imm[12] | imm[10:5] | rs2 | rs1 | funct3 | imm[4:1] | imm[11] | opcode |
 | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
 | 1 | 6 | 5 | 5 | 3 | 4 | 1 | 7 |
-| offset[12|10:5] | src2 | src1 | BEQ/BNE | offset[11|4:1] | BRANCH |
-| offset[12|10:5] | src2 | src1 | BLT[U] | offset[11|4:1] | BRANCH |
-| offset[12|10:5] | src2 | src1 | BGE[U] | offset[11|4:1] | BRANCH |
+| offset[12|10:5] | src2 | src1 | BEQ/BNE | offset[4:1] | offset[11] | BRANCH |
+| offset[12|10:5] | src2 | src1 | BLT[U] | offset[4:1] | offset[11] | BRANCH |
+| offset[12|10:5] | src2 | src1 | BGE[U] | offset[4:1] | offset[11] | BRANCH |
 
  > BEQ/BNE: Compare two register, if "rs1" == "rs2" or "rs1" != "rs2", take the branch.
 
@@ -117,7 +117,7 @@ the least-significant bit of the result to zero.
 
  > BGE/BGEU: Using signed and unsigned comparison respectively, if "rs1" >= "rs2", take the branch.
 
-### Load and Store Instructions
+### 1.3 Load and Store Instructions
 
 Load and store instructions transfer a value between the registers and memory. 
 
@@ -131,7 +131,7 @@ Load and store instructions transfer a value between the registers and memory.
 
  > STORE: Stores the value in "rs2".
 
-### Memory Ordering Instructions
+### 1.4 Memory Ordering Instructions
 
 | fm | PI | PO | PR | PW | SI | SO | SR | SW | rs1 | funct3 | rd | opcode |
 | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
@@ -141,7 +141,7 @@ Load and store instructions transfer a value between the registers and memory.
 
  > FENCH: Order device I/O and memory accesses. Any combination of device input (I), device output (O), memory reads (R), and memory writes (W) may be ordered with respect to any combination of the same. 
 
-### Environment Call and Breakpoints
+### 1.5 Environment Call and Breakpoints
 
 SYSTEM instructions are used to access system functionality that might require privileged access.
 
@@ -156,8 +156,9 @@ SYSTEM instructions are used to access system functionality that might require p
 
  > EBREAK: Return control to a debugging environment.
 
-### HINT Instructions
+### 1.6 HINT Instructions
 
 RV32I reserves a large encoding space for HINT instructions, which are usually used to communicate performance hints to the microarchitecture
 
-## Architecher
+## 2. Architecher
+

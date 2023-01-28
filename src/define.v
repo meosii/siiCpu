@@ -121,13 +121,85 @@
             mem_spm_wr_data = WDATA;\
         end
 
-`define test_spm_write(AS_,RW,ADDR,imm,rs1,rd)\
-        test_spm_as_ = AS_;\
-        test_spm_rw = RW;\
+`define test_spm_write_OP_IMM(ADDR,imm,rs1,funct3,rd)\
+        test_spm_as_ = 0;\
+        test_spm_rw = `WRITE;\
         @(posedge clk);\
         #1 begin\
             test_spm_addr = ADDR;\
-            test_spm_wr_data = {imm,rs1,`FUNCT3_ADDI,rd,`OP_IMM};\
+            test_spm_wr_data = {imm,rs1,funct3,rd,`OP_IMM};\
+        end
+
+`define test_spm_write_OP_LUI(ADDR,imm,rd)\
+        test_spm_as_ = 0;\
+        test_spm_rw = `WRITE;\
+        @(posedge clk);\
+        #1 begin\
+            test_spm_addr = ADDR;\
+            test_spm_wr_data = {imm,rd,`OP_LUI};\
+        end
+
+`define test_spm_write_OP_AUIPC(ADDR,imm,rd)\
+        test_spm_as_ = 0;\
+        test_spm_rw = `WRITE;\
+        @(posedge clk);\
+        #1 begin\
+            test_spm_addr = ADDR;\
+            test_spm_wr_data = {imm,rd,`OP_AUIPC};\
+        end
+
+`define test_spm_write_OP(ADDR,funct7,rs2,rs1,funct3,rd)\
+        test_spm_as_ = 0;\
+        test_spm_rw = `WRITE;\
+        @(posedge clk);\
+        #1 begin\
+            test_spm_addr = ADDR;\
+            test_spm_wr_data = {funct7,rs2,rs1,funct3,rd,`OP};\
+        end
+
+`define test_spm_write_OP_JAL(ADDR,offset,rd)\
+        test_spm_as_ = 0;\
+        test_spm_rw = `WRITE;\
+        @(posedge clk);\
+        #1 begin\
+            test_spm_addr = ADDR;\
+            test_spm_wr_data = {offset,rd,`OP_JAL};\
+        end
+
+`define test_spm_write_OP_JALR(ADDR,offset,rs1_base,rd)\
+        test_spm_as_ = 0;\
+        test_spm_rw = `WRITE;\
+        @(posedge clk);\
+        #1 begin\
+            test_spm_addr = ADDR;\
+            test_spm_wr_data = {offset,rs1_base,3'b000,rd,`OP_JALR};\
+        end
+
+`define test_spm_write_OP_BRANCH(ADDR,offset1,rs2,rs1,funct3,offset2)\
+        test_spm_as_ = 0;\
+        test_spm_rw = `WRITE;\
+        @(posedge clk);\
+        #1 begin\
+            test_spm_addr = ADDR;\
+            test_spm_wr_data = {offset1,rs2,rs1,funct3,offset2,`OP_BRANCH};\
+        end
+
+`define test_spm_write_OP_LOAD(ADDR,imm,rs1,funct3,rd)\
+        test_spm_as_ = 0;\
+        test_spm_rw = `WRITE;\
+        @(posedge clk);\
+        #1 begin\
+            test_spm_addr = ADDR;\
+            test_spm_wr_data = {imm,rs1,funct3,rd,`OP_LOAD};\
+        end
+
+`define test_spm_write_OP_STORE(ADDR,offset1,rs2,rs1,funct3,offset2)\
+        test_spm_as_ = 0;\
+        test_spm_rw = `WRITE;\
+        @(posedge clk);\
+        #1 begin\
+            test_spm_addr = ADDR;\
+            test_spm_wr_data = {offset1,rs2,rs1,funct3,offset2,`OP_STORE};\
         end
 
 `endif

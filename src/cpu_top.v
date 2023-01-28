@@ -38,11 +38,9 @@ wire [`DATA_WIDTH_MEM_OP - 1:0] mem_op;
 wire [`DATA_WIDTH_GPR - 1:0] mem_wr_data;
 wire [`DATA_WIDTH_CTRL_OP - 1:0] ctrl_op;
 wire [`DATA_WIDTH_ISA_EXP - 1:0] exp_code;
-wire [`DATA_WIDTH_MEM_OP - 1:0] ex_mem_op;
-wire [`DATA_WIDTH_GPR - 1:0] ex_mem_wr_data;
 wire [`DATA_WIDTH_GPR - 1:0] wr_data;
-wire [`WORD_ADDR_BUS] addr;
-wire [`DATA_WIDTH_GPR - 1:0] rd_data;
+wire [`WORD_ADDR_BUS] addr_to_mem;
+wire [`DATA_WIDTH_GPR - 1:0] rd_data_from_mem;
 wire mem_spm_rw;
 wire [29:0] mem_spm_addr;
 wire [31:0] mem_spm_wr_data;
@@ -95,7 +93,7 @@ gpr u_gpr(
     .rd_data_1(gpr_rd_data_1)
 );
 
-assign gpr_wr_data = (if_insn[`DATA_WIDTH_OPCODE - 1:0] == 7'b0000011)? spm_to_gpr_wr_data:alu_out;
+assign gpr_wr_data = (if_insn[`DATA_WIDTH_OPCODE - 1:0] == `OP_LOAD)? spm_to_gpr_wr_data:alu_out;
 
 alu u_alu(
     .alu_op(alu_op),
@@ -105,16 +103,15 @@ alu u_alu(
 );
 
 mem_ctrl u_mem_ctrl(
-    .ex_en(ex_en),
-    .ex_mem_op(mem_op),
-    .ex_mem_wr_data(mem_wr_data),
-    .ex_out(alu_out),
-    .rd_data(mem_spm_rd_data), //mem to gpr (rd_data -> out)
-    .addr(addr), //from alu_out
-    .as_(as_),
+    .mem_op(mem_op),
+    .mem_wr_data(mem_wr_data),
+    .mem_addr_from_alu(alu_out),
+    .rd_data_from_mem(mem_spm_rd_data), //mem to gpr (rd_data_from_mem -> mem_data_to_gpr)
+    .addr_to_mem(addr_to_mem), //from alu_out
+    .mem_op_as_(mem_op_as_),
     .rw(rw),
     .wr_data(to_spm_wr_data),
-    .out(spm_to_gpr_wr_data),
+    .mem_data_to_gpr(spm_to_gpr_wr_data),
     .miss_align(miss_align)
 );
 
@@ -133,8 +130,8 @@ spm u_spm(
     .mem_spm_rd_data(mem_spm_rd_data)
 );
 
-assign mem_spm_addr = (cpu_en)? addr:test_spm_addr;
-assign mem_spm_as_ = (cpu_en)? (!(!as_ && !miss_align)):test_spm_as_;
+assign mem_spm_addr = (cpu_en)? addr_to_mem:test_spm_addr;
+assign mem_spm_as_ = (cpu_en)? (!(!mem_op_as_ && !miss_align)):test_spm_as_;
 assign mem_spm_rw = (cpu_en)? rw:test_spm_rw;
 assign mem_spm_wr_data = (cpu_en)? to_spm_wr_data:test_spm_wr_data;
 assign test_spm_rd_data = (cpu_en)? 0:mem_spm_rd_data;

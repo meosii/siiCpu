@@ -75,8 +75,12 @@ always @(*) begin
     end
     `ALU_OP_SRA: begin
         alu_out = alu_in_0;
-        for (i = 0; i < alu_in_1[4:0]; i = i + 1) begin
-            alu_out = {alu_out[0],alu_out[`DATA_WIDTH_GPR - 1:1]};
+        if (alu_in_1[4:0] != 0) begin
+            for (i = 0; i < alu_in_1[4:0]; i = i + 1) begin
+                alu_out = {alu_out[0],alu_out[`DATA_WIDTH_GPR - 1:1]};
+            end
+        end else begin
+            alu_out = alu_in_0;
         end
     end
     default: alu_out = 0;

@@ -31,8 +31,8 @@ module decoder (
 
 wire [`DATA_WIDTH_OPCODE - 1:0] opcode;
 wire [`WORD_ADDR_BUS] ret_addr;
-reg [`WORD_ADDR_BUS] br_target;
-reg [`WORD_ADDR_BUS] jr_offset;
+reg [`WORD_ADDR_BUS] br_target; //BRANCH
+reg [`WORD_ADDR_BUS] jr_offset; //JAL/JALR
 reg [`WORD_ADDR_BUS] jr_target;
 
 assign opcode = if_insn[`DATA_WIDTH_OPCODE - 1:0];
@@ -41,7 +41,7 @@ wire signed [`DATA_WIDTH_GPR - 1:0] s_gpr_rd_data_1 = $signed(gpr_rd_data_1);
 assign ret_addr = if_pc + 1;
 
 always @* begin
-    alu_op = `ALU_OP_NOP;
+    alu_op = `ALU_OP_NOP; //default, not initial, every cycle
     alu_in_0 = gpr_rd_data_0;
     alu_in_1 = gpr_rd_data_1;
     br_taken = 1'b0;
@@ -50,14 +50,14 @@ always @* begin
     mem_op = `MEM_OP_NOP;
     ctrl_op = `CTRL_OP_NOP;
     dst_addr = 0;
-    gpr_we_ = 1'b1;
+    gpr_we_ = 1'b1; // not write to gpr
     exp_code = `ISA_EXP_NO_EXP;
     case (opcode)
         `OP_IMM: begin
             alu_in_0 = if_insn[31:20];
             gpr_rd_addr_0 = if_insn[19:15];
             dst_addr = if_insn[11:7];
-            gpr_we_ = 1'b0;
+            gpr_we_ = 1'b0; // Have the signal of "dst_addr": need write
             case (if_insn[14:12])
                 `FUNCT3_ADDI: begin //rd = ra + imm
                     alu_op = `ALU_OP_ADDI;
@@ -108,16 +108,18 @@ always @* begin
             alu_op = `ALU_OP_LUI;
             alu_in_0 = if_insn[31:12];
             dst_addr = if_insn[11:7]; //rd = imm << 12
+            gpr_we_ = 1'b0;
         end
         `OP_AUIPC: begin //add upper immediate to pc
             alu_op = `ALU_OP_AUIPC;
             alu_in_0 = if_insn[31:12];
             alu_in_1 = if_pc;
             dst_addr = if_insn[11:7]; //rd = PC + (imm << 12)
+            gpr_we_ = 1'b0;
         end
         `OP: begin
-            gpr_rd_addr_0 = if_insn[24:20];
-            gpr_rd_addr_1 = if_insn[19:15];
+            gpr_rd_addr_0 = if_insn[19:15];
+            gpr_rd_addr_1 = if_insn[24:20];
             dst_addr = if_insn[11:7];
             gpr_we_ = 1'b0;
             case (if_insn[31:25])
@@ -154,12 +156,12 @@ always @* begin
                             alu_in_1 = gpr_rd_data_1;
                         end
                         `FUNCT3_SLL: begin //perform logical left shifts on the value in register ra by the shift amount held in the lower 5 bits of register rb.
-                            alu_op = `ALU_OP_SLL; //rd = ra << rb
+                            alu_op = `ALU_OP_SLL; //rd = ra << rb[4:0]
                             alu_in_0 = gpr_rd_data_0;
                             alu_in_1 = gpr_rd_data_1;
                         end
                         `FUNCT3_SRL: begin // logical right shifts on the value in register ra by the shift amount held in the lower 5 bits of register rb.
-                            alu_op = `ALU_OP_SRL; //rd = ra >> rb
+                            alu_op = `ALU_OP_SRL; //rd = ra >> rb[4:0]
                             alu_in_0 = gpr_rd_data_0;
                             alu_in_1 = gpr_rd_data_1;
                         end
@@ -200,6 +202,7 @@ always @* begin
             br_taken = 1'b1;
             br_flag = 1'b1;
             dst_addr = if_insn[11:7];
+            gpr_we_ = 1'b0;
         end
         `OP_JALR: begin //jump and link register; rd = PC+4; PC = ra + imm
             gpr_we_ = 1'b0;
@@ -211,7 +214,6 @@ always @* begin
             dst_addr = if_insn[11:7];
         end
         `OP_BRANCH: begin
-            gpr_we_ = 1'b0;
             gpr_rd_addr_0 = if_insn[19:15];
             gpr_rd_addr_1 = if_insn[24:20];
             br_target = if_pc + {if_insn[31],if_insn[7],if_insn[30:25],if_insn[11:8]};
@@ -270,9 +272,8 @@ always @* begin
         end
         `OP_STORE: begin // Stores copy the value in register rb to memory.
             mem_op = `MEM_OP_STORE;
-            gpr_we_ = 1'b0;
             alu_op = `ALU_OP_ADD;
-            alu_in_0 = if_insn[31:25];
+            alu_in_0 = {if_insn[31:25],if_insn[11:7]};
             gpr_rd_addr_0 = if_insn[19:15];
             alu_in_1 = gpr_rd_data_0; // "alu_out" is the  effective address in memory
             gpr_rd_addr_1 = if_insn[24:20]; //rb
@@ -281,10 +282,10 @@ always @* begin
                     mem_wr_data = gpr_rd_data_1; //M[ra+imm][0:31] = rb[0:31]
                 end
                 `FUNCT3_SH: begin // store 16-bit values from the low bits of register rb to memory.
-                    mem_wr_data = {gpr_rd_data_1[15:0]}; //M[ra+imm][0:15] = rb[0:15]
+                    mem_wr_data = gpr_rd_data_1[15:0]; //M[ra+imm][0:15] = rb[0:15]
                 end
                 `FUNCT3_SB: begin // store 8-bit values from the low bits of register rb to memory.
-                    mem_wr_data = {gpr_rd_data_1[7:0]}; //M[ra+imm][0:7] = rb[0:7]
+                    mem_wr_data = gpr_rd_data_1[7:0]; //M[ra+imm][0:7] = rb[0:7]
                 end
             default: mem_wr_data = 0;
             endcase
