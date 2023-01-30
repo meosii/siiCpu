@@ -51,7 +51,7 @@ always @* begin
     exp_code = `ISA_EXP_NO_EXP;
     case (opcode)
         `OP_IMM: begin
-            if (if_insn[31] == 1) begin
+            if (if_insn[31] == 1) begin //The immediate number is sign extended to XLEN bits
                 imm = {20'b1111_1111_1111_1111_1111,if_insn[31:20]};
             end else begin
                 imm = {20'b0000_0000_0000_0000_0000,if_insn[31:20]};
@@ -70,7 +70,8 @@ always @* begin
                     alu_in_1 = s_gpr_rd_data_0;
                 end
                 `FUNCT3_SLTIU: begin //rd = (ra < imm)?1:0 
-                    alu_in_0 = if_insn[31:20];
+                    alu_in_0 = $unsigned(imm); //The immediate number is sign extended to XLEN bits 
+                                               //and then treated as an unsigned number.
                     alu_op = `ALU_OP_SLTIU;
                     alu_in_1 = gpr_rd_data_0;
                 end
@@ -201,8 +202,8 @@ always @* begin
             endcase
         end
         `OP_JAL: begin //jump and link; rd = PC+4; PC += imm
-            jr_offset = {if_insn[31],if_insn[19:12],if_insn[20],if_insn[30:21],1'b0};
-            if (if_insn[31] == 1) begin //- jr_offset{0,...}
+            jr_offset = {if_insn[31],if_insn[19:12],if_insn[20],if_insn[30:21],1'b0}; //Lowest bit setting 0,realize signed offset for multiples of 2
+            if (if_insn[31] == 1) begin
                 jr_target = if_pc - jr_offset[19:0];
             end else begin
                 jr_target = if_pc + jr_offset[19:0];
