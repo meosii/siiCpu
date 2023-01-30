@@ -160,5 +160,14 @@ SYSTEM instructions are used to access system functionality that might require p
 
 RV32I reserves a large encoding space for HINT instructions, which are usually used to communicate performance hints to the microarchitecture
 
+### 1.7 We will know
+
+RISC-V is a more compact instruction set architecture design with high performance and low power consumption as seen from the basic instruction formats. 
+
+1. RISC-V instructions have only 6 basic instruction formats, and each instruction length is 32 bits, unlike X86-32 and ARM-32 which have many instruction formats, which greatly reduces the decoding time of instructions. 
+2. The RISC-V instruction format has three register addresses, unlike X86 where the source and destination operands share a single address, and it does not require an additional move instruction to store the destination register value. 
+3. For all RISC-V instructions, the read and write register identifiers need to be stored in the same location, which allows the instruction to access the register values in advance of the decode operation.
+Fourth, the immediate numbers in the instruction format are always sign extended and the highest bit of the instruction is the sign bit, so the sign extended operation of the immediate numbers can be performed before decoding.
+
 ## 2. Architecher
 

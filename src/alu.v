@@ -1,4 +1,7 @@
 `include "define.v"
+
+// "signed alu_out" can judge whether the overflow
+
 module alu (
     input wire [`DATA_WIDTH_ALU_OP - 1:0] alu_op,
     input wire [`DATA_WIDTH_GPR - 1:0] alu_in_0,
@@ -35,10 +38,7 @@ always @(*) begin
         alu_out = alu_in_1 >> alu_in_0[4:0];
     end
     `ALU_OP_SRAI: begin
-        alu_out = alu_in_1;
-        for (i = 0; i < alu_in_0[4:0]; i = i + 1) begin
-            alu_out = {alu_out[0],alu_out[`DATA_WIDTH_GPR - 1:1]};
-        end
+        alu_out = alu_in_1 >>> alu_in_0[4:0];
     end
     `ALU_OP_LUI: begin
         alu_out = alu_in_0 << 12;
@@ -74,14 +74,7 @@ always @(*) begin
         alu_out = alu_in_0 - alu_in_1;
     end
     `ALU_OP_SRA: begin
-        alu_out = alu_in_0;
-        if (alu_in_1[4:0] != 0) begin
-            for (i = 0; i < alu_in_1[4:0]; i = i + 1) begin
-                alu_out = {alu_out[0],alu_out[`DATA_WIDTH_GPR - 1:1]};
-            end
-        end else begin
-            alu_out = alu_in_0;
-        end
+            alu_out = alu_in_0 >>> alu_in_1[4:0];
     end
     default: alu_out = 0;
    endcase 

@@ -62,7 +62,6 @@ if_stage u_if_stage(
 decoder u_decoder(
     .if_insn(if_insn),
     .if_pc(if_pc),
-    .if_en(if_en),
     .gpr_rd_data_0(gpr_rd_data_0),
     .gpr_rd_data_1(gpr_rd_data_1),
     .gpr_rd_addr_0(gpr_rd_addr_0),
@@ -74,7 +73,6 @@ decoder u_decoder(
     .alu_in_1(alu_in_1),
     .br_addr(br_addr),
     .br_taken(br_taken),
-    .br_flag(br_flag),
     .mem_op(mem_op),
     .mem_wr_data(mem_wr_data), //to mem
     .ctrl_op(ctrl_op),
