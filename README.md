@@ -167,7 +167,20 @@ RISC-V is a more compact instruction set architecture design with high performan
 1. RISC-V instructions have only 6 basic instruction formats, and each instruction length is 32 bits, unlike X86-32 and ARM-32 which have many instruction formats, which greatly reduces the decoding time of instructions. 
 2. The RISC-V instruction format has three register addresses, unlike X86 where the source and destination operands share a single address, and it does not require an additional move instruction to store the destination register value. 
 3. For all RISC-V instructions, the read and write register identifiers need to be stored in the same location, which allows the instruction to access the register values in advance of the decode operation.
-Fourth, the immediate numbers in the instruction format are always sign extended and the highest bit of the instruction is the sign bit, so the sign extended operation of the immediate numbers can be performed before decoding.
+4. The immediate numbers in the instruction format are always sign extended and the highest bit of the instruction is the sign bit, so the sign extended operation of the immediate numbers can be performed before decoding.
 
 ## 2. Architecher
+
+### 2.1 Single Cycle Processor
+
+Single cycle processor is a processor in which one instruction is completed in one clock cycle.To implement a processor to properly process instructions, there are several steps.
+
+1. Setting up a program counter to fetch an instruction every cycle;
+2. After the instruction fetch, a decoder is needed to translate which task should be performed (here we have three main types of instructions: arithmetic operations, instruction jump and memory access);
+3. If arithmetic operations, the immediate number or gpr's data is passed to the alu module;
+4. If jump instruction, the decoder pass the jump address and the jump enable signal to if_stage;
+5. If memory access instruction, LOAD: Reads the value in gpr, then writes this data to memory, STORE: Reads the value in memory, then writes the data to gpr, by mem_ctrl module execute.
+
+The basic modules we need are:if_stage(Instruction Fetch),decoder,alu,mem_ctrl,gpr,spm(memory) and cpu_top.
+
 

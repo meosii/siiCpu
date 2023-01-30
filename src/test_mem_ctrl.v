@@ -5,9 +5,9 @@
 module test_mem_ctrl ();
 reg ex_en;
 reg [`DATA_WIDTH_MEM_OP - 1:0] mem_op;
-reg [`DATA_WIDTH_GPR - 1:0] mem_wr_data;
-reg [`DATA_WIDTH_GPR - 1:0] mem_addr_from_alu;
-wire [`DATA_WIDTH_GPR - 1:0] rd_data_from_mem;
+reg [`DATA_WIDTH_GPR - 1:0] gpr_data;
+reg [`DATA_WIDTH_GPR - 1:0] alu_out;
+wire [`DATA_WIDTH_GPR - 1:0] mem_data;
 wire [`WORD_ADDR_BUS] addr_to_mem;
 wire mem_op_as_;
 wire rw;
@@ -25,9 +25,9 @@ always #5 clk = ~clk;
 mem_ctrl u_mem_ctrl(
     .ex_en(ex_en),
     .mem_op(mem_op),
-    .mem_wr_data(mem_wr_data),
-    .mem_addr_from_alu(mem_addr_from_alu),
-    .rd_data_from_mem(rd_data_from_mem),
+    .gpr_data(gpr_data),
+    .alu_out(alu_out),
+    .mem_data(mem_data),
     .addr_to_mem(addr_to_mem),
     .as_(as_),
     .rw(rw),
@@ -43,7 +43,7 @@ memory u_memory(
     .memory_as_(as_),
     .memory_rw(rw),
     .memory_wr_data(wr_data),
-    .memory_rd_data(rd_data_from_mem)
+    .memory_rd_data(mem_data)
 );
 
 initial begin
@@ -60,19 +60,19 @@ initial begin
         for (i = 0; i < 40; i ++) begin
             @(posedge clk);
             #1 begin
-                mem_addr_from_alu = i * 4 * 4;
-                mem_wr_data = 32'b0000_0001_0010_0011_0100_0101_0110_0111;
+                alu_out = i * 4 * 4;
+                gpr_data = 32'b0000_0001_0010_0011_0100_0101_0110_0111;
             end
         end
     end
     #10 begin
-        mem_wr_data = 0;
-        mem_addr_from_alu = 0;
+        gpr_data = 0;
+        alu_out = 0;
         mem_op = `MEM_OP_LOAD_LH;
         for (i = 0; i < 40; i ++) begin
             @(posedge clk);
             #1 begin
-                mem_addr_from_alu = i * 4;
+                alu_out = i * 4;
             end
         end
     end

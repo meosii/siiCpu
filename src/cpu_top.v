@@ -35,12 +35,12 @@ wire [`DATA_WIDTH_GPR - 1:0] alu_in_1;
 wire [`DATA_WIDTH_GPR - 1:0] alu_out;
 wire [$clog2(`DATA_HIGH_GPR) - 1:0] dst_addr;
 wire [`DATA_WIDTH_MEM_OP - 1:0] mem_op;
-wire [`DATA_WIDTH_GPR - 1:0] mem_wr_data;
+wire [`DATA_WIDTH_GPR - 1:0] gpr_data;
 wire [`DATA_WIDTH_CTRL_OP - 1:0] ctrl_op;
 wire [`DATA_WIDTH_ISA_EXP - 1:0] exp_code;
 wire [`DATA_WIDTH_GPR - 1:0] wr_data;
 wire [`WORD_ADDR_BUS] addr_to_mem;
-wire [`DATA_WIDTH_GPR - 1:0] rd_data_from_mem;
+wire [`DATA_WIDTH_GPR - 1:0] mem_data;
 wire mem_spm_rw;
 wire [29:0] mem_spm_addr;
 wire [31:0] mem_spm_wr_data;
@@ -74,7 +74,7 @@ decoder u_decoder(
     .br_addr(br_addr),
     .br_taken(br_taken),
     .mem_op(mem_op),
-    .mem_wr_data(mem_wr_data), //to mem
+    .gpr_data(gpr_data), //to mem
     .ctrl_op(ctrl_op),
     .exp_code(exp_code)
 );
@@ -102,13 +102,13 @@ alu u_alu(
 
 mem_ctrl u_mem_ctrl(
     .mem_op(mem_op),
-    .mem_wr_data(mem_wr_data),
-    .mem_addr_from_alu(alu_out),
-    .rd_data_from_mem(mem_spm_rd_data), //mem to gpr (rd_data_from_mem -> mem_data_to_gpr)
+    .alu_out(alu_out),
     .addr_to_mem(addr_to_mem), //from alu_out
+    .gpr_data(gpr_data),
     .mem_op_as_(mem_op_as_),
     .rw(rw),
     .wr_data(to_spm_wr_data),
+    .mem_data(mem_spm_rd_data), //mem to gpr (mem_data -> mem_data_to_gpr)
     .mem_data_to_gpr(spm_to_gpr_wr_data),
     .miss_align(miss_align)
 );

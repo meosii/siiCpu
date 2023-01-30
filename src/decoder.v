@@ -20,7 +20,7 @@ module decoder (
     output reg br_taken,
     //to mem
     output reg [`DATA_WIDTH_MEM_OP - 1:0] mem_op,
-    output reg [`DATA_WIDTH_GPR - 1:0] mem_wr_data,
+    output reg [`DATA_WIDTH_GPR - 1:0] gpr_data,
     //to "ctrl"
     output reg [`DATA_WIDTH_CTRL_OP - 1:0] ctrl_op,
     output reg [`DATA_WIDTH_ISA_EXP - 1:0] exp_code
@@ -314,7 +314,7 @@ always @* begin
             gpr_rd_addr_1 = if_insn[24:20]; //rb
             case (if_insn[14:12])
                 `FUNCT3_SW: begin // store 32-bit values from the low bits of register rb to memory.
-                    mem_wr_data = gpr_rd_data_1; //M[ra+imm][0:31] = rb[0:31]
+                    gpr_data = gpr_rd_data_1; //M[ra+imm][0:31] = rb[0:31]
                 end
                 `FUNCT3_SH: begin // store 16-bit values from the low bits of register rb to memory.
                     if (gpr_rd_data_1[15] == 1) begin
@@ -322,7 +322,7 @@ always @* begin
                     end else begin
                         store_data = {16'b0000_0000_0000_0000,gpr_rd_data_1[15:0]};
                     end
-                    mem_wr_data = $signed(store_data); //M[ra+imm][0:15] = rb[0:15]
+                    gpr_data = $signed(store_data); //M[ra+imm][0:15] = rb[0:15]
                 end
                 `FUNCT3_SB: begin // store 8-bit values from the low bits of register rb to memory.
                     if (gpr_rd_data_1[7] == 1) begin
@@ -330,9 +330,9 @@ always @* begin
                     end else begin
                         store_data = {24'b0000_0000_0000_0000_0000_0000,gpr_rd_data_1[7:0]};
                     end
-                    mem_wr_data = $signed(store_data); //M[ra+imm][0:7] = rb[0:7]
+                    gpr_data = $signed(store_data); //M[ra+imm][0:7] = rb[0:7]
                 end
-            default: mem_wr_data = 0;
+            default: gpr_data = 0;
             endcase
         end
         // `OP_MISC_MEM: begin

@@ -116,11 +116,11 @@ initial begin
         `test_spm_write_OP_BRANCH(176,7'b0000000,5'b00010,5'b00011,`FUNCT3_BGEU,5'b01000) // pc = pc + 'b100 = pc + 8 = 184
 
         //OP_LOAD,将内存的值存入 gpr，将寄存器的值与立即数(12 bits)相加得到 spm 的地址，取出该地址的值写入 gpr 的 rd
-        `test_spm_write_OP_LOAD(184,12'b0000_0000_1010,5'b00010,`FUNCT3_LW,5'b00100) //rd_data_from_mem = spm[10+2] = 'h003F8193, gpr[rd = 5'b00100] = 003F8193
-        `test_spm_write_OP_LOAD(188,12'b0000_0000_0101,5'b00011,`FUNCT3_LH,5'b00101) //rd_data_from_mem = spm[5+3] = 'hFFFF8113, rd = 5'b00101
-        `test_spm_write_OP_LOAD(192,12'b0000_0000_0010,5'b00010,`FUNCT3_LHU,5'b00110) //rd_data_from_mem = spm[2+2] = 'h00008093, rd = 5'b00110
-        `test_spm_write_OP_LOAD(196,12'b0000_0000_0010,5'b00010,`FUNCT3_LB,5'b00111) //rd_data_from_mem = spm[2+2] = 'hFFFFFF93, rd = 5'b00111
-        `test_spm_write_OP_LOAD(200,12'b0000_0000_0010,5'b00010,`FUNCT3_LBU,5'b01000) //rd_data_from_mem = spm[2+2] = 'h00000093, rd = 5'b01000
+        `test_spm_write_OP_LOAD(184,12'b0000_0000_1010,5'b00010,`FUNCT3_LW,5'b00100) //mem_data = spm[10+2] = 'h003F8193, gpr[rd = 5'b00100] = 003F8193
+        `test_spm_write_OP_LOAD(188,12'b0000_0000_0101,5'b00011,`FUNCT3_LH,5'b00101) //mem_data = spm[5+3] = 'hFFFF8113, rd = 5'b00101
+        `test_spm_write_OP_LOAD(192,12'b0000_0000_0010,5'b00010,`FUNCT3_LHU,5'b00110) //mem_data = spm[2+2] = 'h00008093, rd = 5'b00110
+        `test_spm_write_OP_LOAD(196,12'b0000_0000_0010,5'b00010,`FUNCT3_LB,5'b00111) //mem_data = spm[2+2] = 'hFFFFFF93, rd = 5'b00111
+        `test_spm_write_OP_LOAD(200,12'b0000_0000_0010,5'b00010,`FUNCT3_LBU,5'b01000) //mem_data = spm[2+2] = 'h00000093, rd = 5'b01000
 
         //OP_STORE，将 gpr 中 rs2 的值存入，寄存器的值与立即数(7 bits,5 bits)相加得到 spm 的地址
         `test_spm_write_OP_STORE(204,7'b0000110,5'b00100,5'b00011,`FUNCT3_SW,5'b01101) //gpr[rs2] = gpr[5'b00100] = 'h003F8193, spm[205 + 3] = 'h003F8193

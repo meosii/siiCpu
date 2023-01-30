@@ -19,7 +19,7 @@ wire [`WORD_ADDR_BUS] br_addr;
 wire br_taken;
 wire br_flag;
 wire [`DATA_WIDTH_MEM_OP - 1:0] mem_op;
-wire [`DATA_WIDTH_GPR - 1:0] mem_wr_data;
+wire [`DATA_WIDTH_GPR - 1:0] gpr_data;
 wire [`DATA_WIDTH_CTRL_OP - 1:0] ctrl_op;
 wire [`DATA_WIDTH_ISA_EXP - 1:0] exp_code;
 //gpr
@@ -46,7 +46,7 @@ decoder u_decoder(
 .br_taken(br_taken),
 .br_flag(br_flag),
 .mem_op(mem_op),
-.mem_wr_data(mem_wr_data),
+.gpr_data(gpr_data),
 .ctrl_op(ctrl_op),
 .exp_code(exp_code)
 );
@@ -213,7 +213,7 @@ initial begin
             $display("alu_in_1: %b",alu_in_1);
             $display("gpr_rd_addr_1: %b",gpr_rd_addr_1);
             $display("gpr_rd_data_1: %b",gpr_rd_data_1);
-            $display("mem_wr_data: %b",mem_wr_data);
+            $display("gpr_data: %b",gpr_data);
         end
     end
     #1
