@@ -27,75 +27,50 @@ always @* begin
     mem_op_as_ = 1;
     mem_data_to_gpr = 0;
     rw = `READ;
+    if (offset == `BYTE_OFFSET_WORD) begin
+        miss_align = 0;
+    end else begin
+        miss_align = 1;
+    end
     case (mem_op)
         `MEM_OP_LOAD_LW: begin
             mem_op_as_ = 0;
             rw = `READ;
-            if (offset == `BYTE_OFFSET_WORD) begin //align
-                miss_align = 0;
-                mem_data_to_gpr = $signed(mem_data[`WORD_WIDTH - 1:0]);
-            end else begin
-                miss_align = 1;
-            end
+            mem_data_to_gpr = $signed(mem_data[`WORD_WIDTH - 1:0]);
         end
         `MEM_OP_LOAD_LH: begin
             mem_op_as_ = 0;
             rw = `READ;
-            if (offset == `BYTE_OFFSET_WORD) begin
-                miss_align = 0;
-                if (mem_data[(`WORD_WIDTH/2) - 1] == 1) begin
-                    load_data = {16'b1111_1111_1111_1111,mem_data[(`WORD_WIDTH/2) - 1:0]};
-                end else begin
-                    load_data = mem_data[(`WORD_WIDTH/2) - 1:0];
-                end
-                mem_data_to_gpr = $signed(load_data); //Take the halfword width first, then sign extend
+            if (mem_data[(`WORD_WIDTH/2) - 1] == 1) begin
+                load_data = {16'b1111_1111_1111_1111,mem_data[(`WORD_WIDTH/2) - 1:0]};
             end else begin
-                miss_align = 1;
+                load_data = mem_data[(`WORD_WIDTH/2) - 1:0];
             end
+            mem_data_to_gpr = $signed(load_data); //Take the halfword width first, then sign extend
         end
         `MEM_OP_LOAD_LHU: begin
             mem_op_as_ = 0;
             rw = `READ;
-            if (offset == `BYTE_OFFSET_WORD) begin
-                miss_align = 0;
-                mem_data_to_gpr = mem_data[(`WORD_WIDTH/2) - 1:0]; //zero extension
-            end else begin
-                miss_align = 1;
-            end
+            mem_data_to_gpr = mem_data[(`WORD_WIDTH/2) - 1:0]; //zero extension
         end
         `MEM_OP_LOAD_LB: begin
             mem_op_as_ = 0;
             rw = `READ;
-            if (offset == `BYTE_OFFSET_WORD) begin
-                miss_align = 0;
-                if (mem_data[(`WORD_WIDTH/4) - 1] == 1) begin
-                    load_data = {24'b1111_1111_1111_1111_1111_1111,mem_data[(`WORD_WIDTH/4) - 1:0]};
-                end else begin
-                    load_data = mem_data[(`WORD_WIDTH/4) - 1:0];
-                end
-                mem_data_to_gpr = $signed(load_data); //sign extension
+            if (mem_data[(`WORD_WIDTH/4) - 1] == 1) begin
+                load_data = {24'b1111_1111_1111_1111_1111_1111,mem_data[(`WORD_WIDTH/4) - 1:0]};
             end else begin
-                miss_align = 1;
+                load_data = mem_data[(`WORD_WIDTH/4) - 1:0];
             end
+            mem_data_to_gpr = $signed(load_data); //sign extension
         end
         `MEM_OP_LOAD_LBU: begin
             mem_op_as_ = 0;
             rw = `READ;
-            if (offset == `BYTE_OFFSET_WORD) begin
-                miss_align = 0;
-                mem_data_to_gpr = mem_data[(`WORD_WIDTH/4) - 1:0]; //zero extension
-            end else begin
-                miss_align = 1;
-            end
+            mem_data_to_gpr = mem_data[(`WORD_WIDTH/4) - 1:0]; //zero extension
         end
         `MEM_OP_STORE: begin
             mem_op_as_ = 0;
             rw = `WRITE;
-            if (offset == `BYTE_OFFSET_WORD) begin
-                miss_align = 0;
-            end else begin
-                miss_align = 1;
-            end
         end
         default: begin //Reads and writes of memory are not performed
             mem_op_as_ = 1;

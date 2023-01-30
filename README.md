@@ -173,14 +173,165 @@ RISC-V is a more compact instruction set architecture design with high performan
 
 ### 2.1 Single Cycle Processor
 
-Single cycle processor is a processor in which one instruction is completed in one clock cycle.To implement a processor to properly process instructions, there are several steps.
+Single cycle processor is a processor in which one instruction is completed in one clock cycle.To implement a processor to properly process instructions, there are several steps:
 
-1. Setting up a program counter to fetch an instruction every cycle;
-2. After the instruction fetch, a decoder is needed to translate which task should be performed (here we have three main types of instructions: arithmetic operations, instruction jump and memory access);
-3. If arithmetic operations, the immediate number or gpr's data is passed to the alu module;
-4. If jump instruction, the decoder pass the jump address and the jump enable signal to if_stage;
-5. If memory access instruction, LOAD: Reads the value in gpr, then writes this data to memory, STORE: Reads the value in memory, then writes the data to gpr, by mem_ctrl module execute.
+1. Setting up a "program counter" to fetch an instruction every cycle;
+2. After the instruction fetching, a "decoder" is needed to translate current task (here we have three main types of instructions: arithmetic operations, instruction jump and memory access);
+3. Arithmetic operations: the immediate number or gpr's data is passed to the "alu" module;
+4. Jump instruction: the decoder pass the jump address and the jump enable signal to "if_stage";
+5. Memory access instruction: LOAD: Reads the value in "gpr", then writes this data to "memory", STORE: Reads the value in "memory", then writes the data to "gpr", by "mem_ctrl" module executed.
 
-The basic modules we need are:if_stage(Instruction Fetch),decoder,alu,mem_ctrl,gpr,spm(memory) and cpu_top.
+The basic modules we need are: if_stage (Instruction Fetch), decoder, alu, mem_ctrl, gpr, spm(memory) and cpu_top.
+
+#### 2.1.1 if_stage
+
+In this module, we have two main tasks, one is executing jump instruction, the other is executing pc + 4.
+
+By juding the signal of "br_taken", we choose whether jump or not.(ps: "cpu_en" used to write instructions in memory when "cpu_en" is low)
+
+``` verilog
+always @(posedge clk or negedge reset) begin
+    if (!reset | !cpu_en) begin
+        if_pc <= 0;
+    end else if (br_taken) begin
+        if_pc <= br_addr;
+    end else begin
+        if_pc <= if_pc + 4;
+    end
+end
+```
+
+#### 2.1.2 decoder
+
+This module is a combination circuit, the main task is decodering what task will be executed.
+
+Here, we should be careful to the following points:
+1. Distinguish between signed and unsigned numbers.In RISC-V, imm usually show as 12 bits or 20 bits, so the signed bit expansion for immediate numbers is important. 
+``` verilog
+//The immediate number is sign extended to XLEN(32 bits) bits
+if (if_insn[31] == 1) begin
+    imm = {20'b1111_1111_1111_1111_1111,if_insn[31:20]};
+end else begin
+    imm = {20'b0000_0000_0000_0000_0000,if_insn[31:20]};
+end
+```
+2. When we should write in gpr, setting "we_" as 0 is needed, "dst_addr" needs to be prepared. While, if we need read from gpr, we only prepare the signal of "gpr_rd_addr".
+3. To provide "alu_op" or "mem_op" in time. The operation uses `define.
+
+#### 2.1.3 alu
+
+This module is a combination circuit, the main task is executing arithmetic operations.
+
+#### 2.1.4 mem_ctrl
+
+This module is a combination circuit, the main task is transmitting the signals between "gpr" and "memory". By the signal of "mem_op", we judge LOAD or STORE.
+
+Since memory access requires byte alignment, here we judge "alu_out"'s last two bits, if this two bits is 2'b00, means that align.
+
+``` verilog
+assign offset = alu_out[`BYTE_OFFSET_LOC];
+if (offset == `BYTE_OFFSET_WORD) begin
+    miss_align = 0;
+end else begin
+    miss_align = 1;
+end
+```
+
+If "miss_align" is high or the "mem_op" is false, we need put the "as_" as low(spm_as).
 
 
+LOAD:
+
+  Firstly, we gain the memory's addr from "alu", then gain the memory's data from "spm"(memory), using the "dst_addr" from "decoder" we can visit the "gpr" and write "mem_data" to "gpr". This data could be passed as a word(32 bits), a half of a word(16 bits) or a quater of a word(8 bits).
+
+``` verilog
+assign addr_to_mem = alu_out[`WORD_ADDR_BUS];
+always @* begin
+  ···
+  case (mem_op)
+    `MEM_OP_LOAD_LW: begin
+            mem_op_as_ = 0;
+            rw = `READ;
+            mem_data_to_gpr = $signed(mem_data[`WORD_WIDTH - 1:0]);
+        end
+        `MEM_OP_LOAD_LH: begin
+            mem_op_as_ = 0;
+            rw = `READ;
+            //Take the halfword width first, then sign extend
+            if (mem_data[(`WORD_WIDTH/2) - 1] == 1) begin
+                load_data = {16'b1111_1111_1111_1111,mem_data[(`WORD_WIDTH/2) - 1:0]};
+            end else begin
+                load_data = mem_data[(`WORD_WIDTH/2) - 1:0];
+            end
+            mem_data_to_gpr = $signed(load_data); 
+        end
+    ···
+  endcase
+  ···
+end
+```
+
+STORE:
+
+  Only need pass the signal of "gpr_data". "decoder" has already generated a word(32 bits), a half of a word(16 bits) or a quater of a word(8 bits).
+
+``` verilog
+assign wr_data = gpr_data;
+always @* begin
+  ···
+  case (mem_op)
+    `MEM_OP_STORE: begin
+        mem_op_as_ = 0;
+        rw = `WRITE;
+    end
+    ···
+  endcase
+  ···
+end
+```
+
+#### 2.1.5 spm
+
+In memory, an address holds 8bits, but the siiCpu is a 32-bit processer, which needs four address to store the data, showing as follows:
+
+``` verilog
+assign if_spm_rd_data = (!if_spm_as_ && (if_spm_rw == READ))? 
+                        {spm[if_spm_addr],spm[if_spm_addr + 1],spm[if_spm_addr + 2],spm[if_spm_addr + 3]} : 32'b0;
+assign mem_spm_rd_data = (!mem_spm_as_ && (mem_spm_rw == READ))? 
+                        {spm[mem_spm_addr],spm[mem_spm_addr + 1],spm[mem_spm_addr + 2],spm[mem_spm_addr + 3]} : 32'b0;
+always @(posedge clk or negedge rst_) begin
+    if (!rst_) begin
+        for (i = 0;i < 1023;i++) begin
+            spm[i] <= 32'b0;
+        end
+    end else if (!mem_spm_as_ && (mem_spm_rw == WRITE)) begin
+        spm[mem_spm_addr] <= mem_spm_wr_data[31:24];
+        spm[mem_spm_addr + 1] <= mem_spm_wr_data[23:16];
+        spm[mem_spm_addr + 2] <= mem_spm_wr_data[15:8];
+        spm[mem_spm_addr + 3] <= mem_spm_wr_data[7:0];
+    end else if (!if_spm_as_ && (if_spm_rw == WRITE)) begin
+        spm[if_spm_addr] <= if_spm_wr_data[31:24];
+        spm[if_spm_addr + 1] <= if_spm_wr_data[23:16];
+        spm[if_spm_addr + 2] <= if_spm_wr_data[15:8];
+        spm[if_spm_addr + 3] <= if_spm_wr_data[7:0];
+    end
+end
+```
+
+#### 2.1.6 gpr
+
+General Purpose Registers. Here, we use up to three registers as operands, read values from two registers and then write values to the other register.Therefore, we need two read ports and one write port.Showing as follows:
+
+``` verilog
+assign rd_data_0 = ((we_ == `WRITE) && (wr_addr == rd_addr_0))? wr_data : gpr[rd_addr_0];
+assign rd_data_1 = ((we_ == `WRITE) && (wr_addr == rd_addr_1))? wr_data : gpr[rd_addr_1];
+always @(posedge clk or negedge reset) begin
+    if (!reset) begin
+        for (i = 0; i < `DATA_HIGH_GPR; i++) begin
+            gpr[i] <= `DATA_WIDTH_GPR'b0;
+        end
+    end else if (we_ == `WRITE) begin
+            gpr[wr_addr] <= wr_data;
+    end
+end
+```
