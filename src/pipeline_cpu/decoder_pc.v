@@ -1,4 +1,4 @@
-module decoder (
+module decoder_pc (
     //from if
     input wire [`DATA_WIDTH_INSN - 1:0] if_insn,
     input wire [`WORD_ADDR_BUS] if_pc,
@@ -118,7 +118,7 @@ always @* begin
         `OP_AUIPC: begin //add upper immediate to pc
             alu_op = `ALU_OP_AUIPC;
             alu_in_0 = {12'b0,if_insn[31:12]};
-            alu_in_1 = if_pc;
+            alu_in_1 = (if_pc - 4); // Cause of insn resgiter, "insn" will be delay than "pc" one cycle
             dst_addr = if_insn[11:7]; //rd = PC + (imm << 12)
             gpr_we_ = 1'b0;
         end
@@ -203,15 +203,15 @@ always @* begin
         `OP_JAL: begin //jump and link; rd = PC+4; PC += imm
             jr_offset = {if_insn[31],if_insn[19:12],if_insn[20],if_insn[30:21],1'b0}; //Lowest bit setting 0,realize signed offset for multiples of 2
             if (if_insn[31] == 1) begin
-                jr_target = if_pc - jr_offset[19:0];
+                jr_target = (if_pc - 4) - jr_offset[19:0];
             end else begin
-                jr_target = if_pc + jr_offset[19:0];
+                jr_target = (if_pc - 4) + jr_offset[19:0];
             end
             br_addr = jr_target;
             br_taken = 1'b1;
             gpr_we_ = 1'b0;
             alu_op = `ALU_OP_ADD; //rd = pc + 4
-            alu_in_0 = if_pc;
+            alu_in_0 = (if_pc - 4);
             alu_in_1 = 4;
             dst_addr = if_insn[11:7];
         end
@@ -226,7 +226,7 @@ always @* begin
             br_addr = {jr_target[`WORD_ADDR_WIDTH - 1:1],1'b0};
             br_taken = 1'b1;
             alu_op = `ALU_OP_ADD; //rd = pc + 4
-            alu_in_0 = if_pc;
+            alu_in_0 = (if_pc - 4);
             alu_in_1 = 4;
             dst_addr = if_insn[11:7];
         end
@@ -235,9 +235,9 @@ always @* begin
             gpr_rd_addr_1 = if_insn[24:20];
             imm = {if_insn[31],if_insn[7],if_insn[30:25],if_insn[11:8],1'b0};
             if (if_insn[31] == 1) begin
-                br_target = if_pc - imm[11:0];
+                br_target = (if_pc - 4) - imm[11:0];
             end else begin
-                br_target = if_pc + imm[11:0];
+                br_target = (if_pc - 4) + imm[11:0];
             end
             br_addr = br_target;
             case (if_insn[14:12])

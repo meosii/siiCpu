@@ -1,12 +1,15 @@
-`include "define.v"
-`include "if_stage.v"
-`include "decoder.v"
-`include "alu.v"
-`include "gpr.v"
-`include "mem_ctrl.v"
-`include "spm.v"
+`include "id_reg.v"
 
-module cpu_top (
+`include "../define.v"
+`include "../if_stage.v"
+`include "../decoder.v"
+`include "../alu.v"
+`include "../gpr.v"
+`include "../mem_ctrl.v"
+`include "../spm.v"
+
+
+module cpu_two_pipeline_top (
     input wire cpu_en,
     input wire clk,
     input wire reset,
@@ -85,11 +88,43 @@ decoder u_decoder(
     .exp_code(exp_code)
 );
 
+wire [`WORD_ADDR_BUS] id_pc;
+wire [`DATA_WIDTH_INSN - 1:0] id_insn;
+wire [$clog2(`DATA_HIGH_GPR) - 1:0] id_dst_addr;
+wire [`DATA_WIDTH_ALU_OP - 1:0] id_alu_op;
+wire [`DATA_WIDTH_GPR - 1:0] id_alu_in_0;
+wire [`DATA_WIDTH_GPR - 1:0] id_alu_in_1;
+wire [`DATA_WIDTH_MEM_OP - 1:0] id_mem_op;
+wire [`DATA_WIDTH_GPR - 1:0] id_gpr_data;
+
+id_reg u_id_reg(
+    .clk(clk),
+    .reset(reset),
+    .if_pc(if_pc),
+    .id_pc(id_pc),
+    .if_insn(if_insn),
+    .id_insn(id_insn),
+    .gpr_we_(gpr_we_),
+    .dst_addr(dst_addr), 
+    .id_gpr_we_(id_gpr_we_),
+    .id_dst_addr(id_dst_addr),
+    .alu_op(alu_op),
+    .alu_in_0(alu_in_0),
+    .alu_in_1(alu_in_1),
+    .id_alu_op(id_alu_op),
+    .id_alu_in_0(id_alu_in_0),
+    .id_alu_in_1(id_alu_in_1),
+    .mem_op(mem_op),
+    .gpr_data(gpr_data),
+    .id_mem_op(id_mem_op),
+    .id_gpr_data(id_gpr_data)
+);
+
 gpr u_gpr(
     .clk(clk),
     .reset(reset),
-    .we_(gpr_we_),
-    .wr_addr(dst_addr),
+    .we_(id_gpr_we_),
+    .wr_addr(id_dst_addr),
     .wr_data(gpr_wr_data),
     .rd_addr_0(gpr_rd_addr_0),
     .rd_addr_1(gpr_rd_addr_1),
@@ -97,20 +132,20 @@ gpr u_gpr(
     .rd_data_1(gpr_rd_data_1)
 );
 
-assign gpr_wr_data = (if_insn[`DATA_WIDTH_OPCODE - 1:0] == `OP_LOAD)? mem_data_to_gpr:alu_out;
+assign gpr_wr_data = (id_insn[`DATA_WIDTH_OPCODE - 1:0] == `OP_LOAD)? mem_data_to_gpr:alu_out;
 
 alu u_alu(
-    .alu_op(alu_op),
-    .alu_in_0(alu_in_0),
-    .alu_in_1(alu_in_1),
+    .alu_op(id_alu_op),
+    .alu_in_0(id_alu_in_0),
+    .alu_in_1(id_alu_in_1),
     .alu_out(alu_out)
 );
 
 mem_ctrl u_mem_ctrl(
-    .mem_op(mem_op),
+    .mem_op(id_mem_op),
     .alu_out(alu_out),
     .addr_to_mem(addr_to_mem), //from alu_out
-    .gpr_data(gpr_data),
+    .gpr_data(id_gpr_data),
     .mem_op_as_(mem_op_as_),
     .rw(rw),
     .wr_data(to_spm_wr_data),

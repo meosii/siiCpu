@@ -1,5 +1,3 @@
-`include "define.v"
-
 // "signed alu_out" can judge whether the overflow
 
 module alu (
