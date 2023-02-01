@@ -27,6 +27,7 @@ always @(posedge clk or negedge reset) begin
     if (!reset) begin
         ex_pc <= 0;
         ex_insn <= 0;
+        ex_alu_out <= 0;
         ex_gpr_we_ <= 0;
         ex_dst_addr <= 0;
         ex_mem_op <= 0;

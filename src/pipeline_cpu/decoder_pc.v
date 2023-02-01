@@ -1,3 +1,5 @@
+// pc - 4: when we have insn_register, pc is one cycle ahead of insn, 
+// therefore, we should use pc - 4
 module decoder_pc (
     //from if
     input wire [`DATA_WIDTH_INSN - 1:0] if_insn,

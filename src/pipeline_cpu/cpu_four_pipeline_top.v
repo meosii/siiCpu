@@ -22,7 +22,7 @@ module cpu_four_pipeline_top (
     output wire [31:0] test_spm_rd_data
 );
 
-//if_stage
+//if_reg
 wire [`DATA_WIDTH_INSN - 1:0] insn;
 wire [`WORD_ADDR_BUS] if_pc;
 wire [`DATA_WIDTH_INSN - 1:0] if_insn;

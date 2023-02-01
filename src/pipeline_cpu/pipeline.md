@@ -39,7 +39,7 @@ always @(posedge clk or negedge reset) begin
 end
 ```
 
-除了添加一个寄存器模块，在 top 中加入该寄存器：
+除了添加一个寄存器模块，在 top 中加入该寄存器，由于此时内存访问和 gpr 写回都在第二个周期，要将对应信号进行打一拍操作，同时 gpr 的写入地址和写入数据，以及对写入数据判断的当前指令，还有内存的写入数据都应是 "id_···"：
 
 ``` verilog
 //top
@@ -73,6 +73,22 @@ id_reg u_id_reg(
     .gpr_data(gpr_data),
     .id_mem_op(id_mem_op),
     .id_gpr_data(id_gpr_data)
+);
+
+gpr u_gpr(
+    .we_(id_gpr_we_),
+    .wr_addr(id_dst_addr),
+    .wr_data(gpr_wr_data),
+    ···
+);
+
+assign gpr_wr_data = (id_insn[`DATA_WIDTH_OPCODE - 1:0] == `OP_LOAD)? mem_data_to_gpr:alu_out;
+
+mem_ctrl u_mem_ctrl(
+    .mem_op(id_mem_op),
+    .alu_out(alu_out),
+    .gpr_data(id_gpr_data),
+    ···
 );
 ···
 ```
@@ -109,10 +125,40 @@ always @(posedge clk or negedge reset) begin
     end
 end
 ```
+此时虽说是三周期， "if_insn" 落后于 "if_pc" 一个周期，"id_insn" 落后于 "if_insn" 一个周期，对于内存访问和寄存器写入的相关信号仍是 "id_···"，即第三个时钟上升沿。
+``` verilog
+// top
+gpr u_gpr(
+    .we_(id_gpr_we_),
+    .wr_addr(id_dst_addr),
+    .wr_data(gpr_wr_data),
+    ···
+);
 
-对于三级流水线，当第一条指令为跳转指令，在 decoder 产生的跳转地址与跳转使能时，"pc" 已经指向第二条指令，也就是说在第三个时钟上升沿才会跳转到第一条指令指向的跳转地址 "br_addr"，此时的第二条指令就成为了无效指令，产生了一个周期的浪费。
+assign gpr_wr_data = (id_insn[`DATA_WIDTH_OPCODE - 1:0] == `OP_LOAD)? mem_data_to_gpr:alu_out;
+
+mem_ctrl u_mem_ctrl(
+    .mem_op(id_mem_op),
+    .alu_out(alu_out),
+    .gpr_data(id_gpr_data),
+    ···
+);
+```
+
+对于三级流水线，当第一条指令为跳转指令，在 decoder 产生的跳转地址与跳转使能时，"pc" 已经指向第二条指令，也就是说在此的下一个上升沿（第三个时钟上升沿）才会跳转到第一条指令指向的跳转地址 "br_addr"，此时的第二条指令就成为了无效指令，产生了一个周期的浪费。
 
 即产生了控制冒险，可以采用延迟分支的方法，在第二条指令执行完之后再跳转，区别在于此时的第二条指令就可以完整执行，此时避免流水线传送无效数据，避免流水线冒泡。
+
+由于加入了指令寄存器，在跳转时需要加 "pc"，指令落后于 "pc" 一个周期，因此想要取到这一条指令的 "pc"，需要 "if_pc" - 4 才是正确值，因此 decoder 需要更改。例如：
+
+``` verilog
+// decoder
+if (if_insn[31] == 1) begin
+    jr_target = (if_pc - 4) - jr_offset[19:0];
+end else begin
+    jr_target = (if_pc - 4) + jr_offset[19:0];
+end
+```
 
 ## 3.四级流水线
 
@@ -124,6 +170,7 @@ always @(posedge clk or negedge reset) begin
     if (!reset) begin
         ex_pc <= 0;
         ex_insn <= 0;
+        ex_alu_out <= 0;
         ex_gpr_we_ <= 0;
         ex_dst_addr <= 0;
         ex_mem_op <= 0;
@@ -142,20 +189,116 @@ end
 
 此时在 decoder 产生的 "dst_addr" 延迟两拍，"alu_out" 延迟一拍，若此时需要把 "alu_out" 写入 "dst_addr" 地址，正好是同一个时钟周期；"gpr_data" 直接由 mem_ctrl 产生，把 "gpr_data" 写入 "dst_addr" 地址，同样也是一个时钟周期。也就是在该指令被取指之后的第四个时钟沿产生 gpr 的写入地址和数据，那么需要通过指令来判断写入的是 alu 的结果还是 mem 中的数据，此时 "if_pc" 并不是写入 gpr 的指令，因此指令也需要存入寄存器。
 
+此时内存访问和寄存器写入仍作为一个阶段，但此时的信号是执行完 alu 后经过 ex_reg 寄存的信号，都以 "ex_..." 命名。
+
 ``` verilog
 // top
+gpr u_gpr(
+    .we_(ex_gpr_we_),
+    .wr_addr(ex_dst_addr),
+    .wr_data(gpr_wr_data),
+    ···
+);
 assign gpr_wr_data = (ex_insn[`DATA_WIDTH_OPCODE - 1:0] == `OP_LOAD)? mem_data_to_gpr:ex_alu_out;
+
+mem_ctrl u_mem_ctrl(
+    .mem_op(ex_mem_op),
+    .alu_out(ex_alu_out),
+    .gpr_data(ex_gpr_data),
+    ···
+);
+
+wire [`WORD_ADDR_BUS] ex_pc;
+wire [`DATA_WIDTH_INSN - 1:0] ex_insn;
+wire [`DATA_WIDTH_GPR - 1:0] ex_alu_out;
+wire [$clog2(`DATA_HIGH_GPR) - 1:0] ex_dst_addr;
+wire [`DATA_WIDTH_MEM_OP - 1:0] ex_mem_op;
+wire [`DATA_WIDTH_GPR - 1:0] ex_gpr_data;
+
+ex_reg u_ex_reg(
+    .clk(clk),
+    .reset(reset),
+    .id_pc(id_pc),
+    .ex_pc(ex_pc),
+    .id_insn(id_insn),
+    .ex_insn(ex_insn),
+    .alu_out(alu_out),
+    .ex_alu_out(ex_alu_out),
+    .id_gpr_we_(id_gpr_we_),
+    .id_dst_addr(id_dst_addr),
+    .ex_gpr_we_(ex_gpr_we_),
+    .ex_dst_addr(ex_dst_addr),
+    .id_mem_op(id_mem_op),
+    .id_gpr_data(id_gpr_data),
+    .ex_mem_op(ex_mem_op),
+    .ex_gpr_data(ex_gpr_data)
+);
 ```
 
-在跳转时需要加 "pc"，而加入指令寄存器以后，指令落后于 "pc" 一个周期，因此想要取到这一条指令的 "pc"，需要 "if_pc" - 4 才是正确值，因此 decoder 需要更改。例如：
+## 4.五级流水线
+
+将写回寄存器单独作为一个阶段，实现五级流水线。内存写入在 mem_ctrl 完成，将 gpr 写入放至第五阶段，将 "mem_alu_out" 和 "mem_mem_data_to_gpr" 通过 "mem_insn" 做选择写入 gpr，"mem_gpr_we_" 和 "mem_dst_addr" 记得也打一拍使它们在同一周期。
 
 ``` verilog
-// decoder
-if (if_insn[31] == 1) begin
-    jr_target = (if_pc - 4) - jr_offset[19:0];
-end else begin
-    jr_target = (if_pc - 4) + jr_offset[19:0];
+// mem_reg
+always @(posedge clk or negedge reset) begin
+    if (!reset) begin
+        mem_pc <= 0;
+        mem_insn <= 0;
+        mem_alu_out <= 0;
+        mem_gpr_we_ <= 0;
+        mem_dst_addr <= 0;
+        mem_mem_data_to_gpr <= 0;
+    end else begin
+        mem_pc <= ex_pc;
+        mem_insn <= ex_insn;
+        mem_alu_out <= ex_alu_out;
+        mem_gpr_we_ <= ex_gpr_we_;
+        mem_dst_addr <= ex_dst_addr;
+        mem_mem_data_to_gpr <= mem_data_to_gpr;
+    end
 end
+```
+在 top 中将 gpr 的写入信号改为 mem_reg 之后的信号：
+``` verilog
+// top
+gpr u_gpr(
+    .we_(mem_gpr_we_),
+    .wr_addr(mem_dst_addr),
+    .wr_data(gpr_wr_data),
+    ···
+);
+assign gpr_wr_data = (mem_insn[`DATA_WIDTH_OPCODE - 1:0] == `OP_LOAD)? mem_mem_data_to_gpr:mem_alu_out;
+
+mem_ctrl u_mem_ctrl(
+    .mem_op(ex_mem_op),
+    .alu_out(ex_alu_out),
+    .gpr_data(ex_gpr_data),
+    ···
+);
+
+wire [`WORD_ADDR_BUS] mem_pc;
+wire [`DATA_WIDTH_INSN - 1:0] mem_insn;
+wire [`DATA_WIDTH_GPR - 1:0] mem_alu_out;
+wire [$clog2(`DATA_HIGH_GPR) - 1:0] mem_dst_addr;
+wire [`DATA_WIDTH_GPR - 1:0] mem_mem_data_to_gpr;
+
+mem_reg u_mem_reg (
+    .clk(clk),
+    .reset(reset),
+    .ex_pc(ex_pc),
+    .mem_pc(mem_pc),
+    .ex_insn(ex_insn),
+    .mem_insn(mem_insn),
+    .ex_alu_out(ex_alu_out),
+    .mem_alu_out(mem_alu_out),
+    .ex_gpr_we_(ex_gpr_we_),
+    .ex_dst_addr(ex_dst_addr),
+    .mem_gpr_we_(mem_gpr_we_),
+    .mem_dst_addr(mem_dst_addr),
+    .mem_data_to_gpr(mem_data_to_gpr),
+    .mem_mem_data_to_gpr(mem_mem_data_to_gpr)
+);
 ```
 
 ## 测试
