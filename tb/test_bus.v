@@ -1,4 +1,4 @@
-`include"bus_top.v"
+`include "bus/bus_top.v"
 
 module test_bus();
 

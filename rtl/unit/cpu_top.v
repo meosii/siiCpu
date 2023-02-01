@@ -1,13 +1,13 @@
 `ifndef siicpu_cpu_top
 `define siicpu_cpu_top
 
-`include "define.v"
-`include "if_stage.v"
-`include "decoder.v"
-`include "alu.v"
-`include "gpr.v"
-`include "mem_ctrl.v"
-`include "spm.v"
+`include "unit/define.v"
+`include "unit/if_stage.v"
+`include "unit/decoder.v"
+`include "unit/alu.v"
+`include "unit/gpr.v"
+`include "unit/mem_ctrl.v"
+`include "unit/spm.v"
 
 module cpu_top (
     input wire cpu_en,

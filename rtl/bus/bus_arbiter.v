@@ -1,4 +1,4 @@
-`include "define_bus.v"
+`include "bus/define_bus.v"
 
 //Here, we use the round-robin priority,
 //define the priority order as 0 1 2 3 

@@ -1,4 +1,4 @@
-`include "define_bus.v"
+`include "bus/define_bus.v"
 //Using the upper three digits of the address 
 //generate the cs signal
 

@@ -1,12 +1,12 @@
-`include "id_reg.v"
-`include "if_reg.v"
-`include "decoder_pc.v"
+`include "pipeline_cpu/id_reg.v"
+`include "pipeline_cpu/if_reg.v"
+`include "pipeline_cpu/decoder_pc.v"
 
-`include "define.v"
-`include "alu.v"
-`include "gpr.v"
-`include "mem_ctrl.v"
-`include "spm.v"
+`include "unit/define.v"
+`include "unit/alu.v"
+`include "unit/gpr.v"
+`include "unit/mem_ctrl.v"
+`include "unit/spm.v"
 
 
 module cpu_three_pipeline_top (

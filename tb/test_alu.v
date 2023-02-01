@@ -1,5 +1,5 @@
-`include "alu.v"
-`include "define.v"
+`include "unit/alu.v"
+`include "unit/define.v"
 module test_alu();
 reg [`DATA_WIDTH_ALU_OP - 1:0] alu_op;
 reg [`DATA_WIDTH_GPR - 1:0] alu_in_0;
