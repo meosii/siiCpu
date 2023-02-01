@@ -23,13 +23,11 @@ integer i;
 always #5 clk = ~clk;
 
 mem_ctrl u_mem_ctrl(
-    .ex_en(ex_en),
     .mem_op(mem_op),
     .gpr_data(gpr_data),
     .alu_out(alu_out),
     .mem_data(mem_data),
     .addr_to_mem(addr_to_mem),
-    .as_(as_),
     .rw(rw),
     .wr_data(wr_data),
     .mem_data_to_gpr(mem_data_to_gpr),

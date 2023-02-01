@@ -1,3 +1,6 @@
+`ifndef siicpu_spm
+`define siicpu_spm
+
 //Dual Port RAM
 //One port for IF, the other for MEM
 
@@ -46,3 +49,5 @@ always @(posedge clk or negedge rst_) begin
 end
 
 endmodule
+
+`endif 
