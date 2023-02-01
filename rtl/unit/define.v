@@ -1,5 +1,4 @@
 `ifndef siicpu_define
-
 `define siicpu_define
 
 `define DATA_WIDTH_GPR 32

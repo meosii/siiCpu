@@ -1,3 +1,7 @@
+`ifndef siicpu_memory
+`define siicpu_memory
+
+
 module memory(
     input wire clk,
     input wire rst_,
@@ -30,3 +34,5 @@ always @(posedge clk or negedge rst_) begin
 end
 
 endmodule
+
+`endif 

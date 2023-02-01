@@ -1,3 +1,8 @@
+`ifndef siicpu_mem_ctrl
+`define siicpu_mem_ctrl
+
+`include "define.v"
+
 module mem_ctrl (
     input wire [`DATA_WIDTH_MEM_OP - 1:0] mem_op, //from decoder
     output reg rw,
@@ -78,3 +83,5 @@ always @* begin
 end
 
 endmodule
+
+`endif 
