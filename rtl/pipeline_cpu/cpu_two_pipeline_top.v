@@ -1,15 +1,15 @@
 `include "id_reg.v"
-`include "if_reg.v"
-`include "decoder_pc.v"
 
-`include "../define.v"
-`include "../alu.v"
-`include "../gpr.v"
-`include "../mem_ctrl.v"
-`include "../spm.v"
+`include "define.v"
+`include "if_stage.v"
+`include "decoder.v"
+`include "alu.v"
+`include "gpr.v"
+`include "mem_ctrl.v"
+`include "spm.v"
 
 
-module cpu_three_pipeline_top (
+module cpu_two_pipeline_top (
     input wire cpu_en,
     input wire clk,
     input wire reset,
@@ -21,7 +21,7 @@ module cpu_three_pipeline_top (
     output wire [31:0] test_spm_rd_data
 );
 
-//if_reg
+//if_stage
 wire [`DATA_WIDTH_INSN - 1:0] insn;
 wire [`WORD_ADDR_BUS] if_pc;
 wire [`DATA_WIDTH_INSN - 1:0] if_insn;
@@ -56,7 +56,7 @@ wire [31:0] mem_spm_rd_data;
 wire [`DATA_WIDTH_CTRL_OP - 1:0] ctrl_op;
 wire [`DATA_WIDTH_ISA_EXP - 1:0] exp_code;
 
-if_reg u_if_reg(
+if_stage u_if_stage(
     .cpu_en(cpu_en),
     .clk(clk),
     .reset(reset),
@@ -68,7 +68,7 @@ if_reg u_if_reg(
     .if_en(if_en)
 );
 
-decoder_pc u_decoder_pc(
+decoder u_decoder(
     .if_insn(if_insn),
     .if_pc(if_pc),
     .gpr_rd_data_0(gpr_rd_data_0),

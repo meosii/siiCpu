@@ -1,16 +1,15 @@
 `include "id_reg.v"
 `include "if_reg.v"
-`include "ex_reg.v"
 `include "decoder_pc.v"
 
-`include "../define.v"
-`include "../alu.v"
-`include "../gpr.v"
-`include "../mem_ctrl.v"
-`include "../spm.v"
+`include "define.v"
+`include "alu.v"
+`include "gpr.v"
+`include "mem_ctrl.v"
+`include "spm.v"
 
 
-module cpu_four_pipeline_top (
+module cpu_three_pipeline_top (
     input wire cpu_en,
     input wire clk,
     input wire reset,
@@ -124,8 +123,8 @@ id_reg u_id_reg(
 gpr u_gpr(
     .clk(clk),
     .reset(reset),
-    .we_(ex_gpr_we_),
-    .wr_addr(ex_dst_addr),
+    .we_(id_gpr_we_),
+    .wr_addr(id_dst_addr),
     .wr_data(gpr_wr_data),
     .rd_addr_0(gpr_rd_addr_0),
     .rd_addr_1(gpr_rd_addr_1),
@@ -133,7 +132,7 @@ gpr u_gpr(
     .rd_data_1(gpr_rd_data_1)
 );
 
-assign gpr_wr_data = (ex_insn[`DATA_WIDTH_OPCODE - 1:0] == `OP_LOAD)? mem_data_to_gpr:ex_alu_out;
+assign gpr_wr_data = (id_insn[`DATA_WIDTH_OPCODE - 1:0] == `OP_LOAD)? mem_data_to_gpr:alu_out;
 
 alu u_alu(
     .alu_op(id_alu_op),
@@ -142,37 +141,11 @@ alu u_alu(
     .alu_out(alu_out)
 );
 
-wire [`WORD_ADDR_BUS] ex_pc;
-wire [`DATA_WIDTH_INSN - 1:0] ex_insn;
-wire [`DATA_WIDTH_GPR - 1:0] ex_alu_out;
-wire [$clog2(`DATA_HIGH_GPR) - 1:0] ex_dst_addr;
-wire [`DATA_WIDTH_MEM_OP - 1:0] ex_mem_op;
-wire [`DATA_WIDTH_GPR - 1:0] ex_gpr_data;
-
-ex_reg u_ex_reg(
-    .clk(clk),
-    .reset(reset),
-    .id_pc(id_pc),
-    .ex_pc(ex_pc),
-    .id_insn(id_insn),
-    .ex_insn(ex_insn),
-    .alu_out(alu_out),
-    .ex_alu_out(ex_alu_out),
-    .id_gpr_we_(id_gpr_we_),
-    .id_dst_addr(id_dst_addr),
-    .ex_gpr_we_(ex_gpr_we_),
-    .ex_dst_addr(ex_dst_addr),
-    .id_mem_op(id_mem_op),
-    .id_gpr_data(id_gpr_data),
-    .ex_mem_op(ex_mem_op),
-    .ex_gpr_data(ex_gpr_data)
-);
-
 mem_ctrl u_mem_ctrl(
-    .mem_op(ex_mem_op),
-    .alu_out(ex_alu_out),
+    .mem_op(id_mem_op),
+    .alu_out(alu_out),
     .addr_to_mem(addr_to_mem), //from alu_out
-    .gpr_data(ex_gpr_data),
+    .gpr_data(id_gpr_data),
     .mem_op_as_(mem_op_as_),
     .rw(rw),
     .wr_data(to_spm_wr_data),

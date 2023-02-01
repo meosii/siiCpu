@@ -1,4 +1,4 @@
-`include "../define.v"
+`include "define.v"
 module ex_reg (
     input wire clk,
     input wire reset,

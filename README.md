@@ -339,3 +339,20 @@ end
 ### 2.1 CPU with pipeline design
 
 For single cycle processer, an instruction could be executed in one cycle, but for different instructions, the executed time is different. We need to select the longest instruction processing time as a cycle, the clock frequency will be very slow. While for the CPU with pipeline design, an instruction will be executed in multi-cycle, but clock frequency will be improved, even more, 1000 cycles also could execute nearly 1000 instructions.
+
+
+## 3 RUN
+
+### build
+use
+`
+make
+`
+to build the tests, and all the test files would be generated into `test/bin` dirctory
+
+### clean
+use
+`
+make clean
+`
+to clean all the test files and vcd files.

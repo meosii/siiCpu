@@ -1,3 +1,7 @@
+`ifndef siicpu_if_stage
+`define siicpu_if_stage
+
+`include "define.v"
 //Instruction Fetch(IF)
 module if_stage (
     input wire cpu_en,
@@ -26,3 +30,5 @@ end
 
 
 endmodule
+
+`endif

@@ -32,7 +32,6 @@ reg [31:0] wr_data;
 decoder u_decoder(
 .if_insn(if_insn),
 .if_pc(if_pc),
-.if_en(if_en),
 .gpr_rd_data_0(gpr_rd_data_0),
 .gpr_rd_data_1(gpr_rd_data_1),
 .gpr_rd_addr_0(gpr_rd_addr_0),
@@ -44,7 +43,6 @@ decoder u_decoder(
 .alu_in_1(alu_in_1),
 .br_addr(br_addr),
 .br_taken(br_taken),
-.br_flag(br_flag),
 .mem_op(mem_op),
 .gpr_data(gpr_data),
 .ctrl_op(ctrl_op),
