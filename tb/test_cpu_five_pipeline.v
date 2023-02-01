@@ -1,4 +1,4 @@
-`include "cpu_five_pipeline_top.v"
+`include "pipeline_cpu/cpu_five_pipeline_top.v"
 
 module test_cpu_five_pipeline();
 reg cpu_en;

@@ -1,4 +1,4 @@
-`include "define.v"
+`include "unit/define.v"
 module if_reg (
     input wire cpu_en,
     input wire clk,

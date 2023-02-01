@@ -1,4 +1,4 @@
-`include "cpu_top.v"
+`include "unit/cpu_top.v"
 
 module test_cpu_top();
 reg cpu_en;

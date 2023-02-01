@@ -1,5 +1,5 @@
-`include "bus_arbiter.v"
-`include "define_bus.v"
+`include "bus/bus_arbiter.v"
+`include "bus/define_bus.v"
 
 module test_arbiter();
 reg clk;

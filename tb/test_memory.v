@@ -1,4 +1,4 @@
-`include "memory.v"
+`include "unit/memory.v"
 
 module test_memory ();
 

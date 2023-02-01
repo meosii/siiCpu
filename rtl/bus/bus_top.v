@@ -5,11 +5,11 @@
 //By the "decoder" module, we gain the "cs" signal
 //By the "cs" signal, we select the slave to give all master the signals of "data" and "rdy".
 
-`include"bus_arbiter.v"
-`include"bus_master_mux.v"
-`include"bus_decoder.v"
-`include"bus_slave_mux.v"
-`include "define_bus.v"
+`include "bus/bus_arbiter.v"
+`include "bus/bus_master_mux.v"
+`include "bus/bus_decoder.v"
+`include "bus/bus_slave_mux.v"
+`include "bus/define_bus.v"
 
 module bus_top(
     input wire clk,

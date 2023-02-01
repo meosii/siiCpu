@@ -1,6 +1,6 @@
-`include "if_stage.v"
-`include "spm.v"
-`include "define.v"
+`include "unit/if_stage.v"
+`include "unit/spm.v"
+`include "unit/define.v"
 
 module test_if_stage ();
 //if_stage
