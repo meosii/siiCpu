@@ -1,7 +1,7 @@
 `ifndef siicpu_id_reg
 `define siicpu_id_reg
 
-`include "define.v"
+`include "unit/define.v"
 
 module id_reg (
     input wire clk,

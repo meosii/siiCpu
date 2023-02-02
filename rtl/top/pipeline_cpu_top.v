@@ -1,14 +1,14 @@
-`include "id_reg.v"
-`include "if_reg.v"
-`include "ex_reg.v"
-`include "mem_reg.v"
-`include "decoder_forwarding.v"
+`include "unit/id_reg.v"
+`include "unit/if_reg.v"
+`include "unit/ex_reg.v"
+`include "unit/mem_reg.v"
+`include "unit/decoder_forwarding.v"
 
-`include "define.v"
-`include "alu.v"
-`include "gpr.v"
-`include "mem_ctrl.v"
-`include "spm.v"
+`include "unit/define.v"
+`include "unit/alu.v"
+`include "unit/gpr.v"
+`include "unit/mem_ctrl.v"
+`include "unit/spm.v"
 
 module pipeline_cpu_top (
     input wire cpu_en,
