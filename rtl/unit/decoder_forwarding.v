@@ -1,7 +1,7 @@
 `ifndef siicpu_decoder_forwarding
 `define siicpu_decoder_forwarding
 
-`include "define.v"
+`include "unit/define.v"
 // forwarding
 // pc - 4: when we have insn_register, pc is one cycle ahead of insn, 
 // therefore, we should use pc - 4

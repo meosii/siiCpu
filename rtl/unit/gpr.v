@@ -1,7 +1,7 @@
 `ifndef siicpu_gpr
 `define siicpu_gpr
 
-`include "define.v"
+`include "unit/define.v"
 //General Purpose Registers
 //Here, we use up to three registers as operands, 
 //read values from two registers and then write values to the other register.
