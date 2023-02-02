@@ -1,7 +1,7 @@
 `ifndef siicpu_decoder
 `define siicpu_decoder
 
-`include "define.v"
+`include "unit/define.v"
 
 module decoder (
     //from if
