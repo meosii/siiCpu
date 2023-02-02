@@ -1,5 +1,4 @@
 `include "pipeline_cpu_top.v"
-
 module test_pipeline_cpu_top();
 reg cpu_en;
 reg clk;

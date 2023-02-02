@@ -2,7 +2,7 @@ CC = iverilog
 
 rtl = ../rtl
 
-IncludePath = -I"${rtl}/bus" -I"${rtl}/top" -I"${rtl}/unit"
+IncludePath = -I${rtl}
 
 OutputPath = ./bin
 

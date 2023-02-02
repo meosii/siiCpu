@@ -2,6 +2,7 @@
 `define siicpu_mem_reg
 
 `include "define.v"
+
 module mem_reg (
     input wire clk,
     input wire reset,

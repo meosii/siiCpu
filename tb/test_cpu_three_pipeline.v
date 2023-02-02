@@ -1,6 +1,6 @@
-`include "unit/cpu_top.v"
+`include "pipeline_cpu/cpu_three_pipeline_top.v"
 
-module test_cpu_top();
+module test_cpu_three_pipeline();
 reg cpu_en;
 reg clk;
 reg reset;
@@ -11,7 +11,7 @@ reg test_spm_rw;
 reg [31:0] test_spm_wr_data;
 wire [31:0] test_spm_rd_data;
 
-cpu_top u_cpu_top(
+cpu_three_pipeline_top u_cpu_three_pipeline_top(
 .cpu_en(cpu_en),
 .clk(clk),
 .reset(reset),
@@ -122,17 +122,14 @@ initial begin
         `test_spm_write_OP_LOAD(196,12'b0000_0000_0010,5'b00010,`FUNCT3_LB,5'b00111) //mem_data = spm[2+2] = 'hFFFFFF93, rd = 5'b00111
         `test_spm_write_OP_LOAD(200,12'b0000_0000_0010,5'b00010,`FUNCT3_LBU,5'b01000) //mem_data = spm[2+2] = 'h00000093, rd = 5'b01000
 
-        // //OP_STORE，将 gpr 中 rs2 的值存入，寄存器的值与立即数(7 bits,5 bits)相加得到 spm 的地址
-        // `test_spm_write_OP_STORE(204,7'b0000110,5'b00100,5'b00011,`FUNCT3_SW,5'b01101) //gpr[rs2] = gpr[5'b00100] = 'h003F8193, spm[205 + 3] = 'h003F8193
-        //         //因此，在 spm 的 208 地址会执行 register3 = register[5'b11111] + 3 = 0 + 3 = 3
+        //OP_STORE，将 gpr 中 rs2 的值存入，寄存器的值与立即数(7 bits,5 bits)相加得到 spm 的地址
+        `test_spm_write_OP_STORE(204,7'b0000110,5'b00100,5'b00011,`FUNCT3_SW,5'b01101) //gpr[rs2] = gpr[5'b00100] = 'h003F8193, spm[205 + 3] = 'h003F8193
+                //因此，在 spm 的 208 地址会执行 register3 = register[5'b11111] + 3 = 0 + 3 = 3
 
-        // `test_spm_write_OP_STORE(212,7'b0000110,5'b00110,5'b01001,`FUNCT3_SB,5'b01111) //gpr[rs2] = gpr[5'b00110] = 'h00008093, spm[207 + 9] = 'hFFFFFF93
-        // `test_spm_write_OP_STORE(220,7'b0000110,5'b00100,5'b01001,`FUNCT3_SH,5'b10111) //gpr[rs2] = gpr[5'b00100] = 'h003F8193, spm[215 + 9] = 'hFFFF8193
+        `test_spm_write_OP_STORE(212,7'b0000110,5'b00110,5'b01001,`FUNCT3_SB,5'b01111) //gpr[rs2] = gpr[5'b00110] = 'h00008093, spm[207 + 9] = 'hFFFFFF93
+        `test_spm_write_OP_STORE(220,7'b0000110,5'b00100,5'b01001,`FUNCT3_SH,5'b10111) //gpr[rs2] = gpr[5'b00100] = 'h003F8193, spm[215 + 9] = 'hFFFF8193
 
-        `test_spm_write_OP_STORE(228,7'b0000000,5'b00011,5'b01001,`FUNCT3_SW,5'b00111) //先往内存写：spm[7 + 9] = gpr[5'b00011] = 3
-        `test_spm_write_OP_LOAD(236,12'b0000_0000_1101,5'b00011,`FUNCT3_LW,5'b00100) //再从内存读往 gpr 中写： gpr[4] = spm[3 + 13] = 3
-        `test_spm_write_OP_IMM(240,12'b0000_0000_0000,5'b00100,`FUNCT3_ADDI,5'b00101) //再读 gpr: gpr[5] = 0 + gpr[3] = 3
-        `test_spm_write_OP_IMM(244,12'b0000_0000_0000,5'b00100,`FUNCT3_ADDI,5'b00110) //再读 gpr: gpr[6] = 0 + gpr[3] = 3
+
 
     end
     // cpu 测试
@@ -145,8 +142,8 @@ initial begin
 end
 
 initial begin
-    $dumpfile("wave_cpu_top.vcd");
-    $dumpvars(0,test_cpu_top);
+    $dumpfile("wave_cpu_three_pipeline.vcd");
+    $dumpvars(0,test_cpu_three_pipeline);
 end
 
 endmodule
