@@ -2,6 +2,7 @@
 `define siicpu_if_reg
 
 `include "unit/define.v"
+
 module if_reg (
     input wire cpu_en,
     input wire clk,

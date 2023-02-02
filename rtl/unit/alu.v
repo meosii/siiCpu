@@ -1,7 +1,7 @@
 // "signed alu_out" can judge whether the overflow
 `ifndef siicpu_alu
 `define siicpu_alu
-`include "unit/define.v"
+`include "define.v"
 
 module alu (
     input wire [`DATA_WIDTH_ALU_OP - 1:0] alu_op,
