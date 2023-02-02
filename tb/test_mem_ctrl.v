@@ -1,6 +1,6 @@
-`include "mem_ctrl.v"
-`include "define.v"
-`include "memory.v"
+`include "unit/mem_ctrl.v"
+`include "unit/define.v"
+`include "unit/memory.v"
 
 module test_mem_ctrl ();
 reg ex_en;

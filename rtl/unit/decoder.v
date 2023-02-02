@@ -1,6 +1,8 @@
 `ifndef siicpu_decoder
 `define siicpu_decoder
 
+`include "define.v"
+
 module decoder (
     //from if
     input wire [`DATA_WIDTH_INSN - 1:0] if_insn,

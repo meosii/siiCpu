@@ -1,4 +1,4 @@
-`include "define_bus.v"
+`include "bus/define_bus.v"
 
 module bus_slave_mux(
     //from decoder

@@ -10,7 +10,6 @@
 `include "mem_ctrl.v"
 `include "spm.v"
 
-
 module pipeline_cpu_top (
     input wire cpu_en,
     input wire clk,

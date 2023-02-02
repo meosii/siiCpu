@@ -2,6 +2,7 @@
 `define siicpu_ex_reg
 
 `include "define.v"
+
 module ex_reg (
     input wire clk,
     input wire reset,

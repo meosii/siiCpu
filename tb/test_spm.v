@@ -1,4 +1,4 @@
-`include "spm.v"
+`include "unit/spm.v"
 
 module test_spm ();
 

@@ -1,6 +1,6 @@
-`include "define.v"
-`include "decoder.v"
-`include "gpr.v"
+`include "unit/define.v"
+`include "unit/decoder.v"
+`include "unit/gpr.v"
 
 module test_decoder ();
 reg [`DATA_WIDTH_INSN - 1:0] if_insn;
