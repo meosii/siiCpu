@@ -2,7 +2,7 @@
 `include "if_reg.v"
 `include "ex_reg.v"
 `include "mem_reg.v"
-`include "decoder_pc.v"
+`include "decoder_forwarding.v"
 
 `include "define.v"
 `include "alu.v"
@@ -11,7 +11,7 @@
 `include "spm.v"
 
 
-module cpu_five_pipeline_top (
+module pipeline_cpu_top (
     input wire cpu_en,
     input wire clk,
     input wire reset,
@@ -70,9 +70,16 @@ if_reg u_if_reg(
     .if_en(if_en)
 );
 
-decoder_pc u_decoder_pc(
+//forwarding
+wire [`DATA_WIDTH_INSN - 1:0] id_insn;
+wire [$clog2(`DATA_HIGH_GPR) - 1:0] id_dst_addr;
+wire [`DATA_WIDTH_INSN - 1:0] ex_insn;
+wire [$clog2(`DATA_HIGH_GPR) - 1:0] ex_dst_addr;
+
+decoder_forwarding u_decoder_forwarding(
     .if_insn(if_insn),
     .if_pc(if_pc),
+    .if_en(if_en),
     .gpr_rd_data_0(gpr_rd_data_0),
     .gpr_rd_data_1(gpr_rd_data_1),
     .gpr_rd_addr_0(gpr_rd_addr_0),
@@ -87,12 +94,20 @@ decoder_pc u_decoder_pc(
     .mem_op(mem_op),
     .gpr_data(gpr_data), //to mem
     .ctrl_op(ctrl_op),
-    .exp_code(exp_code)
+    .exp_code(exp_code),
+    .id_en(id_en),
+    .id_insn(id_insn),
+    .id_gpr_we_(id_gpr_we_),
+    .id_dst_addr(id_dst_addr),
+    .alu_out(alu_out),
+    .ex_en(ex_en),
+    .ex_insn(ex_insn),
+    .ex_gpr_we_(ex_gpr_we_),
+    .ex_dst_addr(ex_dst_addr),
+    .mem_data_to_gpr(mem_data_to_gpr),
+    .ex_alu_out(ex_alu_out)
 );
 
-wire [`WORD_ADDR_BUS] id_pc;
-wire [`DATA_WIDTH_INSN - 1:0] id_insn;
-wire [$clog2(`DATA_HIGH_GPR) - 1:0] id_dst_addr;
 wire [`DATA_WIDTH_ALU_OP - 1:0] id_alu_op;
 wire [`DATA_WIDTH_GPR - 1:0] id_alu_in_0;
 wire [`DATA_WIDTH_GPR - 1:0] id_alu_in_1;
@@ -106,6 +121,8 @@ id_reg u_id_reg(
     .id_pc(id_pc),
     .if_insn(if_insn),
     .id_insn(id_insn),
+    .if_en(if_en),
+    .id_en(id_en),
     .gpr_we_(gpr_we_),
     .dst_addr(dst_addr), 
     .id_gpr_we_(id_gpr_we_),
@@ -144,9 +161,7 @@ alu u_alu(
 );
 
 wire [`WORD_ADDR_BUS] ex_pc;
-wire [`DATA_WIDTH_INSN - 1:0] ex_insn;
 wire [`DATA_WIDTH_GPR - 1:0] ex_alu_out;
-wire [$clog2(`DATA_HIGH_GPR) - 1:0] ex_dst_addr;
 wire [`DATA_WIDTH_MEM_OP - 1:0] ex_mem_op;
 wire [`DATA_WIDTH_GPR - 1:0] ex_gpr_data;
 
@@ -157,6 +172,8 @@ ex_reg u_ex_reg(
     .ex_pc(ex_pc),
     .id_insn(id_insn),
     .ex_insn(ex_insn),
+    .id_en(id_en),
+    .ex_en(ex_en),
     .alu_out(alu_out),
     .ex_alu_out(ex_alu_out),
     .id_gpr_we_(id_gpr_we_),
@@ -195,6 +212,8 @@ mem_reg u_mem_reg (
     .mem_pc(mem_pc),
     .ex_insn(ex_insn),
     .mem_insn(mem_insn),
+    .ex_en(ex_en),
+    .mem_en(mem_en),
     .ex_alu_out(ex_alu_out),
     .mem_alu_out(mem_alu_out),
     .ex_gpr_we_(ex_gpr_we_),
@@ -209,7 +228,7 @@ spm u_spm(
     .clk(clk),
     .rst_(reset),
     .if_spm_addr(if_pc),
-    .if_spm_as_(!if_en),
+    .if_spm_as_(!(reset && cpu_en)),
     .if_spm_rw(`READ),
     .if_spm_wr_data(0),
     .if_spm_rd_data(insn),

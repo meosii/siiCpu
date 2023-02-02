@@ -1,3 +1,6 @@
+`ifndef siicpu_ex_reg
+`define siicpu_ex_reg
+
 `include "define.v"
 module ex_reg (
     input wire clk,
@@ -8,6 +11,9 @@ module ex_reg (
     // insn
     input wire [`DATA_WIDTH_INSN - 1:0] id_insn,
     output reg [`DATA_WIDTH_INSN - 1:0] ex_insn,
+    // en
+    input wire id_en,
+    output reg ex_en,
     // from "alu" (to "mem_ctrl" or "gpr")
     input wire [`DATA_WIDTH_GPR - 1:0] alu_out,
     output reg [`DATA_WIDTH_GPR - 1:0] ex_alu_out,
@@ -27,6 +33,7 @@ always @(posedge clk or negedge reset) begin
     if (!reset) begin
         ex_pc <= 0;
         ex_insn <= 0;
+        ex_en <= 0;
         ex_alu_out <= 0;
         ex_gpr_we_ <= 0;
         ex_dst_addr <= 0;
@@ -35,6 +42,7 @@ always @(posedge clk or negedge reset) begin
     end else begin
         ex_pc <= id_pc;
         ex_insn <= id_insn;
+        ex_en <= id_en;
         ex_alu_out <= alu_out;
         ex_gpr_we_ <= id_gpr_we_;
         ex_dst_addr <= id_dst_addr;
@@ -44,3 +52,5 @@ always @(posedge clk or negedge reset) begin
 end
 
 endmodule
+
+`endif

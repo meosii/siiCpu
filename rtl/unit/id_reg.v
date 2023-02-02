@@ -1,3 +1,6 @@
+`ifndef siicpu_id_reg
+`define siicpu_id_reg
+
 `include "define.v"
 module id_reg (
     input wire clk,
@@ -5,9 +8,12 @@ module id_reg (
     // pc
     input wire [`WORD_ADDR_BUS] if_pc,
     output reg [`WORD_ADDR_BUS] id_pc,
-    //insn
+    // insn
     input wire [`DATA_WIDTH_INSN - 1:0] if_insn,
     output reg [`DATA_WIDTH_INSN - 1:0] id_insn,
+    // en
+    input wire if_en,
+    output reg id_en,
     // to gpr
     input wire gpr_we_,
     input wire [$clog2(`DATA_HIGH_GPR) - 1:0] dst_addr, // only used when "memory" or "alu" write to gpr 
@@ -31,6 +37,7 @@ always @(posedge clk or negedge reset) begin
     if (!reset) begin
         id_pc <= 0;
         id_insn <= 0;
+        id_en <= 0;
         id_gpr_we_ <= 0;
         id_dst_addr <= 0;
         id_alu_op <= 0;
@@ -41,6 +48,7 @@ always @(posedge clk or negedge reset) begin
     end else begin
         id_pc <= if_pc;
         id_insn <= if_insn;
+        id_en <= if_en;
         id_gpr_we_ <= gpr_we_;
         id_dst_addr <= dst_addr;
         id_alu_op <= alu_op;
@@ -52,3 +60,5 @@ always @(posedge clk or negedge reset) begin
 end
 
 endmodule
+
+`endif
