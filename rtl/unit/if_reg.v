@@ -7,11 +7,12 @@ module if_reg (
     input wire cpu_en,
     input wire clk,
     input wire reset,
+    // when br_taken, jump to br_addr
     input wire br_taken,
     input wire [`WORD_ADDR_BUS] br_addr,
-    input wire [`DATA_WIDTH_INSN - 1:0] insn,
+    input wire [`DATA_WIDTH_INSN - 1 : 0] insn,
     output reg [`WORD_ADDR_BUS] if_pc,
-    output reg [`DATA_WIDTH_INSN - 1:0] if_insn,
+    output reg [`DATA_WIDTH_INSN - 1 : 0] if_insn,
     output reg if_en
 );
 
