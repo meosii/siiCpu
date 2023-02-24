@@ -12,12 +12,12 @@
 `define DATA_WIDTH_ISA_EXP 3
 `define WORD_WIDTH 32
 
-`define WORD_ADDR_BUS 29:0
+`define WORD_ADDR_BUS 29 : 0
 `define WORD_ADDR_WIDTH 30
 // In memory, each address stores 8 bits(1 byte),
 // While, in a 32-bit cpu, each instruction has 32 bits(4 bytes),
-`define WORD_ADDR_LOC 31:2 // So, the cpu internally addresses the high 30 bits as a word 
-`define BYTE_OFFSET_LOC 1:0 // and the low 2 bits as a byte shift
+`define WORD_ADDR_LOC 31 : 2 // So, the cpu internally addresses the high 30 bits as a word 
+`define BYTE_OFFSET_LOC 1 : 0 // and the low 2 bits as a byte shift
 `define BYTE_OFFSET_WORD 2'b00 // to judge "miss_align"
 
 //define by "RISC_V"

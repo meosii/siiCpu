@@ -10,28 +10,28 @@ module id_reg (
     input wire [`WORD_ADDR_BUS] if_pc,
     output reg [`WORD_ADDR_BUS] id_pc,
     // insn
-    input wire [`DATA_WIDTH_INSN - 1:0] if_insn,
-    output reg [`DATA_WIDTH_INSN - 1:0] id_insn,
+    input wire [`DATA_WIDTH_INSN - 1 : 0] if_insn,
+    output reg [`DATA_WIDTH_INSN - 1 : 0] id_insn,
     // en
     input wire if_en,
     output reg id_en,
     // to gpr
     input wire gpr_we_,
-    input wire [$clog2(`DATA_HIGH_GPR) - 1:0] dst_addr, // only used when "memory" or "alu" write to gpr 
+    input wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] dst_addr, // only used when "memory" or "alu" write to gpr 
     output reg id_gpr_we_,
-    output reg [$clog2(`DATA_HIGH_GPR) - 1:0] id_dst_addr,
+    output reg [$clog2(`DATA_HIGH_GPR) - 1 : 0] id_dst_addr,
     // to alu
-    input wire [`DATA_WIDTH_ALU_OP - 1:0] alu_op,
-    input wire [`DATA_WIDTH_GPR - 1:0] alu_in_0,
-    input wire [`DATA_WIDTH_GPR - 1:0] alu_in_1,
-    output reg [`DATA_WIDTH_ALU_OP - 1:0] id_alu_op,
-    output reg [`DATA_WIDTH_GPR - 1:0] id_alu_in_0,
-    output reg [`DATA_WIDTH_GPR - 1:0] id_alu_in_1,
+    input wire [`DATA_WIDTH_ALU_OP - 1 : 0] alu_op,
+    input wire [`DATA_WIDTH_GPR - 1 : 0] alu_in_0,
+    input wire [`DATA_WIDTH_GPR - 1 : 0] alu_in_1,
+    output reg [`DATA_WIDTH_ALU_OP - 1 : 0] id_alu_op,
+    output reg [`DATA_WIDTH_GPR - 1 : 0] id_alu_in_0,
+    output reg [`DATA_WIDTH_GPR - 1 : 0] id_alu_in_1,
     // to mem
-    input wire [`DATA_WIDTH_MEM_OP - 1:0] mem_op,
-    input wire [`DATA_WIDTH_GPR - 1:0] gpr_data,
-    output reg [`DATA_WIDTH_MEM_OP - 1:0] id_mem_op,
-    output reg [`DATA_WIDTH_GPR - 1:0] id_gpr_data
+    input wire [`DATA_WIDTH_MEM_OP - 1 : 0] mem_op,
+    input wire [`DATA_WIDTH_GPR - 1 : 0] gpr_data,
+    output reg [`DATA_WIDTH_MEM_OP - 1 : 0] id_mem_op,
+    output reg [`DATA_WIDTH_GPR - 1 : 0] id_gpr_data
 );
 
 always @(posedge clk or negedge reset) begin

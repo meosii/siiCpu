@@ -10,12 +10,12 @@ module gpr(
     input wire clk,
     input wire reset,
     input wire we_, //we_ = 0, WRITE
-    input wire [$clog2(`DATA_HIGH_GPR) - 1:0] wr_addr,
+    input wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] wr_addr,
     input wire [`DATA_WIDTH_GPR - 1:0] wr_data,
-    input wire [$clog2(`DATA_HIGH_GPR) - 1:0] rd_addr_0,
-    input wire [$clog2(`DATA_HIGH_GPR) - 1:0] rd_addr_1,
-    output wire [`DATA_WIDTH_GPR - 1:0] rd_data_0,
-    output wire [`DATA_WIDTH_GPR - 1:0] rd_data_1
+    input wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] rd_addr_0,
+    input wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] rd_addr_1,
+    output wire [`DATA_WIDTH_GPR - 1 : 0] rd_data_0,
+    output wire [`DATA_WIDTH_GPR - 1 : 0] rd_data_1
 );
 
 reg [`DATA_WIDTH_GPR - 1:0] gpr[0:`DATA_HIGH_GPR - 1];
