@@ -7,13 +7,13 @@ module mem_ctrl (
     input wire [`DATA_WIDTH_MEM_OP - 1 : 0] mem_op, //from decoder
     output reg rw,
     // LOAD: mem -> gpr
-    input wire [`DATA_WIDTH_GPR - 1 : 0] alu_out, //alu_out -> addr_to_mem
+    input wire [`WORD_WIDTH - 1 : 0] alu_out, //alu_out -> addr_to_mem
     output wire [`WORD_ADDR_BUS] addr_to_mem, // addr -> mem_data(rd_data_from_mem)
-    input wire [`DATA_WIDTH_GPR - 1 : 0] mem_data, // mem_data -> mem_data_to_gpr
-    output reg [`DATA_WIDTH_GPR - 1 : 0] mem_data_to_gpr,
+    input wire [`WORD_WIDTH - 1 : 0] mem_data, // mem_data -> mem_data_to_gpr
+    output reg [`WORD_WIDTH - 1 : 0] mem_data_to_gpr,
     // STORE: gpr -> mem
-    input wire [`DATA_WIDTH_GPR - 1 : 0] gpr_data, //from decoder(from "gpr_rd_data_1")
-    output wire [`DATA_WIDTH_GPR - 1 : 0] wr_data,
+    input wire [`WORD_WIDTH - 1 : 0] gpr_data, //from decoder(from "gpr_rd_data_1")
+    output wire [`WORD_WIDTH - 1 : 0] wr_data,
 
     output reg mem_op_as_,
     output reg miss_align

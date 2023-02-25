@@ -8,7 +8,7 @@ OutputPath = ./bin
 
 $(shell mkdir -p ${OutputPath})
 
-all: alu arbiter bus pipeline_cpu decoder gpr mem_ctrl spm 
+all: alu arbiter bus pipeline_cpu gpr mem_ctrl spm 
 
 run: all
 
@@ -31,10 +31,6 @@ bus:
 pipeline_cpu:
 	${CC} test_pipeline_cpu_top.v ${IncludePath} -o ${OutputPath}/test_pipeline_cpu_top
 	${OutputPath}/test_pipeline_cpu_top
-
-decoder:
-	${CC} test_decoder.v ${IncludePath} -o ${OutputPath}/test_decoder
-	${OutputPath}/test_decoder
 
 gpr:
 	${CC} test_gpr.v ${IncludePath} -o ${OutputPath}/test_gpr

@@ -5,14 +5,14 @@
 module test_mem_ctrl ();
 reg ex_en;
 reg [`DATA_WIDTH_MEM_OP - 1:0] mem_op;
-reg [`DATA_WIDTH_GPR - 1:0] gpr_data;
-reg [`DATA_WIDTH_GPR - 1:0] alu_out;
-wire [`DATA_WIDTH_GPR - 1:0] mem_data;
+reg [`WORD_WIDTH - 1:0] gpr_data;
+reg [`WORD_WIDTH - 1:0] alu_out;
+wire [`WORD_WIDTH - 1:0] mem_data;
 wire [`WORD_ADDR_BUS] addr_to_mem;
 wire mem_op_as_;
 wire rw;
-wire [`DATA_WIDTH_GPR - 1:0] wr_data;
-wire [`DATA_WIDTH_GPR - 1:0] mem_data_to_gpr;
+wire [`WORD_WIDTH - 1:0] wr_data;
+wire [`WORD_WIDTH - 1:0] mem_data_to_gpr;
 wire miss_align;
 
 reg clk;

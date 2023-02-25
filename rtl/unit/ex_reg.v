@@ -10,14 +10,14 @@ module ex_reg (
     input wire [`WORD_ADDR_BUS] id_pc,
     output reg [`WORD_ADDR_BUS] ex_pc,
     // insn
-    input wire [`DATA_WIDTH_INSN - 1 : 0] id_insn,
-    output reg [`DATA_WIDTH_INSN - 1 : 0] ex_insn,
+    input wire [`WORD_WIDTH - 1 : 0] id_insn,
+    output reg [`WORD_WIDTH - 1 : 0] ex_insn,
     // en
     input wire id_en,
     output reg ex_en,
     // from "alu" (to "mem_ctrl" or "gpr")
-    input wire [`DATA_WIDTH_GPR - 1 : 0] alu_out,
-    output reg [`DATA_WIDTH_GPR - 1 : 0] ex_alu_out,
+    input wire [`WORD_WIDTH - 1 : 0] alu_out,
+    output reg [`WORD_WIDTH - 1 : 0] ex_alu_out,
     // to gpr
     input wire id_gpr_we_,
     input wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] id_dst_addr,
@@ -25,9 +25,9 @@ module ex_reg (
     output reg [$clog2(`DATA_HIGH_GPR) - 1 : 0] ex_dst_addr,
     // to mem
     input wire [`DATA_WIDTH_MEM_OP - 1 : 0] id_mem_op,
-    input wire [`DATA_WIDTH_GPR - 1 : 0] id_gpr_data,
+    input wire [`WORD_WIDTH - 1 : 0] id_gpr_data,
     output reg [`DATA_WIDTH_MEM_OP - 1 : 0] ex_mem_op,
-    output reg [`DATA_WIDTH_GPR - 1 : 0] ex_gpr_data
+    output reg [`WORD_WIDTH - 1 : 0] ex_gpr_data
 );
 
 always @(posedge clk or negedge reset) begin

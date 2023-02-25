@@ -5,9 +5,9 @@
 
 module alu (
     input wire [`DATA_WIDTH_ALU_OP - 1:0] alu_op,
-    input wire [`DATA_WIDTH_GPR - 1:0] alu_in_0,
-    input wire [`DATA_WIDTH_GPR - 1:0] alu_in_1,
-    output reg [`DATA_WIDTH_GPR - 1:0] alu_out
+    input wire [`WORD_WIDTH - 1:0] alu_in_0,
+    input wire [`WORD_WIDTH - 1:0] alu_in_1,
+    output reg [`WORD_WIDTH - 1:0] alu_out
 );
 
 integer i;

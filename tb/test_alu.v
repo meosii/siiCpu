@@ -2,9 +2,9 @@
 `include "unit/alu.v"
 module test_alu();
 reg [`DATA_WIDTH_ALU_OP - 1:0] alu_op;
-reg [`DATA_WIDTH_GPR - 1:0] alu_in_0;
-reg [`DATA_WIDTH_GPR - 1:0] alu_in_1;
-wire [`DATA_WIDTH_GPR - 1:0] alu_out;
+reg [`WORD_WIDTH - 1:0] alu_in_0;
+reg [`WORD_WIDTH - 1:0] alu_in_1;
+wire [`WORD_WIDTH - 1:0] alu_out;
 
 alu u_alu(
     .alu_op(alu_op),
