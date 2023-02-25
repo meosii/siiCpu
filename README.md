@@ -328,7 +328,7 @@ assign rd_data_1 = ((we_ == `WRITE) && (wr_addr == rd_addr_1))? wr_data : gpr[rd
 always @(posedge clk or negedge reset) begin
     if (!reset) begin
         for (i = 0; i < `DATA_HIGH_GPR; i++) begin
-            gpr[i] <= `DATA_WIDTH_GPR'b0;
+            gpr[i] <= `WORD_WIDTH'b0;
         end
     end else if (we_ == `WRITE) begin
             gpr[wr_addr] <= wr_data;

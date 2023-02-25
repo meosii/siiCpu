@@ -10,9 +10,9 @@ module if_reg (
     // when br_taken, jump to br_addr
     input wire br_taken,
     input wire [`WORD_ADDR_BUS] br_addr,
-    input wire [`DATA_WIDTH_INSN - 1 : 0] insn,
+    input wire [`WORD_WIDTH - 1 : 0] insn,
     output reg [`WORD_ADDR_BUS] if_pc,
-    output reg [`DATA_WIDTH_INSN - 1 : 0] if_insn,
+    output reg [`WORD_WIDTH - 1 : 0] if_insn,
     output reg if_en
 );
 

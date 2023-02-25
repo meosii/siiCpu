@@ -2,7 +2,7 @@
 `include "unit/if_reg.v"
 `include "unit/ex_reg.v"
 `include "unit/mem_reg.v"
-`include "unit/decoder_forwarding.v"
+`include "unit/decoder.v"
 
 `include "unit/define.v"
 `include "unit/alu.v"
@@ -16,38 +16,38 @@ module pipeline_cpu_top (
     input wire clk,
     input wire reset,
     //spm
-    input wire [29 : 0] test_spm_addr,
+    input wire [`WORD_ADDR_BUS] test_spm_addr,
     input wire test_spm_as_,
     input wire test_spm_rw,
-    input wire [31 : 0] test_spm_wr_data,
-    output wire [31 : 0] test_spm_rd_data
+    input wire [`WORD_WIDTH - 1 : 0] test_spm_wr_data,
+    output wire [`WORD_WIDTH - 1 : 0] test_spm_rd_data
 );
 
 //if_reg
-wire [`DATA_WIDTH_INSN - 1 : 0] insn;
+wire [`WORD_WIDTH - 1 : 0] insn;
 wire [`WORD_ADDR_BUS] if_pc;
-wire [`DATA_WIDTH_INSN - 1 : 0] if_insn;
+wire [`WORD_WIDTH - 1 : 0] if_insn;
 wire [`WORD_ADDR_BUS] br_addr;
 //gpr
 wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] gpr_rd_addr_0;
 wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] gpr_rd_addr_1;
-wire [`DATA_WIDTH_GPR - 1 : 0] gpr_rd_data_0;
-wire [`DATA_WIDTH_GPR - 1 : 0] gpr_rd_data_1;
+wire [`WORD_WIDTH - 1 : 0] gpr_rd_data_0;
+wire [`WORD_WIDTH - 1 : 0] gpr_rd_data_1;
 wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] dst_addr;
-wire [`DATA_WIDTH_GPR - 1 : 0] gpr_wr_data;
-wire [`DATA_WIDTH_GPR - 1 : 0] mem_data_to_gpr;
+wire [`WORD_WIDTH - 1 : 0] gpr_wr_data;
+wire [`WORD_WIDTH - 1 : 0] mem_data_to_gpr;
 // alu
 wire [`DATA_WIDTH_ALU_OP - 1 : 0] alu_op;
-wire [`DATA_WIDTH_GPR - 1 : 0] alu_in_0;
-wire [`DATA_WIDTH_GPR - 1 : 0] alu_in_1;
-wire [`DATA_WIDTH_GPR - 1 : 0] alu_out;
+wire [`WORD_WIDTH - 1 : 0] alu_in_0;
+wire [`WORD_WIDTH - 1 : 0] alu_in_1;
+wire [`WORD_WIDTH - 1 : 0] alu_out;
 // mem_ctrl
 wire [`DATA_WIDTH_MEM_OP - 1 : 0] mem_op;
-wire [`DATA_WIDTH_GPR - 1 : 0] gpr_data;
+wire [`WORD_WIDTH - 1 : 0] gpr_data;
 wire [`WORD_ADDR_BUS] addr_to_mem;
-wire [`DATA_WIDTH_GPR - 1 : 0] wr_data; // gpr to mem
-wire [`DATA_WIDTH_GPR - 1 : 0] to_spm_wr_data; // gpr to mem
-wire [`DATA_WIDTH_GPR - 1 : 0] mem_data; // mem_to gpr
+wire [`WORD_WIDTH - 1 : 0] wr_data; // gpr to mem
+wire [`WORD_WIDTH - 1 : 0] to_spm_wr_data; // gpr to mem
+wire [`WORD_WIDTH - 1 : 0] mem_data; // mem_to gpr
 // spm
 wire mem_spm_as_;
 wire mem_spm_rw;
@@ -71,12 +71,12 @@ if_reg u_if_reg(
 );
 
 //forwarding
-wire [`DATA_WIDTH_INSN - 1 : 0] id_insn;
+wire [`WORD_WIDTH - 1 : 0] id_insn;
 wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] id_dst_addr;
-wire [`DATA_WIDTH_INSN - 1 : 0] ex_insn;
+wire [`WORD_WIDTH - 1 : 0] ex_insn;
 wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] ex_dst_addr;
 
-decoder_forwarding u_decoder_forwarding(
+decoder u_decoder(
     .if_insn(if_insn),
     .if_pc(if_pc),
     .if_en(if_en),
@@ -109,10 +109,10 @@ decoder_forwarding u_decoder_forwarding(
 );
 
 wire [`DATA_WIDTH_ALU_OP - 1 : 0] id_alu_op;
-wire [`DATA_WIDTH_GPR - 1 : 0] id_alu_in_0;
-wire [`DATA_WIDTH_GPR - 1 : 0] id_alu_in_1;
+wire [`WORD_WIDTH - 1 : 0] id_alu_in_0;
+wire [`WORD_WIDTH - 1 : 0] id_alu_in_1;
 wire [`DATA_WIDTH_MEM_OP - 1 : 0] id_mem_op;
-wire [`DATA_WIDTH_GPR - 1 : 0] id_gpr_data;
+wire [`WORD_WIDTH - 1 : 0] id_gpr_data;
 
 id_reg u_id_reg(
     .clk(clk),
@@ -151,7 +151,7 @@ gpr u_gpr(
     .rd_data_1(gpr_rd_data_1)
 );
 
-assign gpr_wr_data = (mem_insn[`DATA_WIDTH_OPCODE - 1 : 0] == `OP_LOAD)? mem_mem_data_to_gpr : mem_alu_out;
+assign gpr_wr_data = (mem_insn[`ALL_TYPE_OPCODE] == `OP_LOAD)? mem_mem_data_to_gpr : mem_alu_out;
 
 alu u_alu(
     .alu_op(id_alu_op),
@@ -161,9 +161,9 @@ alu u_alu(
 );
 
 wire [`WORD_ADDR_BUS] ex_pc;
-wire [`DATA_WIDTH_GPR - 1 : 0] ex_alu_out;
+wire [`WORD_WIDTH - 1 : 0] ex_alu_out;
 wire [`DATA_WIDTH_MEM_OP - 1 : 0] ex_mem_op;
-wire [`DATA_WIDTH_GPR - 1 : 0] ex_gpr_data;
+wire [`WORD_WIDTH - 1 : 0] ex_gpr_data;
 
 ex_reg u_ex_reg(
     .clk(clk),
@@ -200,10 +200,10 @@ mem_ctrl u_mem_ctrl(
 );
 
 wire [`WORD_ADDR_BUS] mem_pc;
-wire [`DATA_WIDTH_INSN - 1 : 0] mem_insn;
-wire [`DATA_WIDTH_GPR - 1 : 0] mem_alu_out;
+wire [`WORD_WIDTH - 1 : 0] mem_insn;
+wire [`WORD_WIDTH - 1 : 0] mem_alu_out;
 wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] mem_dst_addr;
-wire [`DATA_WIDTH_GPR - 1 : 0] mem_mem_data_to_gpr;
+wire [`WORD_WIDTH - 1 : 0] mem_mem_data_to_gpr;
 
 mem_reg u_mem_reg (
     .clk(clk),
