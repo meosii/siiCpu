@@ -1,62 +1,91 @@
+`ifndef PIPELINE_CPU_TOP
+`define PIPELINE_CPU_TOP
+
+`include "unit/define.v"
 `include "unit/id_reg.v"
 `include "unit/if_reg.v"
 `include "unit/ex_reg.v"
 `include "unit/mem_reg.v"
 `include "unit/decoder.v"
-
-`include "unit/define.v"
 `include "unit/alu.v"
 `include "unit/gpr.v"
 `include "unit/mem_ctrl.v"
 `include "unit/spm.v"
 
-
 module pipeline_cpu_top (
-    input wire cpu_en,
-    input wire clk,
-    input wire reset,
+    input wire                  cpu_en,
+    input wire                  clk,
+    input wire                  reset,
     //spm
-    input wire [`WORD_ADDR_BUS] test_spm_addr,
-    input wire test_spm_as_,
-    input wire test_spm_rw,
-    input wire [`WORD_WIDTH - 1 : 0] test_spm_wr_data,
-    output wire [`WORD_WIDTH - 1 : 0] test_spm_rd_data
+    input wire [`WORD_ADDR_BUS]         test_spm_addr,
+    input wire                          test_spm_as_,
+    input wire                          test_spm_rw,
+    input wire [`WORD_WIDTH - 1 : 0]    test_spm_wr_data,
+    output wire [`WORD_WIDTH - 1 : 0]   test_spm_rd_data
 );
 
-//if_reg
-wire [`WORD_WIDTH - 1 : 0] insn;
-wire [`WORD_ADDR_BUS] if_pc;
-wire [`WORD_WIDTH - 1 : 0] if_insn;
-wire [`WORD_ADDR_BUS] br_addr;
+//if
+wire [`WORD_WIDTH - 1 : 0]  insn;
+wire [`WORD_ADDR_BUS]       if_pc;
+wire [`WORD_WIDTH - 1 : 0]  if_insn;
+wire [`WORD_ADDR_BUS]       br_addr;
+// id
+wire [`DATA_WIDTH_ALU_OP - 1 : 0]       id_alu_op;
+wire [`WORD_WIDTH - 1 : 0]              id_alu_in_0;
+wire [`WORD_WIDTH - 1 : 0]              id_alu_in_1;
+wire [`DATA_WIDTH_MEM_OP - 1 : 0]       id_mem_op;
+wire [`WORD_WIDTH - 1 : 0]              id_gpr_data;
+wire [`WORD_WIDTH - 1 : 0]              id_insn;
+wire [$clog2(`DATA_HIGH_GPR) - 1 : 0]   id_dst_addr;
 //gpr
-wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] gpr_rd_addr_0;
-wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] gpr_rd_addr_1;
-wire [`WORD_WIDTH - 1 : 0] gpr_rd_data_0;
-wire [`WORD_WIDTH - 1 : 0] gpr_rd_data_1;
-wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] dst_addr;
-wire [`WORD_WIDTH - 1 : 0] gpr_wr_data;
-wire [`WORD_WIDTH - 1 : 0] mem_data_to_gpr;
+wire [$clog2(`DATA_HIGH_GPR) - 1 : 0]   gpr_rd_addr_0;
+wire [$clog2(`DATA_HIGH_GPR) - 1 : 0]   gpr_rd_addr_1;
+wire [`WORD_WIDTH - 1 : 0]              gpr_rd_data_0;
+wire [`WORD_WIDTH - 1 : 0]              gpr_rd_data_1;
+wire [$clog2(`DATA_HIGH_GPR) - 1 : 0]   dst_addr;
+wire [`WORD_WIDTH - 1 : 0]              gpr_wr_data;
+wire [`WORD_WIDTH - 1 : 0]              mem_data_to_gpr;
 // alu
-wire [`DATA_WIDTH_ALU_OP - 1 : 0] alu_op;
-wire [`WORD_WIDTH - 1 : 0] alu_in_0;
-wire [`WORD_WIDTH - 1 : 0] alu_in_1;
-wire [`WORD_WIDTH - 1 : 0] alu_out;
+wire [`DATA_WIDTH_ALU_OP - 1 : 0]       alu_op;
+wire [`WORD_WIDTH - 1 : 0]              alu_in_0;
+wire [`WORD_WIDTH - 1 : 0]              alu_in_1;
+wire [`WORD_WIDTH - 1 : 0]              alu_out;
+// exe
+wire [`WORD_WIDTH - 1 : 0]              ex_insn;
+wire [$clog2(`DATA_HIGH_GPR) - 1 : 0]   ex_dst_addr;
+wire [`WORD_ADDR_BUS]                   ex_pc;
+wire [`WORD_WIDTH - 1 : 0]              ex_alu_out;
+wire [`DATA_WIDTH_MEM_OP - 1 : 0]       ex_mem_op;
+wire [`WORD_WIDTH - 1 : 0]              ex_gpr_data;
 // mem_ctrl
-wire [`DATA_WIDTH_MEM_OP - 1 : 0] mem_op;
-wire [`WORD_WIDTH - 1 : 0] gpr_data;
-wire [`WORD_ADDR_BUS] addr_to_mem;
-wire [`WORD_WIDTH - 1 : 0] wr_data; // gpr to mem
-wire [`WORD_WIDTH - 1 : 0] to_spm_wr_data; // gpr to mem
-wire [`WORD_WIDTH - 1 : 0] mem_data; // mem_to gpr
+wire [`DATA_WIDTH_MEM_OP - 1 : 0]       mem_op;
+wire [`WORD_WIDTH - 1 : 0]              gpr_data;
+wire [`WORD_ADDR_BUS]                   addr_to_mem;
+wire [`WORD_WIDTH - 1 : 0]              wr_data; // gpr to mem
+wire [`WORD_WIDTH - 1 : 0]              to_spm_wr_data; // gpr to mem
+wire [`WORD_WIDTH - 1 : 0]              mem_data; // mem_to gpr
+// mem
+wire [`WORD_ADDR_BUS]                   mem_pc;
+wire [`WORD_WIDTH - 1 : 0]              mem_insn;
+wire [`WORD_WIDTH - 1 : 0]              mem_alu_out;
+wire [$clog2(`DATA_HIGH_GPR) - 1 : 0]   mem_dst_addr;
+wire [`WORD_WIDTH - 1 : 0]              mem_mem_data_to_gpr;
 // spm
-wire mem_spm_as_;
-wire mem_spm_rw;
-wire [29 : 0] mem_spm_addr;
-wire [31 : 0] mem_spm_wr_data;
-wire [31 : 0] mem_spm_rd_data;
+wire                                    mem_spm_as_;
+wire                                    mem_spm_rw;
+wire [29 : 0]                           mem_spm_addr;
+wire [31 : 0]                           mem_spm_wr_data;
+wire [31 : 0]                           mem_spm_rd_data;
 // ctrl
-wire [`DATA_WIDTH_CTRL_OP - 1 : 0] ctrl_op;
-wire [`DATA_WIDTH_ISA_EXP - 1 : 0] exp_code;
+wire [`DATA_WIDTH_CTRL_OP - 1 : 0]      ctrl_op;
+wire [`DATA_WIDTH_ISA_EXP - 1 : 0]      exp_code;
+
+// write instructions into spm
+assign mem_spm_addr     = (cpu_en) ? addr_to_mem                        : test_spm_addr;
+assign mem_spm_as_      = (cpu_en) ? (!(!mem_op_as_ && !miss_align))    : test_spm_as_;
+assign mem_spm_rw       = (cpu_en) ? rw                                 : test_spm_rw;
+assign mem_spm_wr_data  = (cpu_en) ? to_spm_wr_data                     : test_spm_wr_data;
+assign test_spm_rd_data = (cpu_en) ? 0                                  : mem_spm_rd_data;
 
 if_reg u_if_reg(
     .cpu_en(cpu_en),
@@ -69,12 +98,6 @@ if_reg u_if_reg(
     .if_insn(if_insn),
     .if_en(if_en)
 );
-
-//forwarding
-wire [`WORD_WIDTH - 1 : 0] id_insn;
-wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] id_dst_addr;
-wire [`WORD_WIDTH - 1 : 0] ex_insn;
-wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] ex_dst_addr;
 
 decoder u_decoder(
     .if_insn(if_insn),
@@ -107,12 +130,6 @@ decoder u_decoder(
     .mem_data_to_gpr(mem_data_to_gpr),
     .ex_alu_out(ex_alu_out)
 );
-
-wire [`DATA_WIDTH_ALU_OP - 1 : 0] id_alu_op;
-wire [`WORD_WIDTH - 1 : 0] id_alu_in_0;
-wire [`WORD_WIDTH - 1 : 0] id_alu_in_1;
-wire [`DATA_WIDTH_MEM_OP - 1 : 0] id_mem_op;
-wire [`WORD_WIDTH - 1 : 0] id_gpr_data;
 
 id_reg u_id_reg(
     .clk(clk),
@@ -160,11 +177,6 @@ alu u_alu(
     .alu_out(alu_out)
 );
 
-wire [`WORD_ADDR_BUS] ex_pc;
-wire [`WORD_WIDTH - 1 : 0] ex_alu_out;
-wire [`DATA_WIDTH_MEM_OP - 1 : 0] ex_mem_op;
-wire [`WORD_WIDTH - 1 : 0] ex_gpr_data;
-
 ex_reg u_ex_reg(
     .clk(clk),
     .reset(reset),
@@ -198,12 +210,6 @@ mem_ctrl u_mem_ctrl(
     .mem_data_to_gpr(mem_data_to_gpr),
     .miss_align(miss_align)
 );
-
-wire [`WORD_ADDR_BUS] mem_pc;
-wire [`WORD_WIDTH - 1 : 0] mem_insn;
-wire [`WORD_WIDTH - 1 : 0] mem_alu_out;
-wire [$clog2(`DATA_HIGH_GPR) - 1 : 0] mem_dst_addr;
-wire [`WORD_WIDTH - 1 : 0] mem_mem_data_to_gpr;
 
 mem_reg u_mem_reg (
     .clk(clk),
@@ -239,15 +245,5 @@ spm u_spm(
     .mem_spm_rd_data(mem_spm_rd_data)
 );
 
-assign mem_spm_addr = (cpu_en) ? addr_to_mem 
-                               : test_spm_addr;
-assign mem_spm_as_ = (cpu_en) ? (!(!mem_op_as_ && !miss_align)) 
-                              : test_spm_as_;
-assign mem_spm_rw = (cpu_en) ? rw 
-                             : test_spm_rw;
-assign mem_spm_wr_data = (cpu_en) ? to_spm_wr_data 
-                                  : test_spm_wr_data;
-assign test_spm_rd_data = (cpu_en) ? 0 
-                                   : mem_spm_rd_data;
-
 endmodule
+`endif
