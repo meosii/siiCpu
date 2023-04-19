@@ -156,7 +156,7 @@ cache 的写入策略是指当处理器要修改 cache 中的数据时，如何�
 
 在此，我们利用 Write Back 和 Write Allocate 配合使用：
 
-[![p9P8hrR.png](https://s1.ax1x.com/2023/04/17/p9P8hrR.png)](https://imgse.com/i/p9P8hrR)
+[![p9PhsPK.png](https://s1.ax1x.com/2023/04/18/p9PhsPK.png)](https://imgse.com/i/p9PhsPK)
 
 
  

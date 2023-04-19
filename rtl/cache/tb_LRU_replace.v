@@ -4,45 +4,21 @@ module tb_LRU_replace ();
 reg                           clk;
 reg                           rst_n;
 reg  [`WAY_NUM - 1 : 0]       hit_en;
-reg  [`INDEX_WIDTH - 1 : 0]    index;
-wire [$clog2(`WAY_NUM) : 0]   line0_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line1_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line2_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line3_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line4_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line5_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line6_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line7_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line8_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line9_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line10_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line11_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line12_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line13_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line14_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line15_replace_way;
+reg  [`INDEX_WIDTH - 1 : 0]   index;
+wire                          way0_replace_en;
+wire                          way1_replace_en;
+wire                          way2_replace_en;
+wire                          way3_replace_en;
 
 LRU_replace u_LRU_replace(
     .clk(clk),
     .rst_n(rst_n),
     .hit_en(hit_en),
     .index(index),
-    .line0_replace_way(line0_replace_way),
-    .line1_replace_way(line1_replace_way),
-    .line2_replace_way(line2_replace_way),
-    .line3_replace_way(line3_replace_way),
-    .line4_replace_way(line4_replace_way),
-    .line5_replace_way(line5_replace_way),
-    .line6_replace_way(line6_replace_way),
-    .line7_replace_way(line7_replace_way),
-    .line8_replace_way(line8_replace_way),
-    .line9_replace_way(line9_replace_way),
-    .line10_replace_way(line10_replace_way),
-    .line11_replace_way(line11_replace_way),
-    .line12_replace_way(line12_replace_way),
-    .line13_replace_way(line13_replace_way),
-    .line14_replace_way(line14_replace_way),
-    .line15_replace_way(line15_replace_way)
+    .way0_replace_en(way0_replace_en),
+    .way1_replace_en(way1_replace_en),
+    .way2_replace_en(way2_replace_en),
+    .way3_replace_en(way3_replace_en)
 );
 
 localparam TIME_CLK = 10;
@@ -50,14 +26,14 @@ localparam TIME_CLK = 10;
 always #(TIME_CLK/2) clk = ~clk;
 
 task hit_and_index(
-    input [`WAY_NUM - 1 : 0] test_hit_en,
-    input [`INDEX_WIDTH - 1 : 0] test_index
+    input [`WAY_NUM - 1 : 0]        test_hit_en,
+    input [`INDEX_WIDTH - 1 : 0]    test_index
 );
 begin
     @(posedge clk)
     #1 begin
         hit_en = test_hit_en;
-        index = test_index;
+        index  = test_index;
     end
 end
 endtask
@@ -78,12 +54,19 @@ initial begin
         hit_and_index(`HIT_WAY1,`INDEX_LINE0);
         hit_and_index(`HIT_WAY2,`INDEX_LINE0);
         hit_and_index(`HIT_WAY1,`INDEX_LINE0);
+        // test replace
+        hit_and_index(`NO_HIT,`INDEX_LINE0);
+        hit_and_index(`HIT_WAY1,`INDEX_LINE0);
+        hit_and_index(`HIT_WAY2,`INDEX_LINE0);
+        hit_and_index(`HIT_WAY1,`INDEX_LINE0);
         // line1
         hit_and_index(`HIT_WAY0,`INDEX_LINE1);
         hit_and_index(`HIT_WAY3,`INDEX_LINE1);
         hit_and_index(`HIT_WAY2,`INDEX_LINE1);
         hit_and_index(`HIT_WAY1,`INDEX_LINE1);
         hit_and_index(`HIT_WAY2,`INDEX_LINE1);
+        // test replace
+        hit_and_index(`NO_HIT,`INDEX_LINE1);
         // line2
         hit_and_index(`HIT_WAY3,`INDEX_LINE2);
         hit_and_index(`HIT_WAY2,`INDEX_LINE2);
@@ -185,10 +168,6 @@ initial begin
         hit_and_index(`HIT_WAY3,`INDEX_LINE15);
     end
     $finish;
-end
-
-initial begin
-    $monitor(" Time: %t, \n line0: way %d will be replaced.\n line1: way %d will be replaced.\n ", $time, line0_replace_way, line1_replace_way);
 end
 
 initial begin

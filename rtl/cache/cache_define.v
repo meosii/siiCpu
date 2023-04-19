@@ -15,7 +15,7 @@ and use an example of a cache with the following specifications:
 `define CACHE_DEFINE
 
 `define ADDR_WIDTH          32 //{tag, index, offset}
-`define OFFSET_WIDTH         4  // 2^4-byte= 16-byte
+`define OFFSET_WIDTH         4  // 2^4-byte = 16-byte = 4-words
 `define INDEX_WIDTH          4  // 16-cacheline
 `define TAG_WIDTH            24 // 32 - 4 - 4
 `define WAY_NUM             4  // 4-cacheway (2^(`INDEX_WIDTH))
@@ -39,6 +39,8 @@ and use an example of a cache with the following specifications:
 `define REPLACE_WAY1 1
 `define REPLACE_WAY2 2
 `define REPLACE_WAY3 3
+// replaced_way[2:0]
+`define NO_REPLACE_WAY 4
 
 // hit_en[`WAY_NUM - 1 : 0]
 `define HIT_WAY0 4'b0001

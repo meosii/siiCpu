@@ -24,8 +24,8 @@ module data_ram (
     // main memory
     // if not hit, main memory -> cache
     output reg                              read_main_memory_en,
-    output wire [`ADDR_WIDTH - 1 : 0]       addr_to_main_memory, // instruction tag
-    output wire [$clog2(`WAY_NUM) : 0]      replaced_way, // to tag_ram
+    output reg [`ADDR_WIDTH - 1 : 0]       addr_to_main_memory, // instruction tag
+    output reg [($clog2(`WAY_NUM) + 1): 0]      replaced_way, // to tag_ram
     input wire [`CACHELINE_WIDTH - 1 : 0]   data_from_main_memory, 
 
     // LOAD: to cpu
@@ -45,133 +45,75 @@ reg way1_dirty [`LINE_NUM - 1 : 0];
 reg way2_dirty [`LINE_NUM - 1 : 0]; 
 reg way3_dirty [`LINE_NUM - 1 : 0]; 
 
-// if no hit, the data in main memory needs to be stored in cahce, 
-// and then it is replaced by the way selected by LRU module.
-wire [$clog2(`WAY_NUM) : 0]   line0_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line1_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line2_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line3_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line4_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line5_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line6_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line7_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line8_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line9_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line10_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line11_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line12_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line13_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line14_replace_way;
-wire [$clog2(`WAY_NUM) : 0]   line15_replace_way;
-
-LRU_replace u_LRU_replace(
-    .clk(clk),
-    .rst_n(rst_n),
-    .hit_en(hit_en),
-    .index(index),
-    .line0_replace_way(line0_replace_way),
-    .line1_replace_way(line1_replace_way),
-    .line2_replace_way(line2_replace_way),
-    .line3_replace_way(line3_replace_way),
-    .line4_replace_way(line4_replace_way),
-    .line5_replace_way(line5_replace_way),
-    .line6_replace_way(line6_replace_way),
-    .line7_replace_way(line7_replace_way),
-    .line8_replace_way(line8_replace_way),
-    .line9_replace_way(line9_replace_way),
-    .line10_replace_way(line10_replace_way),
-    .line11_replace_way(line11_replace_way),
-    .line12_replace_way(line12_replace_way),
-    .line13_replace_way(line13_replace_way),
-    .line14_replace_way(line14_replace_way),
-    .line15_replace_way(line15_replace_way)
-);
-
 // Used to indicate which way of the current index can be replaced
 wire way0_replace_en;
 wire way1_replace_en;
 wire way2_replace_en;
 wire way3_replace_en;
 
-assign way0_replace_en = ( ((index == `INDEX_LINE0)  && (line0_replace_way  == `REPLACE_WAY0)) 
-                        || ((index == `INDEX_LINE1)  && (line1_replace_way  == `REPLACE_WAY0))
-                        || ((index == `INDEX_LINE2)  && (line2_replace_way  == `REPLACE_WAY0))
-                        || ((index == `INDEX_LINE3)  && (line3_replace_way  == `REPLACE_WAY0))
-                        || ((index == `INDEX_LINE4)  && (line4_replace_way  == `REPLACE_WAY0))
-                        || ((index == `INDEX_LINE5)  && (line5_replace_way  == `REPLACE_WAY0))
-                        || ((index == `INDEX_LINE6)  && (line6_replace_way  == `REPLACE_WAY0))
-                        || ((index == `INDEX_LINE7)  && (line7_replace_way  == `REPLACE_WAY0))
-                        || ((index == `INDEX_LINE8)  && (line8_replace_way  == `REPLACE_WAY0))
-                        || ((index == `INDEX_LINE9)  && (line9_replace_way  == `REPLACE_WAY0))
-                        || ((index == `INDEX_LINE10) && (line10_replace_way == `REPLACE_WAY0))
-                        || ((index == `INDEX_LINE11) && (line11_replace_way == `REPLACE_WAY0))
-                        || ((index == `INDEX_LINE12) && (line12_replace_way == `REPLACE_WAY0))
-                        || ((index == `INDEX_LINE13) && (line13_replace_way == `REPLACE_WAY0))
-                        || ((index == `INDEX_LINE14) && (line14_replace_way == `REPLACE_WAY0))
-                        || ((index == `INDEX_LINE15) && (line15_replace_way == `REPLACE_WAY0)) )? 1:0;
+LRU_replace u_LRU_replace(
+    .clk(clk),
+    .rst_n(rst_n),
+    .hit_en(hit_en),
+    .index(index),
+    .way0_replace_en(way0_replace_en),
+    .way1_replace_en(way1_replace_en),
+    .way2_replace_en(way2_replace_en),
+    .way3_replace_en(way3_replace_en)
+);
 
-assign way1_replace_en = (  ((index == `INDEX_LINE0)  && (line0_replace_way  == `REPLACE_WAY1)) 
-                        || ((index == `INDEX_LINE1)  && (line1_replace_way  == `REPLACE_WAY1))
-                        || ((index == `INDEX_LINE2)  && (line2_replace_way  == `REPLACE_WAY1))
-                        || ((index == `INDEX_LINE3)  && (line3_replace_way  == `REPLACE_WAY1))
-                        || ((index == `INDEX_LINE4)  && (line4_replace_way  == `REPLACE_WAY1))
-                        || ((index == `INDEX_LINE5)  && (line5_replace_way  == `REPLACE_WAY1))
-                        || ((index == `INDEX_LINE6)  && (line6_replace_way  == `REPLACE_WAY1))
-                        || ((index == `INDEX_LINE7)  && (line7_replace_way  == `REPLACE_WAY1))
-                        || ((index == `INDEX_LINE8)  && (line8_replace_way  == `REPLACE_WAY1))
-                        || ((index == `INDEX_LINE9)  && (line9_replace_way  == `REPLACE_WAY1))
-                        || ((index == `INDEX_LINE10) && (line10_replace_way == `REPLACE_WAY1))
-                        || ((index == `INDEX_LINE11) && (line11_replace_way == `REPLACE_WAY1))
-                        || ((index == `INDEX_LINE12) && (line12_replace_way == `REPLACE_WAY1))
-                        || ((index == `INDEX_LINE13) && (line13_replace_way == `REPLACE_WAY1))
-                        || ((index == `INDEX_LINE14) && (line14_replace_way == `REPLACE_WAY1))
-                        || ((index == `INDEX_LINE15) && (line15_replace_way == `REPLACE_WAY1)) )? 1:0;
-
-assign way2_replace_en = (  ((index == `INDEX_LINE0)  && (line0_replace_way  == `REPLACE_WAY2)) 
-                        || ((index == `INDEX_LINE1)  && (line1_replace_way  == `REPLACE_WAY2))
-                        || ((index == `INDEX_LINE2)  && (line2_replace_way  == `REPLACE_WAY2))
-                        || ((index == `INDEX_LINE3)  && (line3_replace_way  == `REPLACE_WAY2))
-                        || ((index == `INDEX_LINE4)  && (line4_replace_way  == `REPLACE_WAY2))
-                        || ((index == `INDEX_LINE5)  && (line5_replace_way  == `REPLACE_WAY2))
-                        || ((index == `INDEX_LINE6)  && (line6_replace_way  == `REPLACE_WAY2))
-                        || ((index == `INDEX_LINE7)  && (line7_replace_way  == `REPLACE_WAY2))
-                        || ((index == `INDEX_LINE8)  && (line8_replace_way  == `REPLACE_WAY2))
-                        || ((index == `INDEX_LINE9)  && (line9_replace_way  == `REPLACE_WAY2))
-                        || ((index == `INDEX_LINE10) && (line10_replace_way == `REPLACE_WAY2))
-                        || ((index == `INDEX_LINE11) && (line11_replace_way == `REPLACE_WAY2))
-                        || ((index == `INDEX_LINE12) && (line12_replace_way == `REPLACE_WAY2))
-                        || ((index == `INDEX_LINE13) && (line13_replace_way == `REPLACE_WAY2))
-                        || ((index == `INDEX_LINE14) && (line14_replace_way == `REPLACE_WAY2))
-                        || ((index == `INDEX_LINE15) && (line15_replace_way == `REPLACE_WAY2)) )? 1:0;
-
-assign way3_replace_en = (  ((index == `INDEX_LINE0)  && (line0_replace_way  == `REPLACE_WAY3)) 
-                        || ((index == `INDEX_LINE1)  && (line1_replace_way  == `REPLACE_WAY3))
-                        || ((index == `INDEX_LINE2)  && (line2_replace_way  == `REPLACE_WAY3))
-                        || ((index == `INDEX_LINE3)  && (line3_replace_way  == `REPLACE_WAY3))
-                        || ((index == `INDEX_LINE4)  && (line4_replace_way  == `REPLACE_WAY3))
-                        || ((index == `INDEX_LINE5)  && (line5_replace_way  == `REPLACE_WAY3))
-                        || ((index == `INDEX_LINE6)  && (line6_replace_way  == `REPLACE_WAY3))
-                        || ((index == `INDEX_LINE7)  && (line7_replace_way  == `REPLACE_WAY3))
-                        || ((index == `INDEX_LINE8)  && (line8_replace_way  == `REPLACE_WAY3))
-                        || ((index == `INDEX_LINE9)  && (line9_replace_way  == `REPLACE_WAY3))
-                        || ((index == `INDEX_LINE10) && (line10_replace_way == `REPLACE_WAY3))
-                        || ((index == `INDEX_LINE11) && (line11_replace_way == `REPLACE_WAY3))
-                        || ((index == `INDEX_LINE12) && (line12_replace_way == `REPLACE_WAY3))
-                        || ((index == `INDEX_LINE13) && (line13_replace_way == `REPLACE_WAY3))
-                        || ((index == `INDEX_LINE14) && (line14_replace_way == `REPLACE_WAY3))
-                        || ((index == `INDEX_LINE15) && (line15_replace_way == `REPLACE_WAY3)) )? 1:0;
-
-assign addr_to_write_buffer = {tag, index, offset};
-assign addr_to_main_memory  = {tag, index, offset};
-assign main_memory_tag      =  tag;
-
-always @(*) begin
-    if (hit_en == 0) begin
-        read_main_memory_en <= 0;
-    end else begin
-        read_main_memory_en <= 1;
+// Generated on the second clock edge
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        replaced_way    <= `NO_REPLACE_WAY;
+    end else if (hit_en == 0) begin
+        if (way0_replace_en == 1) begin
+            replaced_way    <= `REPLACE_WAY0;
+        end else if (way1_replace_en == 1) begin
+            replaced_way    <= `REPLACE_WAY1;
+        end else if (way2_replace_en == 1) begin
+            replaced_way    <= `REPLACE_WAY2;
+        end else if (way3_replace_en == 1) begin
+            replaced_way    <= `REPLACE_WAY3;
+        end
     end
 end
+
+// Using sequential circuits, 
+//'addr_to_main_memory'  lags  'cachein_addr'  one cycle
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        read_main_memory_en <= 0;
+        addr_to_main_memory <= 0;
+    end else if (hit_en == 0) begin
+        read_main_memory_en <= 1;
+        addr_to_main_memory <= {tag, index, offset};
+    end else begin
+        read_main_memory_en <= 0;
+        addr_to_main_memory <= 0;
+    end
+end
+// if data_from_main_memory needs a clock to read in memory, 
+// then all the signals of the following "always" need a beat
+
+// reg [`INDEX_WIDTH - 1 : 0] index_r1;
+// reg [`WORD_WIDTH - 1 : 0] store_data_r1;
+
+// always @(posedge clk or negedge rst_n) begin
+//     if (!rst_n) begin
+//         index_r1 <= 0;
+//     end else begin
+//         index_r1 <= index;
+//     end
+// end
+
+// always @(posedge clk or negedge rst_n) begin
+//     if (!rst_n) begin
+//         store_data_r1 <= 0;
+//     end else begin
+//         store_data_r1 <= store_data;
+//     end
+// end
 
 integer i;
 // write in cache(data ram)
@@ -237,7 +179,7 @@ always @(posedge clk or negedge rst_n) begin
                     `OFFSET_WORD2:  way0_data_ram[index] <= {data_from_main_memory[255:96], store_data, data_from_main_memory[63:0]};
                     `OFFSET_WORD3:  way0_data_ram[index] <= {data_from_main_memory[255:128], store_data, data_from_main_memory[95:0]};
                 endcase
-                way0_dirty[index] <= `NON_DIRTY;
+                way0_dirty[index]   <= `NON_DIRTY;
             // 1.5.2 way1 could be replaced
             end else if (way1_replace_en == 1) begin
                 case (offset[3:2])
@@ -246,7 +188,7 @@ always @(posedge clk or negedge rst_n) begin
                     `OFFSET_WORD2:  way1_data_ram[index] <= {data_from_main_memory[255:96], store_data, data_from_main_memory[63:0]};
                     `OFFSET_WORD3:  way1_data_ram[index] <= {data_from_main_memory[255:128], store_data, data_from_main_memory[95:0]};
                 endcase
-                way1_dirty[index] <= `NON_DIRTY;
+                way1_dirty[index]   <= `NON_DIRTY;
             // 1.5.3 way2 could be replaced
             end else if (way2_replace_en == 1) begin
                 case (offset[3:2])
@@ -255,7 +197,7 @@ always @(posedge clk or negedge rst_n) begin
                     `OFFSET_WORD2:  way2_data_ram[index] <= {data_from_main_memory[255:96], store_data, data_from_main_memory[63:0]};
                     `OFFSET_WORD3:  way2_data_ram[index] <= {data_from_main_memory[255:128], store_data, data_from_main_memory[95:0]};
                 endcase
-                way2_dirty[index] <= `NON_DIRTY;
+                way2_dirty[index]   <= `NON_DIRTY;
             // 1.5.4 way3 could be replaced
             end else if (way3_replace_en == 1) begin
                 case (offset[3:2])
@@ -264,14 +206,15 @@ always @(posedge clk or negedge rst_n) begin
                     `OFFSET_WORD2:  way3_data_ram[index] <= {data_from_main_memory[255:96], store_data, data_from_main_memory[63:0]};
                     `OFFSET_WORD3:  way3_data_ram[index] <= {data_from_main_memory[255:128], store_data, data_from_main_memory[95:0]};
                 endcase 
-                way3_dirty[index] <= `NON_DIRTY;
+                way3_dirty[index]   <= `NON_DIRTY;
             end
         end
     end else begin
     // 2. LOAD
+        if (hit_en == 0) begin
         // When loading, if the cache is not hit, we also need to write data to the cache.
-        // At this time, the data written is the main_data.
-        if (way0_replace_en == 1) begin
+        // At this time, the data being written is the main_data.
+            if (way0_replace_en == 1) begin
             way0_data_ram[index]    <= data_from_main_memory;
             way0_dirty[index]       <= `NON_DIRTY;
         end else if (way1_replace_en == 1) begin
@@ -284,8 +227,11 @@ always @(posedge clk or negedge rst_n) begin
             way3_data_ram[index]    <= data_from_main_memory;
             way3_dirty[index]       <= `NON_DIRTY;
         end
+        end
     end
 end
+
+assign addr_to_write_buffer = (write_buffer_en)? {tag, index, offset} : 0;
 
 // dirty: cache data -> write buffer
 always @(*) begin
@@ -311,7 +257,8 @@ always @(*) begin
         data_to_write_buffer    = 0;
     end
 end
-
+// hit: first clock edge
+// no hit: third clock edge
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         load_data <= 0;
