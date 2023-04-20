@@ -33,9 +33,21 @@ reg [`TAG_WIDTH - 1 : 0] way3_tag_ram [`LINE_NUM - 1 : 0];
 
 wire [`TAG_WIDTH - 1 : 0]    main_memory_tag;
 wire [`INDEX_WIDTH - 1 : 0]  main_memory_index;
+reg [`TAG_WIDTH - 1 : 0]     main_memory_tag_r1;
+reg [`INDEX_WIDTH - 1 : 0]   main_memory_index_r1;
 
 assign main_memory_tag   = addr_to_main_memory[31 : 8];
 assign main_memory_index = addr_to_main_memory[7 : 4];
+
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        main_memory_tag_r1      <= 0;
+        main_memory_index_r1    <= 0;
+    end else begin
+        main_memory_tag_r1      <= main_memory_tag;
+        main_memory_index_r1    <= main_memory_index;
+    end
+end
 
 integer i;
 always @(posedge clk or negedge rst_n) begin
@@ -53,20 +65,20 @@ always @(posedge clk or negedge rst_n) begin
     end else if (read_main_memory_en == 1) begin
         case (replaced_way)
             `REPLACE_WAY0: begin
-                way0_tag_ram[main_memory_index] <= main_memory_tag;
-                way0_value[main_memory_index]   <= 1;
+                way0_tag_ram[main_memory_index_r1] <= main_memory_tag_r1;
+                way0_value[main_memory_index_r1]   <= 1;
             end
             `REPLACE_WAY1: begin
-                way1_tag_ram[main_memory_index] <= main_memory_tag;
-                way1_value[main_memory_index]   <= 1;
+                way1_tag_ram[main_memory_index_r1] <= main_memory_tag_r1;
+                way1_value[main_memory_index_r1]   <= 1;
             end
             `REPLACE_WAY2: begin
-                way2_tag_ram[main_memory_index] <= main_memory_tag;
-                way2_value[main_memory_index]   <= 1;
+                way2_tag_ram[main_memory_index_r1] <= main_memory_tag_r1;
+                way2_value[main_memory_index_r1]   <= 1;
             end
             `REPLACE_WAY3: begin
-                way3_tag_ram[main_memory_index] <= main_memory_tag;
-                way3_value[main_memory_index]   <= 1;
+                way3_tag_ram[main_memory_index_r1] <= main_memory_tag_r1;
+                way3_value[main_memory_index_r1]   <= 1;
             end
             // replaced_way = NO_REPLACE_WAY, do nothing
         endcase

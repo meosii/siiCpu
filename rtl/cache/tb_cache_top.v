@@ -57,6 +57,8 @@ always @(posedge clk or negedge rst_n) begin
         rdata_from_main_memory <= 0;
     end else if (read_main_memory_en == 1) begin
         rdata_from_main_memory <= small_main_memory[addr_to_main_memory[31:4]];
+    end else begin
+        rdata_from_main_memory <= 0;
     end
 end
 
@@ -65,15 +67,15 @@ task test_cache_top(
     input [`TAG_WIDTH - 1 : 0]       test_cachein_addr_tag,
     input [`INDEX_WIDTH  - 1 : 0]    test_cachein_addr_index,
     input [`OFFSET_WIDTH - 1 : 0]    test_cachein_addr_offset,
-    input [`WORD_WIDTH - 1 : 0]       test_store_data
+    input [`WORD_WIDTH - 1 : 0]      test_store_data
 );
 begin
     @(posedge clk)
+    #1
     begin
         wr                      = test_wr;
         cachein_addr            = {test_cachein_addr_tag, test_cachein_addr_index, test_cachein_addr_offset};
         store_data              = test_store_data;
-        $display("when wr = %b, addr = %b, addr_to_main_memory = %h,load_data: %h", test_wr, cachein_addr, addr_to_main_memory, load_data);
     end
 end
 endtask
@@ -91,9 +93,9 @@ initial begin
         rst_n = 1;
         cache_en = 1;
     end
-    // load
+    // load: Initialize the data ram and tag ram
     #1 begin
-        // way3
+        // way0
             for (i = 1; i <= 15; i ++) begin
                 test_cache_top(`READ, 24'd0, i, 4'd0, 32'b0);
             end
@@ -105,18 +107,91 @@ initial begin
             for (i = 0; i <= 15; i ++) begin
                 test_cache_top(`READ, 24'd2, i, 4'd0, 32'b0);
             end
-        // way0
+        // way3
             for (i = 0; i <= 15; i ++) begin
                 test_cache_top(`READ, 24'd3, i, 4'd0, 32'b0);
             end
     end
+    // load: Given the same address, 
+    // judge whether data_ram is written correctly by load_data.
     #1 begin
-        $display("small_main_memory[1]: %h", small_main_memory[1]);
-        $display("small_main_memory[2]: %h", small_main_memory[2]);
-        $display("small_main_memory[3]: %h", small_main_memory[3]);
-        $display("small_main_memory[10]: %h", small_main_memory[10]);
-        $display("small_main_memory[12]: %h", small_main_memory[12]);
-        $display("small_main_memory[32]: %h", small_main_memory[32]);
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`READ, 24'd0, i, 4'd0, 32'b0);
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`READ, 24'd1, i, 4'd0, 32'b0);
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`READ, 24'd2, i, 4'd0, 32'b0);
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`READ, 24'd3, i, 4'd0, 32'b0);
+            end
+    end
+    // store: hit
+    // Firstly, we store the existing address data in data_ram
+    // Change the word3 here: 32'h11111111, 32'h22222222
+    #1 begin
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`WRITE, 24'd0, i, 4'd3, (i*(2 << 27) + i*(2 << 23) + i*(2 << 19) + i*(2 << 15) + i*(2 << 11) + i*(2 << 7) + i*(2 << 3) + i));
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`WRITE, 24'd1, i, 4'd3, (i*(2 << 27) + i*(2 << 23) + i*(2 << 19) + i*(2 << 15) + i*(2 << 11) + i*(2 << 7) + i*(2 << 3) + i));
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`WRITE, 24'd2, i, 4'd3, (i*(2 << 27) + i*(2 << 23) + i*(2 << 19) + i*(2 << 15) + i*(2 << 11) + i*(2 << 7) + i*(2 << 3) + i));
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`WRITE, 24'd3, i, 4'd3, (i*(2 << 27) + i*(2 << 23) + i*(2 << 19) + i*(2 << 15) + i*(2 << 11) + i*(2 << 7) + i*(2 << 3) + i));
+            end
+    end
+    // load: Given the same address, 
+    // jugde whether data_ram is written correctly by store_data.
+    #1 begin
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`READ, 24'd0, i, 4'd3, 32'b0);
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`READ, 24'd1, i, 4'd3, 32'b0);
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`READ, 24'd2, i, 4'd3, 32'b0);
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`READ, 24'd3, i, 4'd3, 32'b0);
+            end
+    end
+    // store: no hit
+    // word2 32'h01010101 32'h02020202
+    #1 begin
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`WRITE, 24'd10, i, 4'd2, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`WRITE, 24'd11, i, 4'd2, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`WRITE, 24'd12, i, 4'd2, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`WRITE, 24'd13, i, 4'd2, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
+            end
+    end
+    // load: hit, 
+    // jugde whether data_ram is written correctly by store_data.
+    #1 begin
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`READ, 24'd10, i, 4'd2, 32'b0);
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`READ, 24'd11, i, 4'd2, 32'b0);
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`READ, 24'd12, i, 4'd2, 32'b0);
+            end
+            for (i = 0; i <= 15; i ++) begin
+                test_cache_top(`READ, 24'd13, i, 4'd2, 32'b0);
+            end
     end
     $finish();
 end

@@ -26,25 +26,25 @@ module reg1 (
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        wr_r1 <= 0;
-        index_r1 <= 0;
-        offset_r1 <= 0;
-        store_data_r1 <= 0;
-        hit_en_r1 <= 0;
-        way0_replace_en_r1 <= 0;
-        way1_replace_en_r1 <= 0;
-        way2_replace_en_r1 <= 0;
-        way3_replace_en_r1 <= 0;
+        wr_r1               <= 0;
+        index_r1            <= 0;
+        offset_r1           <= 0;
+        store_data_r1       <= 0;
+        hit_en_r1           <= 0;
+        way0_replace_en_r1  <= 0;
+        way1_replace_en_r1  <= 0;
+        way2_replace_en_r1  <= 0;
+        way3_replace_en_r1  <= 0;
     end else begin
-        wr_r1 <= wr;
-        index_r1 <= index;
-        offset_r1 <= offset;
-        store_data_r1 <= store_data;
-        hit_en_r1 <= hit_en;
-        way0_replace_en_r1 <= way0_replace_en;
-        way1_replace_en_r1 <= way1_replace_en;
-        way2_replace_en_r1 <= way2_replace_en;
-        way3_replace_en_r1 <= way3_replace_en;
+        wr_r1               <= wr;
+        index_r1            <= index;
+        offset_r1           <= offset;
+        store_data_r1       <= store_data;
+        hit_en_r1           <= hit_en;
+        way0_replace_en_r1  <= way0_replace_en;
+        way1_replace_en_r1  <= way1_replace_en;
+        way2_replace_en_r1  <= way2_replace_en;
+        way3_replace_en_r1  <= way3_replace_en;
     end
 end
 
