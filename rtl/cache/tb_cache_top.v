@@ -4,11 +4,12 @@ module tb_cache_top ();
 // from cpu
 reg clk;
 reg rst_n;
+reg cache_en;
 reg wr;
 reg  [`ADDR_WIDTH - 1 : 0]       cachein_addr;
 reg  [`WORD_WIDTH - 1 : 0]       store_data;
 // from main_memory
-reg  [`CACHELINE_WIDTH - 1 : 0]  data_from_main_memory;
+reg  [`CACHELINE_WIDTH - 1 : 0]  rdata_from_main_memory;
 // to cpu
 wire [`WORD_WIDTH - 1 : 0]       load_data;
 // to write_buffer
@@ -22,10 +23,11 @@ wire [`ADDR_WIDTH - 1 : 0]       addr_to_main_memory;
 cache_top u_cache_top(
     .clk(clk),
     .rst_n(rst_n),
+    .cache_en(cache_en),
     .wr(wr),
     .cachein_addr(cachein_addr),
     .store_data(store_data),
-    .data_from_main_memory(data_from_main_memory),
+    .rdata_from_main_memory(rdata_from_main_memory),
     .load_data(load_data),
     .write_buffer_en(write_buffer_en),
     .addr_to_write_buffer(addr_to_write_buffer),
@@ -52,9 +54,9 @@ end
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        data_from_main_memory <= 0;
+        rdata_from_main_memory <= 0;
     end else if (read_main_memory_en == 1) begin
-        data_from_main_memory <= small_main_memory[addr_to_main_memory[31:4]];
+        rdata_from_main_memory <= small_main_memory[addr_to_main_memory[31:4]];
     end
 end
 
@@ -80,30 +82,32 @@ initial begin
     #0 begin
         clk = 0;
         rst_n = 0;
+        cache_en = 0;
         wr = 0;
         cachein_addr = {22'd0, 4'd0, 4'd0};
         store_data = 0;
     end
     #2 begin
         rst_n = 1;
+        cache_en = 1;
     end
     // load
     #1 begin
         // way3
             for (i = 1; i <= 15; i ++) begin
-                test_cache_top(`READ, 22'd0, i, 4'd0, 32'b0);
+                test_cache_top(`READ, 24'd0, i, 4'd0, 32'b0);
             end
         // way1
             for (i = 0; i <= 15; i ++) begin
-                test_cache_top(`READ, 22'd1, i, 4'd0, 32'b0);
+                test_cache_top(`READ, 24'd1, i, 4'd0, 32'b0);
             end
         // way2
             for (i = 0; i <= 15; i ++) begin
-                test_cache_top(`READ, 22'd2, i, 4'd0, 32'b0);
+                test_cache_top(`READ, 24'd2, i, 4'd0, 32'b0);
             end
         // way0
             for (i = 0; i <= 15; i ++) begin
-                test_cache_top(`READ, 22'd3, i, 4'd0, 32'b0);
+                test_cache_top(`READ, 24'd3, i, 4'd0, 32'b0);
             end
     end
     #1 begin
