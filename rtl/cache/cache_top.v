@@ -42,6 +42,10 @@ wire                             way0_replace_en_r1;
 wire                             way1_replace_en_r1;
 wire                             way2_replace_en_r1;
 wire                             way3_replace_en_r1;
+wire                             way0_replace_en;
+wire                             way1_replace_en;
+wire                             way2_replace_en;
+wire                             way3_replace_en;
 
 cache_decoder u_cache_decoder(
     .cachein_addr(cachein_addr),
@@ -102,6 +106,7 @@ data_ram u_data_ram(
     .clk(clk),
     .rst_n(rst_n),
     .cachein_addr(cachein_addr),
+    .index(index),
     .wr_r1(wr_r1),
     .index_r1(index_r1),
     .offset_r1(offset_r1),
@@ -111,6 +116,11 @@ data_ram u_data_ram(
     .way1_replace_en_r1(way1_replace_en_r1),
     .way2_replace_en_r1(way2_replace_en_r1),
     .way3_replace_en_r1(way3_replace_en_r1),
+    .hit_en(hit_en),
+    .way0_replace_en(way0_replace_en),
+    .way1_replace_en(way1_replace_en),
+    .way2_replace_en(way2_replace_en),
+    .way3_replace_en(way3_replace_en),
     .data_from_main_memory(data_from_main_memory), 
     .write_buffer_en(write_buffer_en),
     .addr_to_write_buffer(addr_to_write_buffer),

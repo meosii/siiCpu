@@ -15,15 +15,15 @@ and use an example of a cache with the following specifications:
 `define CACHE_DEFINE
 
 `define ADDR_WIDTH          32 //{tag, index, offset}
-`define OFFSET_WIDTH         4  // 2^4-byte = 16-byte = 4-words
-`define INDEX_WIDTH          4  // 16-cacheline
-`define TAG_WIDTH            24 // 32 - 4 - 4
+`define OFFSET_WIDTH        4  // 2^4-byte = 16-byte = 4-words
+`define INDEX_WIDTH         4  // 16-cacheline
+`define TAG_WIDTH           24 // 32 - 4 - 4
 `define WAY_NUM             4  // 4-cacheway (2^(`INDEX_WIDTH))
 `define LINE_NUM            16 // 16-cacheline
 `define WORD_WIDTH          32 // 1 word = 32 bits
 `define CACHELINE_WIDTH     128 // a cachelie has 128 bits
-`define WRITE   1
-`define READ    0
+`define WRITE           1'b1
+`define READ            1'b0
 
 //offset[3:2]
 `define OFFSET_WORD0 2'b00
@@ -31,16 +31,15 @@ and use an example of a cache with the following specifications:
 `define OFFSET_WORD2 2'b10
 `define OFFSET_WORD3 2'b11
 
-`define DIRTY 1
-`define NON_DIRTY 0
+`define DIRTY       1'b1
+`define NON_DIRTY   1'b0
 
-// line_replace_way[1:0]
-`define REPLACE_WAY0 0
-`define REPLACE_WAY1 1
-`define REPLACE_WAY2 2
-`define REPLACE_WAY3 3
 // replaced_way[2:0]
-`define NO_REPLACE_WAY 4
+`define REPLACE_WAY0 3'd0
+`define REPLACE_WAY1 3'd1
+`define REPLACE_WAY2 3'd2
+`define REPLACE_WAY3 3'd3
+`define NO_REPLACE_WAY 3'd4
 
 // hit_en[`WAY_NUM - 1 : 0]
 `define HIT_WAY0 4'b0001

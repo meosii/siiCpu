@@ -35,6 +35,7 @@ wire [`TAG_WIDTH - 1 : 0]    main_memory_tag;
 wire [`INDEX_WIDTH - 1 : 0]  main_memory_index;
 reg [`TAG_WIDTH - 1 : 0]     main_memory_tag_r1;
 reg [`INDEX_WIDTH - 1 : 0]   main_memory_index_r1;
+reg  [$clog2(`WAY_NUM): 0]   replaced_way_r1;
 
 assign main_memory_tag   = addr_to_main_memory[31 : 8];
 assign main_memory_index = addr_to_main_memory[7 : 4];
@@ -43,27 +44,29 @@ always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         main_memory_tag_r1      <= 0;
         main_memory_index_r1    <= 0;
+        replaced_way_r1         <= 0;
     end else begin
         main_memory_tag_r1      <= main_memory_tag;
         main_memory_index_r1    <= main_memory_index;
+        replaced_way_r1         <= replaced_way;
     end
 end
 
-integer i;
+integer j;
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        for (i = 0; i < `LINE_NUM; i ++) begin
-            way0_value[i] <= 0;
-            way1_value[i] <= 0;
-            way2_value[i] <= 0;
-            way3_value[i] <= 0;
-            way0_tag_ram[i] <= 0;
-            way1_tag_ram[i] <= 0;
-            way2_tag_ram[i] <= 0;
-            way3_tag_ram[i] <= 0;
+        for (j = 0; j < `LINE_NUM; j = j + 1) begin
+            way0_value[j] <= 0;
+            way1_value[j] <= 0;
+            way2_value[j] <= 0;
+            way3_value[j] <= 0;
+            way0_tag_ram[j] <= 0;
+            way1_tag_ram[j] <= 0;
+            way2_tag_ram[j] <= 0;
+            way3_tag_ram[j] <= 0;
         end
     end else if (read_main_memory_en == 1) begin
-        case (replaced_way)
+        case (replaced_way_r1)
             `REPLACE_WAY0: begin
                 way0_tag_ram[main_memory_index_r1] <= main_memory_tag_r1;
                 way0_value[main_memory_index_r1]   <= 1;

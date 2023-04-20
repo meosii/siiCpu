@@ -5,6 +5,7 @@ module data_ram (
     input wire                              clk,
     input wire                              rst_n,
     input wire [`ADDR_WIDTH - 1 : 0]        cachein_addr,
+    input wire [`INDEX_WIDTH - 1 : 0]       index,
 
     // reg1
     // from decoder
@@ -14,19 +15,25 @@ module data_ram (
     input wire [`WORD_WIDTH - 1 : 0]        store_data_r1, // STORE a word
     // tag_ram
     input wire [`WAY_NUM - 1 : 0]           hit_en_r1, // Determine which way is hit
-    // from replace_way_ctrl (LRU)
-    input wire                             way0_replace_en_r1,
-    input wire                             way1_replace_en_r1,
-    input wire                             way2_replace_en_r1,
-    input wire                             way3_replace_en_r1,
+    input wire                              way0_replace_en_r1,
+    input wire                              way1_replace_en_r1,
+    input wire                              way2_replace_en_r1,
+    input wire                              way3_replace_en_r1,
+    
+    // tag_ram
+    input wire [`WAY_NUM - 1 : 0]           hit_en, // Determine which way is hit
+    input wire                              way0_replace_en,
+    input wire                              way1_replace_en,
+    input wire                              way2_replace_en,
+    input wire                              way3_replace_en,
 
     // from replace_data_ctrl (main_memory data)
     input wire [`CACHELINE_WIDTH - 1 : 0]  data_from_main_memory,
 
     // to write_buffer
-    output reg                             write_buffer_en,
-    output wire [`ADDR_WIDTH - 1 : 0]      addr_to_write_buffer, // cacheline tag
-    output reg [`CACHELINE_WIDTH - 1 : 0]  data_to_write_buffer, 
+    output reg                              write_buffer_en,
+    output reg [`ADDR_WIDTH - 1 : 0]        addr_to_write_buffer, // cacheline tag
+    output reg [`CACHELINE_WIDTH - 1 : 0]   data_to_write_buffer, 
     // LOAD: to cpu
     output reg [`WORD_WIDTH - 1 : 0]        load_data // LOAD a word
 );
@@ -51,7 +58,7 @@ integer i;
 // write in cache(data ram)
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        for (i = 0; i < (`LINE_NUM - 1); i++) begin
+        for (i = 0; i < `LINE_NUM; i = i + 1) begin
             way0_data_ram[i]    <= 0;
             way1_data_ram[i]    <= 0;
             way2_data_ram[i]    <= 0;
@@ -106,37 +113,37 @@ always @(posedge clk or negedge rst_n) begin
             // 1.5.1 way0 could be replaced
             if (way0_replace_en_r1 == 1) begin
                 case (offset_r1[3:2])
-                    `OFFSET_WORD0:  way0_data_ram[index_r1] <= {data_from_main_memory[255:32], store_data_r1};
-                    `OFFSET_WORD1:  way0_data_ram[index_r1] <= {data_from_main_memory[255:64], store_data_r1, data_from_main_memory[31:0]};
-                    `OFFSET_WORD2:  way0_data_ram[index_r1] <= {data_from_main_memory[255:96], store_data_r1, data_from_main_memory[63:0]};
-                    `OFFSET_WORD3:  way0_data_ram[index_r1] <= {data_from_main_memory[255:128], store_data_r1, data_from_main_memory[95:0]};
+                    `OFFSET_WORD0:  way0_data_ram[index_r1] <= {data_from_main_memory[127:32], store_data_r1};
+                    `OFFSET_WORD1:  way0_data_ram[index_r1] <= {data_from_main_memory[127:64], store_data_r1, data_from_main_memory[31:0]};
+                    `OFFSET_WORD2:  way0_data_ram[index_r1] <= {data_from_main_memory[127:96], store_data_r1, data_from_main_memory[63:0]};
+                    `OFFSET_WORD3:  way0_data_ram[index_r1] <= {store_data_r1, data_from_main_memory[95:0]};
                 endcase
                 way0_dirty[index_r1]   <= `NON_DIRTY;
             // 1.5.2 way1 could be replaced
             end else if (way1_replace_en_r1 == 1) begin
                 case (offset_r1[3:2])
-                    `OFFSET_WORD0:  way1_data_ram[index_r1] <= {data_from_main_memory[255:32], store_data_r1};
-                    `OFFSET_WORD1:  way1_data_ram[index_r1] <= {data_from_main_memory[255:64], store_data_r1, data_from_main_memory[31:0]};
-                    `OFFSET_WORD2:  way1_data_ram[index_r1] <= {data_from_main_memory[255:96], store_data_r1, data_from_main_memory[63:0]};
-                    `OFFSET_WORD3:  way1_data_ram[index_r1] <= {data_from_main_memory[255:128], store_data_r1, data_from_main_memory[95:0]};
+                    `OFFSET_WORD0:  way1_data_ram[index_r1] <= {data_from_main_memory[127:32], store_data_r1};
+                    `OFFSET_WORD1:  way1_data_ram[index_r1] <= {data_from_main_memory[127:64], store_data_r1, data_from_main_memory[31:0]};
+                    `OFFSET_WORD2:  way1_data_ram[index_r1] <= {data_from_main_memory[127:96], store_data_r1, data_from_main_memory[63:0]};
+                    `OFFSET_WORD3:  way1_data_ram[index_r1] <= {store_data_r1, data_from_main_memory[95:0]};
                 endcase
                 way1_dirty[index_r1]   <= `NON_DIRTY;
             // 1.5.3 way2 could be replaced
             end else if (way2_replace_en_r1 == 1) begin
                 case (offset_r1[3:2])
-                    `OFFSET_WORD0:  way2_data_ram[index_r1] <= {data_from_main_memory[255:32], store_data_r1};
-                    `OFFSET_WORD1:  way2_data_ram[index_r1] <= {data_from_main_memory[255:64], store_data_r1, data_from_main_memory[31:0]};
-                    `OFFSET_WORD2:  way2_data_ram[index_r1] <= {data_from_main_memory[255:96], store_data_r1, data_from_main_memory[63:0]};
-                    `OFFSET_WORD3:  way2_data_ram[index_r1] <= {data_from_main_memory[255:128], store_data_r1, data_from_main_memory[95:0]};
+                    `OFFSET_WORD0:  way2_data_ram[index_r1] <= {data_from_main_memory[127:32], store_data_r1};
+                    `OFFSET_WORD1:  way2_data_ram[index_r1] <= {data_from_main_memory[127:64], store_data_r1, data_from_main_memory[31:0]};
+                    `OFFSET_WORD2:  way2_data_ram[index_r1] <= {data_from_main_memory[127:96], store_data_r1, data_from_main_memory[63:0]};
+                    `OFFSET_WORD3:  way2_data_ram[index_r1] <= {store_data_r1, data_from_main_memory[95:0]};
                 endcase
                 way2_dirty[index_r1]   <= `NON_DIRTY;
             // 1.5.4 way3 could be replaced
             end else if (way3_replace_en_r1 == 1) begin
                 case (offset_r1[3:2])
-                    `OFFSET_WORD0:  way3_data_ram[index_r1] <= {data_from_main_memory[255:32], store_data_r1};
-                    `OFFSET_WORD1:  way3_data_ram[index_r1] <= {data_from_main_memory[255:64], store_data_r1, data_from_main_memory[31:0]};
-                    `OFFSET_WORD2:  way3_data_ram[index_r1] <= {data_from_main_memory[255:96], store_data_r1, data_from_main_memory[63:0]};
-                    `OFFSET_WORD3:  way3_data_ram[index_r1] <= {data_from_main_memory[255:128], store_data_r1, data_from_main_memory[95:0]};
+                    `OFFSET_WORD0:  way3_data_ram[index_r1] <= {data_from_main_memory[127:32], store_data_r1};
+                    `OFFSET_WORD1:  way3_data_ram[index_r1] <= {data_from_main_memory[127:64], store_data_r1, data_from_main_memory[31:0]};
+                    `OFFSET_WORD2:  way3_data_ram[index_r1] <= {data_from_main_memory[127:96], store_data_r1, data_from_main_memory[63:0]};
+                    `OFFSET_WORD3:  way3_data_ram[index_r1] <= {store_data_r1, data_from_main_memory[95:0]};
                 endcase 
                 way3_dirty[index_r1]   <= `NON_DIRTY;
             end
@@ -163,32 +170,6 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-assign addr_to_write_buffer = (write_buffer_en)? cachein_addr : 0;
-
-// dirty: cache data -> write buffer
-always @(*) begin
-    if (hit_en_r1 == 4'b0000) begin
-    // no way is hit
-        // write cache_data to write_buffer
-        if ((way0_replace_en_r1 == 1) && (way0_dirty[index_r1] == `DIRTY)) begin
-            data_to_write_buffer = way0_data_ram[index_r1];
-            write_buffer_en      = 1;
-        end else if ((way1_replace_en_r1 == 1) && (way1_dirty[index_r1] == `DIRTY)) begin
-            data_to_write_buffer = way1_data_ram[index_r1];
-            write_buffer_en      = 1;
-        end else if ((way2_replace_en_r1 == 1) && (way2_dirty[index_r1] == `DIRTY)) begin
-            data_to_write_buffer = way2_data_ram[index_r1];
-            write_buffer_en      = 1;
-        end else if ((way3_replace_en_r1 == 1) && (way3_dirty[index_r1] == `DIRTY)) begin
-            data_to_write_buffer = way3_data_ram[index_r1];
-            write_buffer_en      = 1;
-        end
-    end else begin
-    // cache hit
-        write_buffer_en         = 0;
-        data_to_write_buffer    = 0;
-    end
-end
 // hit: first clock edge
 // no hit: third clock edge
 always @(posedge clk or negedge rst_n) begin
@@ -233,6 +214,39 @@ always @(posedge clk or negedge rst_n) begin
         end
     end else begin // STORE
         load_data <= 0;
+    end
+end
+
+// dirty: cache data -> write buffer
+// here, we use hit_en rather than hit_en_r1
+// the second clock edge
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        data_to_write_buffer <= 0;
+        write_buffer_en      <= 0;
+        addr_to_write_buffer <= 0;
+    end else if (hit_en == 4'b0000) begin
+    // no way is hit
+        addr_to_write_buffer <= cachein_addr;
+        // write cache_data to write_buffer
+        if ((way0_replace_en == 1) && (way0_dirty[index] == `DIRTY)) begin
+            data_to_write_buffer <= way0_data_ram[index];
+            write_buffer_en      <= 1;
+        end else if ((way1_replace_en == 1) && (way1_dirty[index] == `DIRTY)) begin
+            data_to_write_buffer <= way1_data_ram[index];
+            write_buffer_en      <= 1;
+        end else if ((way2_replace_en == 1) && (way2_dirty[index] == `DIRTY)) begin
+            data_to_write_buffer <= way2_data_ram[index];
+            write_buffer_en      <= 1;
+        end else if ((way3_replace_en == 1) && (way3_dirty[index] == `DIRTY)) begin
+            data_to_write_buffer <= way3_data_ram[index];
+            write_buffer_en      <= 1;
+        end
+    end else begin
+    // cache hit
+        addr_to_write_buffer    <= 0;
+        write_buffer_en         <= 0;
+        data_to_write_buffer    <= 0;
     end
 end
 
