@@ -48,13 +48,16 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
+integer k;
+
 // Record the least recently used
+// The reset value of the asynchronous reset should be kept low to avoid latching
 reg [2:0] age [`LINE_NUM - 1 : 0];
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        age[index_r1][0] <= 1'b1; 
-        age[index_r1][1] <= 1'b1;
-        age[index_r1][2] <= 1'b1;
+        for (k = 0; k < `LINE_NUM; k = k + 1) begin
+            age[k] <= 3'b0;
+        end
     end else begin
         if (hit_en_r1[0]) begin            // way0 hit
             age[index_r1][0] <= 1'b1; 
@@ -86,6 +89,10 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 always @(*) begin
+    way0_replace_en = 0;
+    way1_replace_en = 0;
+    way2_replace_en = 0;
+    way3_replace_en = 0;
     if (hit_en == 4'b0000 && (cache_en == 1)) begin
         if (way0_value[index] == 0) begin
             way0_replace_en = 1;
@@ -134,6 +141,11 @@ always @(*) begin
                 end
             end
         end
+    end else begin
+        way0_replace_en = 0;
+        way1_replace_en = 0;
+        way2_replace_en = 0;
+        way3_replace_en = 0;
     end
 end
 
