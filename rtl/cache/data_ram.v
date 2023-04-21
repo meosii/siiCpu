@@ -6,30 +6,30 @@ module data_ram (
     input wire                              rst_n,
     input wire [`ADDR_WIDTH - 1 : 0]        cachein_addr,
     input wire [`INDEX_WIDTH - 1 : 0]       index,
-
-    // reg1
-    // from decoder
-    input wire                              wr_r1, // wr = 1: write
-    input wire [`INDEX_WIDTH - 1 : 0]       index_r1,
-    input wire [`OFFSET_WIDTH - 1 : 0]      offset_r1, // offset[3:2] = which word, offset[1:0] = which byte
-    input wire [`WORD_WIDTH - 1 : 0]        store_data_r1, // STORE a word
-    // tag_ram
-    input wire [`WAY_NUM - 1 : 0]           hit_en_r1, // Determine which way is hit
-    input wire                              way0_replace_en_r1,
-    input wire                              way1_replace_en_r1,
-    input wire                              way2_replace_en_r1,
-    input wire                              way3_replace_en_r1,
     
     // tag_ram
-    input wire [`WAY_NUM - 1 : 0]           hit_en, // Determine which way is hit
+    // for writting to write buffer
+    input wire [`WAY_NUM - 1 : 0]           hit_en,         // Determine which way is hit
     input wire                              way0_replace_en,
     input wire                              way1_replace_en,
     input wire                              way2_replace_en,
     input wire                              way3_replace_en,
 
     // from replace_data_ctrl (main_memory data)
-    input wire [`CACHELINE_WIDTH - 1 : 0]  data_from_main_memory,
-
+    input wire [`CACHELINE_WIDTH - 1 : 0]   data_from_main_memory,
+    // from reg1
+        // from decoder
+    input wire                              wr_r1,          // wr = 1: write
+    input wire [`INDEX_WIDTH - 1 : 0]       index_r1,
+    input wire [`OFFSET_WIDTH - 1 : 0]      offset_r1,      // offset[3:2] = which word, offset[1:0] = which byte
+    input wire [`WORD_WIDTH - 1 : 0]        store_data_r1,  // STORE a word
+        // from tag_ram
+    input wire [`WAY_NUM - 1 : 0]           hit_en_r1,      // Determine which way is hit
+    input wire                              way0_replace_en_r1,
+    input wire                              way1_replace_en_r1,
+    input wire                              way2_replace_en_r1,
+    input wire                              way3_replace_en_r1,
+    
     // to write_buffer
     output reg                              write_buffer_en,
     output reg [`ADDR_WIDTH - 1 : 0]        addr_to_write_buffer, // cacheline tag
@@ -53,7 +53,6 @@ reg way3_dirty [`LINE_NUM - 1 : 0];
 
 // if data_from_main_memory needs a clock to read in memory, 
 // then all the signals of the following "always" need a beat
-
 integer i;
 // write in cache(data ram)
 always @(posedge clk or negedge rst_n) begin
@@ -222,30 +221,27 @@ end
 // the second clock edge
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        data_to_write_buffer <= 0;
         write_buffer_en      <= 0;
         addr_to_write_buffer <= 0;
+        data_to_write_buffer <= 0;
     end else if (hit_en == 4'b0000) begin
     // no way is hit
+        write_buffer_en      <= 1;
         addr_to_write_buffer <= cachein_addr;
         // write cache_data to write_buffer
         if ((way0_replace_en == 1) && (way0_dirty[index] == `DIRTY)) begin
             data_to_write_buffer <= way0_data_ram[index];
-            write_buffer_en      <= 1;
         end else if ((way1_replace_en == 1) && (way1_dirty[index] == `DIRTY)) begin
             data_to_write_buffer <= way1_data_ram[index];
-            write_buffer_en      <= 1;
         end else if ((way2_replace_en == 1) && (way2_dirty[index] == `DIRTY)) begin
             data_to_write_buffer <= way2_data_ram[index];
-            write_buffer_en      <= 1;
         end else if ((way3_replace_en == 1) && (way3_dirty[index] == `DIRTY)) begin
             data_to_write_buffer <= way3_data_ram[index];
-            write_buffer_en      <= 1;
         end
     end else begin
     // cache hit
-        addr_to_write_buffer    <= 0;
         write_buffer_en         <= 0;
+        addr_to_write_buffer    <= 0;
         data_to_write_buffer    <= 0;
     end
 end

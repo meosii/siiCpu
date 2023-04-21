@@ -6,10 +6,12 @@ module replace_data_ctrl (
     input wire                             cache_en,
     input wire  [`ADDR_WIDTH - 1 : 0]      cachein_addr,
     input wire [`WAY_NUM - 1 : 0]          hit_en,
-    input wire [`CACHELINE_WIDTH - 1 : 0]  rdata_from_main_memory, 
+    // to main_memory
     output reg                             read_main_memory_en,
     output reg [`ADDR_WIDTH - 1 : 0]       addr_to_main_memory,
-    output wire [`CACHELINE_WIDTH - 1 : 0] data_from_main_memory
+    output wire [`CACHELINE_WIDTH - 1 : 0] data_from_main_memory,
+    // from main_memory
+    input wire [`CACHELINE_WIDTH - 1 : 0]  rdata_from_main_memory
 );
 
 assign data_from_main_memory = rdata_from_main_memory;

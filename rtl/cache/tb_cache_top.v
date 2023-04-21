@@ -133,64 +133,64 @@ initial begin
     // Change the word3 here: 32'h11111111, 32'h22222222
     #1 begin
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`WRITE, 24'd0, i, 4'd3, (i*(2 << 27) + i*(2 << 23) + i*(2 << 19) + i*(2 << 15) + i*(2 << 11) + i*(2 << 7) + i*(2 << 3) + i));
+                test_cache_top(`WRITE, 24'd0, i, {2'd3,2'b00}, (i*(2 << 27) + i*(2 << 23) + i*(2 << 19) + i*(2 << 15) + i*(2 << 11) + i*(2 << 7) + i*(2 << 3) + i));
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`WRITE, 24'd1, i, 4'd3, (i*(2 << 27) + i*(2 << 23) + i*(2 << 19) + i*(2 << 15) + i*(2 << 11) + i*(2 << 7) + i*(2 << 3) + i));
+                test_cache_top(`WRITE, 24'd1, i, {2'd3,2'b00}, (i*(2 << 27) + i*(2 << 23) + i*(2 << 19) + i*(2 << 15) + i*(2 << 11) + i*(2 << 7) + i*(2 << 3) + i));
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`WRITE, 24'd2, i, 4'd3, (i*(2 << 27) + i*(2 << 23) + i*(2 << 19) + i*(2 << 15) + i*(2 << 11) + i*(2 << 7) + i*(2 << 3) + i));
+                test_cache_top(`WRITE, 24'd2, i, {2'd3,2'b00}, (i*(2 << 27) + i*(2 << 23) + i*(2 << 19) + i*(2 << 15) + i*(2 << 11) + i*(2 << 7) + i*(2 << 3) + i));
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`WRITE, 24'd3, i, 4'd3, (i*(2 << 27) + i*(2 << 23) + i*(2 << 19) + i*(2 << 15) + i*(2 << 11) + i*(2 << 7) + i*(2 << 3) + i));
+                test_cache_top(`WRITE, 24'd3, i, {2'd3,2'b00}, (i*(2 << 27) + i*(2 << 23) + i*(2 << 19) + i*(2 << 15) + i*(2 << 11) + i*(2 << 7) + i*(2 << 3) + i));
             end
     end
     // load: Given the same address, 
     // jugde whether data_ram is written correctly by store_data.
     #1 begin
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`READ, 24'd0, i, 4'd3, 32'b0);
+                test_cache_top(`READ, 24'd0, i, {2'd3,2'b00}, 32'b0);
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`READ, 24'd1, i, 4'd3, 32'b0);
+                test_cache_top(`READ, 24'd1, i, {2'd3,2'b00}, 32'b0);
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`READ, 24'd2, i, 4'd3, 32'b0);
+                test_cache_top(`READ, 24'd2, i, {2'd3,2'b00}, 32'b0);
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`READ, 24'd3, i, 4'd3, 32'b0);
+                test_cache_top(`READ, 24'd3, i, {2'd3,2'b00}, 32'b0);
             end
     end
     // store: no hit
     // word2 32'h01010101 32'h02020202
     #1 begin
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`WRITE, 24'd10, i, 4'd2, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
+                test_cache_top(`WRITE, 24'd10, i, {2'd2,2'b00}, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`WRITE, 24'd11, i, 4'd2, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
+                test_cache_top(`WRITE, 24'd11, i, {2'd2,2'b00}, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`WRITE, 24'd12, i, 4'd2, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
+                test_cache_top(`WRITE, 24'd12, i, {2'd2,2'b00}, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`WRITE, 24'd13, i, 4'd2, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
+                test_cache_top(`WRITE, 24'd13, i, {2'd2,2'b00}, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
             end
     end
     // load: hit, 
     // jugde whether data_ram is written correctly by store_data.
     #1 begin
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`READ, 24'd10, i, 4'd2, 32'b0);
+                test_cache_top(`READ, 24'd10, i, {2'd2,2'b00}, 32'b0);
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`READ, 24'd11, i, 4'd2, 32'b0);
+                test_cache_top(`READ, 24'd11, i, {2'd2,2'b00}, 32'b0);
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`READ, 24'd12, i, 4'd2, 32'b0);
+                test_cache_top(`READ, 24'd12, i, {2'd2,2'b00}, 32'b0);
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`READ, 24'd13, i, 4'd2, 32'b0);
+                test_cache_top(`READ, 24'd13, i, {2'd2,2'b00}, 32'b0);
             end
     end
     $finish();

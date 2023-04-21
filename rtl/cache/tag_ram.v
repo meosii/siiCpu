@@ -10,9 +10,10 @@ module tag_ram (
     input wire  [`TAG_WIDTH - 1 : 0]        tag,   // from decoder
     input wire  [`INDEX_WIDTH - 1 : 0]      index, // from decoder
     output reg [`WAY_NUM - 1 : 0]           hit_en,
-    // from replace_data_ctrl
-    input wire                              read_main_memory_en,
-    input wire  [`ADDR_WIDTH - 1 : 0]       addr_to_main_memory,
+    // from reg1: save the replace tag
+    input wire                              read_main_memory_en_r1,
+    input wire [`TAG_WIDTH - 1 : 0]         main_memory_tag_r1,
+    input wire [`INDEX_WIDTH - 1 : 0]       main_memory_index_r1,
     // to data_ram
     output wire                             way0_replace_en,
     output wire                             way1_replace_en,
@@ -31,24 +32,32 @@ reg [`TAG_WIDTH - 1 : 0] way1_tag_ram [`LINE_NUM - 1 : 0];
 reg [`TAG_WIDTH - 1 : 0] way2_tag_ram [`LINE_NUM - 1 : 0];
 reg [`TAG_WIDTH - 1 : 0] way3_tag_ram [`LINE_NUM - 1 : 0];
 
-wire [`TAG_WIDTH - 1 : 0]    main_memory_tag;
-wire [`INDEX_WIDTH - 1 : 0]  main_memory_index;
-reg [`TAG_WIDTH - 1 : 0]     main_memory_tag_r1;
-reg [`INDEX_WIDTH - 1 : 0]   main_memory_index_r1;
-reg  [$clog2(`WAY_NUM): 0]   replaced_way_r1;
+wire  [$clog2(`WAY_NUM): 0] replaced_way;
 
-assign main_memory_tag   = addr_to_main_memory[31 : 8];
-assign main_memory_index = addr_to_main_memory[7 : 4];
+LRU u_LRU(
+    .clk(clk),
+    .rst_n(rst_n),
+    .cache_en(cache_en),
+    .hit_en(hit_en),
+    .index(index),
+    .way0_value(way0_value),
+    .way1_value(way1_value),
+    .way2_value(way2_value),
+    .way3_value(way3_value),
+    .way0_replace_en(way0_replace_en),
+    .way1_replace_en(way1_replace_en),
+    .way2_replace_en(way2_replace_en),
+    .way3_replace_en(way3_replace_en),
+    .replaced_way(replaced_way)
+);
+
+reg  [$clog2(`WAY_NUM): 0]   replaced_way_r1;
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        main_memory_tag_r1      <= 0;
-        main_memory_index_r1    <= 0;
-        replaced_way_r1         <= 0;
+        replaced_way_r1 <= 0;
     end else begin
-        main_memory_tag_r1      <= main_memory_tag;
-        main_memory_index_r1    <= main_memory_index;
-        replaced_way_r1         <= replaced_way;
+        replaced_way_r1 <= replaced_way;
     end
 end
 
@@ -65,7 +74,7 @@ always @(posedge clk or negedge rst_n) begin
             way2_tag_ram[j] <= 0;
             way3_tag_ram[j] <= 0;
         end
-    end else if (read_main_memory_en == 1) begin
+    end else if (read_main_memory_en_r1 == 1) begin
         case (replaced_way_r1)
             `REPLACE_WAY0: begin
                 way0_tag_ram[main_memory_index_r1] <= main_memory_tag_r1;
@@ -110,25 +119,6 @@ always @(*) begin
         hit_en[3] <= 0;
     end
 end
-
-wire  [$clog2(`WAY_NUM): 0] replaced_way;
-
-LRU u_LRU(
-    .clk(clk),
-    .rst_n(rst_n),
-    .cache_en(cache_en),
-    .hit_en(hit_en),
-    .index(index),
-    .way0_value(way0_value),
-    .way1_value(way1_value),
-    .way2_value(way2_value),
-    .way3_value(way3_value),
-    .way0_replace_en(way0_replace_en),
-    .way1_replace_en(way1_replace_en),
-    .way2_replace_en(way2_replace_en),
-    .way3_replace_en(way3_replace_en),
-    .replaced_way(replaced_way)
-);
 
 endmodule
 `endif
