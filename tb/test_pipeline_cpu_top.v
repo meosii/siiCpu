@@ -38,7 +38,6 @@ initial begin
     end
     // spm 中写入指令
     #TIMECLK begin
-
         // OP_IMM
         // 执行 ADDI，将立即数写入 gpr，地址 0 - 10，写入 0 - 10
         test_spm_write_OP_IMM(0,12'b0000_0000_0000,5'b11111,`FUNCT3_ADDI,5'b00000); // gpr[rd] = 0
@@ -105,7 +104,6 @@ initial begin
         
         //OP_JALR，跳转到 rs1 地址加上 imm（最后一位置零），将当前pc + 4 的值写入目标寄存器（uses x0 as the return address register）
         test_spm_write_OP_JALR(132,12'b0000_1000_0011,5'b00101,5'b00000); // gpr[5'b00000] = pc + 4 = 136; pc = 'b1000_0011 + 'b101 = 136 
-
 
         //OP_BRANCH，后寄存器与前寄存器比较，满足则发生跳转
         test_spm_write_OP_BRANCH(136,1'b0,6'b000000,5'b00011,5'b00011,`FUNCT3_BEQ,4'b0100,1'b0); // pc = pc + 'b1000 = pc + 8 = 144 (next_pc)

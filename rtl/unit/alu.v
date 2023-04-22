@@ -4,10 +4,10 @@
 `include "unit/define.v"
 
 module alu (
-    input wire [`DATA_WIDTH_ALU_OP - 1:0] alu_op,
-    input wire [`WORD_WIDTH - 1:0] alu_in_0,
-    input wire [`WORD_WIDTH - 1:0] alu_in_1,
-    output reg [`WORD_WIDTH - 1:0] alu_out
+    input wire [`DATA_WIDTH_ALU_OP - 1:0]   alu_op,
+    input wire [`WORD_WIDTH - 1:0]          alu_in_0,
+    input wire [`WORD_WIDTH - 1:0]          alu_in_1,
+    output reg [`WORD_WIDTH - 1:0]          alu_out
 );
 
 integer i;
@@ -75,7 +75,7 @@ always @(*) begin
         alu_out = alu_in_0 - alu_in_1;
     end
     `ALU_OP_SRA: begin
-            alu_out = alu_in_0 >>> alu_in_1[4:0];
+        alu_out = alu_in_0 >>> alu_in_1[4:0];
     end
     default: alu_out = 0;
    endcase 
