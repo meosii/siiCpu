@@ -47,7 +47,7 @@ integer i;
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         for (i = 0; i < 255; i = i + 1) begin
-            small_main_memory[i] <= i*(2 << 95) + i*(2 << 63) + i*(2 << 31) + i; //cacheline1 = 
+            small_main_memory[i] <= i*(2 << 95) + i*(2 << 63) + i*(2 << 31) + i; 
         end
     end
 end
@@ -177,7 +177,7 @@ initial begin
                 test_cache_top(`WRITE, 24'd13, i, {2'd2,2'b00}, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
             end
     end
-    // load: hit, 
+    // load: hit
     // jugde whether data_ram is written correctly by store_data.
     #1 begin
             for (i = 0; i <= 15; i = i + 1) begin

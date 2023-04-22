@@ -153,18 +153,18 @@ always @(posedge clk or negedge rst_n) begin
         // When loading, if the cache is not hit, we also need to write data to the cache.
         // At this time, the data being written is the main_data.
             if (way0_replace_en_r1 == 1) begin
-            way0_data_ram[index_r1]    <= data_from_main_memory;
-            way0_dirty[index_r1]       <= `NON_DIRTY;
-        end else if (way1_replace_en_r1 == 1) begin
-            way1_data_ram[index_r1]    <= data_from_main_memory;
-            way1_dirty[index_r1]       <= `NON_DIRTY;
-        end else if (way2_replace_en_r1 == 1) begin
-            way2_data_ram[index_r1]    <= data_from_main_memory;
-            way2_dirty[index_r1]       <= `NON_DIRTY;
-        end else if (way3_replace_en_r1 == 1) begin
-            way3_data_ram[index_r1]    <= data_from_main_memory;
-            way3_dirty[index_r1]       <= `NON_DIRTY;
-        end
+                way0_data_ram[index_r1]    <= data_from_main_memory;
+                way0_dirty[index_r1]       <= `NON_DIRTY;
+            end else if (way1_replace_en_r1 == 1) begin
+                way1_data_ram[index_r1]    <= data_from_main_memory;
+                way1_dirty[index_r1]       <= `NON_DIRTY;
+            end else if (way2_replace_en_r1 == 1) begin
+                way2_data_ram[index_r1]    <= data_from_main_memory;
+                way2_dirty[index_r1]       <= `NON_DIRTY;
+            end else if (way3_replace_en_r1 == 1) begin
+                way3_data_ram[index_r1]    <= data_from_main_memory;
+                way3_dirty[index_r1]       <= `NON_DIRTY;
+            end
         end
     end
 end

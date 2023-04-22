@@ -31,7 +31,7 @@ wire [`TAG_WIDTH - 1 : 0]        tag;
 wire [`INDEX_WIDTH - 1 : 0]      index;
 wire [`OFFSET_WIDTH - 1 : 0]     offset;
 wire [`WAY_NUM - 1 : 0]          hit_en;
-wire [$clog2(`WAY_NUM) : 0] replaced_way;
+wire [$clog2(`WAY_NUM) : 0]      replaced_way;
 wire [`CACHELINE_WIDTH - 1 : 0]  data_from_main_memory;
 wire                             wr_r1;
 wire [`TAG_WIDTH - 1 : 0]        tag_r1;
@@ -39,7 +39,6 @@ wire [`INDEX_WIDTH - 1 : 0]      index_r1;
 wire [`OFFSET_WIDTH - 1 : 0]     offset_r1; 
 wire [`WORD_WIDTH - 1 : 0]       store_data_r1; 
 wire [`WAY_NUM - 1 : 0]          hit_en_r1;
-wire                             read_main_memory_en_r1;
 wire                             way0_replace_en_r1;
 wire                             way1_replace_en_r1;
 wire                             way2_replace_en_r1;
@@ -63,9 +62,7 @@ tag_ram u_tag_ram(
     .tag(tag),
     .index(index),
     .hit_en(hit_en),
-    .read_main_memory_en_r1(read_main_memory_en_r1),
-    .main_memory_tag_r1(tag_r1),
-    .main_memory_index_r1(index_r1),
+    .read_main_memory_en(read_main_memory_en),
     .way0_replace_en(way0_replace_en),
     .way1_replace_en(way1_replace_en),
     .way2_replace_en(way2_replace_en),
@@ -91,7 +88,6 @@ reg1 u_reg1(
     .offset(offset),
     .store_data(store_data),
     .hit_en(hit_en),
-    .read_main_memory_en(read_main_memory_en),
     .way0_replace_en(way0_replace_en),
     .way1_replace_en(way1_replace_en),
     .way2_replace_en(way2_replace_en),
@@ -102,7 +98,6 @@ reg1 u_reg1(
     .offset_r1(offset_r1),
     .store_data_r1(store_data_r1),
     .hit_en_r1(hit_en_r1),
-    .read_main_memory_en_r1(read_main_memory_en_r1),
     .way0_replace_en_r1(way0_replace_en_r1),
     .way1_replace_en_r1(way1_replace_en_r1),
     .way2_replace_en_r1(way2_replace_en_r1),

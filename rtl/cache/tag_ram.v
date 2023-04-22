@@ -11,9 +11,7 @@ module tag_ram (
     input wire  [`INDEX_WIDTH - 1 : 0]      index, // from decoder
     output reg [`WAY_NUM - 1 : 0]           hit_en,
     // from reg1: save the replace tag
-    input wire                              read_main_memory_en_r1,
-    input wire [`TAG_WIDTH - 1 : 0]         main_memory_tag_r1,
-    input wire [`INDEX_WIDTH - 1 : 0]       main_memory_index_r1,
+    input wire                              read_main_memory_en,
     // to data_ram
     output wire                             way0_replace_en,
     output wire                             way1_replace_en,
@@ -51,16 +49,6 @@ LRU u_LRU(
     .replaced_way(replaced_way)
 );
 
-reg  [$clog2(`WAY_NUM): 0]   replaced_way_r1;
-
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        replaced_way_r1 <= 0;
-    end else begin
-        replaced_way_r1 <= replaced_way;
-    end
-end
-
 integer j;
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -74,23 +62,23 @@ always @(posedge clk or negedge rst_n) begin
             way2_tag_ram[j] <= 0;
             way3_tag_ram[j] <= 0;
         end
-    end else if (read_main_memory_en_r1 == 1) begin
-        case (replaced_way_r1)
+    end else if (read_main_memory_en == 1) begin
+        case (replaced_way)
             `REPLACE_WAY0: begin
-                way0_tag_ram[main_memory_index_r1] <= main_memory_tag_r1;
-                way0_value[main_memory_index_r1]   <= 1;
+                way0_tag_ram[index] <= tag;
+                way0_value[index]   <= 1;
             end
             `REPLACE_WAY1: begin
-                way1_tag_ram[main_memory_index_r1] <= main_memory_tag_r1;
-                way1_value[main_memory_index_r1]   <= 1;
+                way1_tag_ram[index] <= tag;
+                way1_value[index]   <= 1;
             end
             `REPLACE_WAY2: begin
-                way2_tag_ram[main_memory_index_r1] <= main_memory_tag_r1;
-                way2_value[main_memory_index_r1]   <= 1;
+                way2_tag_ram[index] <= tag;
+                way2_value[index]   <= 1;
             end
             `REPLACE_WAY3: begin
-                way3_tag_ram[main_memory_index_r1] <= main_memory_tag_r1;
-                way3_value[main_memory_index_r1]   <= 1;
+                way3_tag_ram[index] <= tag;
+                way3_value[index]   <= 1;
             end
             // replaced_way = NO_REPLACE_WAY, do nothing
         endcase
