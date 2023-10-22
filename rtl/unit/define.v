@@ -1,13 +1,17 @@
-`ifndef siicpu_define
-`define siicpu_define
+`ifndef SIICPU_DEFINE
+`define SIICPU_DEFINE
 
 `define WORD_WIDTH          32
 `define DATA_HIGH_GPR       32
+`define GPR_ADDR_WIDTH      5
+
 `define DATA_WIDTH_ALU_OP   5
-`define DATA_WIDTH_MEM_OP   3
+`define DATA_WIDTH_MEM_OP   4
 `define DATA_WIDTH_CTRL_OP  2
 `define DATA_WIDTH_OFFSET   2
 `define DATA_WIDTH_ISA_EXP  3
+
+`define PC_WIDTH            32
 
 `define WORD_ADDR_BUS       29 : 0
 `define WORD_ADDR_WIDTH     30
@@ -19,6 +23,8 @@
 
 `define READ                1'b1
 `define WRITE               1'b0
+`define DISABLE             1'b0
+`define ENABLE              1'b1
 
 //define by "RISC_V"
 `define OP_IMM              7'b0010011
@@ -30,6 +36,7 @@
 `define OP_BRANCH           7'b1100011
 `define OP_LOAD             7'b0000011
 `define OP_STORE            7'b0100011
+`define OP_SYSTEM           7'b1110011
 
 `define FUNCT3_ADDI         3'b000
 `define FUNCT3_SLTI         3'b010
@@ -91,13 +98,17 @@
 `define ALU_OP_SRL          19
 `define ALU_OP_SUB          20
 `define ALU_OP_SRA          21
+
 `define MEM_OP_NOP          0
 `define MEM_OP_LOAD_LW      1
 `define MEM_OP_LOAD_LH      2
 `define MEM_OP_LOAD_LHU     3
 `define MEM_OP_LOAD_LB      4
 `define MEM_OP_LOAD_LBU     5
-`define MEM_OP_STORE        6
+`define MEM_OP_SW           6
+`define MEM_OP_SH           7
+`define MEM_OP_SB           8
+
 `define CTRL_OP_NOP         0
 
 `define ISA_EXP_NO_EXP      3'b000 // No exceptions
@@ -138,6 +149,7 @@
 
 // S-type
 //The meaning of the corresponding bit
+`define S_TYPE_IMM_11           31
 `define S_TYPE_IMM_11_5         31 : 25
 `define S_TYPE_RS2              24 : 20 
 `define S_TYPE_RS1              19 : 15

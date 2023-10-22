@@ -8,7 +8,7 @@ OutputPath = ./bin
 
 $(shell mkdir -p ${OutputPath})
 
-all: alu arbiter bus pipeline_cpu gpr mem_ctrl spm 
+all: alu arbiter bus pipeline_cpu gpr mem_ctrl spm ffacs
 
 run: all
 
@@ -43,3 +43,7 @@ mem_ctrl:
 spm:
 	${CC} test_spm.v ${IncludePath} -o ${OutputPath}/test_spm
 	${OutputPath}/test_spm
+
+ffacs:
+	${CC} tb_ffacs.v ${IncludePath} -o ${OutputPath}/test_cpu_ffacs
+	${OutputPath}/test_cpu_ffacs

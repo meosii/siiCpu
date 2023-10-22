@@ -18,14 +18,16 @@ Cache 是用来提高数据访问速度的一种高速存储器，它利用了�
 在此我们设计一个四路组相联 cache，并使用以下规范:
 
 - cache 的容量为 1024 Bytes = 1 KB
-- 主存的容量为 2^32 Bytes = 4 GB
-- cache 是四路组相联，即每个 cache 包含 4 个 cacheWay
-- 每个 cacheWay 中包含 16 条 cacheLine，一条 cacheLine 中含有 16 Bytes 数据
-- 每条 cacheLine 的数据部分可以存放 16 Bytes = 4 words
+- main memory 的容量为 2^32 Bytes = 4 GB
+- 每条 cacheLine 存放 16 Bytes = 4 words
+- 每个 cacheWay 中包含 16 条 cacheLine
+- 每个 cache 包含 4 个 cacheWay，四路组相联
 
 注: cacheLine 是 cache 中的一个存储单元，其中的数据部分称为 data block。每个 cacheLine 都有一个标记 tag，用于标识该 cacheLine 所对应的主存地址。
 
 为了设计四路组相联 cache，我们需要确定如何将主存地址映射到 cache。为此，我们在主内存地址中使用三个字段：标记（Tag）、索引（Index）和偏移量（Offset）。
+
+在 cache 中需要存储主存地址 tag 和主存数据 data，其中 tag 是主存地址的高几位（具体几位由 cache 结构决定），为什么不用存储完整的地址呢？因为其中的 index 与 offset 均为数据在 cache 中的位置决定，即知道存储位置，则知道 index 与 offset。
 
 首先通过 index 表明选定了哪几个 cacheLine，接着判断这些 cacheLine （即一个 cacheSet）中对应的 tag 是否有与地址中的 tag 一致，若存在一致，表明 hit，选出该 cacheLine 中的数据，通过 offset 选择被选中的数据，如果没有 hit 通过一定的替换策略，将主存中的该地址数据发送到 cache，再去访问该地址对应值。
 
