@@ -33,20 +33,20 @@ reg [`TAG_WIDTH - 1 : 0] way3_tag_ram [`LINE_NUM - 1 : 0];
 wire  [$clog2(`WAY_NUM): 0] replaced_way;
 
 LRU u_LRU(
-    .clk(clk),
-    .rst_n(rst_n),
-    .cache_en(cache_en),
-    .hit_en(hit_en),
-    .index(index),
-    .way0_value(way0_value),
-    .way1_value(way1_value),
-    .way2_value(way2_value),
-    .way3_value(way3_value),
-    .way0_replace_en(way0_replace_en),
-    .way1_replace_en(way1_replace_en),
-    .way2_replace_en(way2_replace_en),
-    .way3_replace_en(way3_replace_en),
-    .replaced_way(replaced_way)
+    .clk                (clk            ),
+    .rst_n              (rst_n          ),
+    .cache_en           (cache_en       ),
+    .hit_en             (hit_en         ),
+    .index              (index          ),
+    .way0_value         (way0_value     ),
+    .way1_value         (way1_value     ),
+    .way2_value         (way2_value     ),
+    .way3_value         (way3_value     ),
+    .way0_replace_en    (way0_replace_en),
+    .way1_replace_en    (way1_replace_en),
+    .way2_replace_en    (way2_replace_en),
+    .way3_replace_en    (way3_replace_en),
+    .replaced_way       (replaced_way   )
 );
 
 integer j;

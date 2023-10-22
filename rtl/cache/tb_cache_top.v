@@ -165,16 +165,16 @@ initial begin
     // word2 32'h01010101 32'h02020202
     #1 begin
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`WRITE, 24'd10, i, {2'd2,2'b00}, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
+                test_cache_top(`WRITE, 24'd10, i, {2'd2,2'b00}, (i*(2 << 23) + i*(2 << 15) + i*(2 << 7) + i));
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`WRITE, 24'd11, i, {2'd2,2'b00}, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
+                test_cache_top(`WRITE, 24'd11, i, {2'd2,2'b00}, (i*(2 << 23) + i*(2 << 15) + i*(2 << 7) + i));
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`WRITE, 24'd12, i, {2'd2,2'b00}, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
+                test_cache_top(`WRITE, 24'd12, i, {2'd2,2'b00}, (i*(2 << 23) + i*(2 << 15) + i*(2 << 7) + i));
             end
             for (i = 0; i <= 15; i = i + 1) begin
-                test_cache_top(`WRITE, 24'd13, i, {2'd2,2'b00}, (i*(2 << 23) + + i*(2 << 15) + + i*(2 << 7) + i));
+                test_cache_top(`WRITE, 24'd13, i, {2'd2,2'b00}, (i*(2 << 23) + i*(2 << 15) + i*(2 << 7) + i));
             end
     end
     // load: hit

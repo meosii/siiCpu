@@ -1,16 +1,13 @@
-// "signed alu_out" can judge whether the overflow
-`ifndef siicpu_alu
-`define siicpu_alu
-`include "unit/define.v"
+`ifndef SIICPU_ALU
+`define SIICPU_ALU
+`include "define.v"
 
 module alu (
-    input wire [`DATA_WIDTH_ALU_OP - 1:0]   alu_op,
-    input wire [`WORD_WIDTH - 1:0]          alu_in_0,
-    input wire [`WORD_WIDTH - 1:0]          alu_in_1,
+    input wire [`DATA_WIDTH_ALU_OP - 1:0]   alu_op   ,
+    input wire [`WORD_WIDTH - 1:0]          alu_in_0 ,
+    input wire [`WORD_WIDTH - 1:0]          alu_in_1 ,
     output reg [`WORD_WIDTH - 1:0]          alu_out
 );
-
-integer i;
 
 always @(*) begin
    case (alu_op)
@@ -18,10 +15,10 @@ always @(*) begin
         alu_out = alu_in_0 + alu_in_1;
     end
     `ALU_OP_SLTI: begin
-        alu_out = (alu_in_1 < alu_in_0)? 1:0;
+        alu_out = ($signed(alu_in_1) < $signed(alu_in_0))? 1'b1:1'b0;
     end
     `ALU_OP_SLTIU: begin
-        alu_out = (alu_in_1 < alu_in_0)? 1:0;
+        alu_out = (alu_in_1 < alu_in_0)? 1'b1:1'b0;
     end
     `ALU_OP_ANDI: begin
         alu_out = alu_in_0 & alu_in_1;
@@ -51,7 +48,7 @@ always @(*) begin
         alu_out = alu_in_0 + alu_in_1;
     end
     `ALU_OP_SLT: begin
-        alu_out = (alu_in_0 < alu_in_1)? 1:0;
+        alu_out = ($signed(alu_in_0) < $signed(alu_in_1))? 1:0;
     end
     `ALU_OP_SLTU: begin
         alu_out = (alu_in_0 < alu_in_1)? 1:0;
@@ -82,5 +79,4 @@ always @(*) begin
 end
 
 endmodule
-
 `endif 
