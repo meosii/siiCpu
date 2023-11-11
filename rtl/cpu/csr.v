@@ -102,9 +102,9 @@ end
 //      UTIP(1), MSIP(1), WPRI(1), SSIP(1), USIP(1)}
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        csr_mip <= {20'b0, `MIP_MEIP_OFF, 3'b0, `MIP_MTIP_OFF, 3'b0, `MIP_MSIP_OFF};
+        csr_mip <= {20'b0, `MIP_MEIP_OFF, 3'b0, `MIP_MTIP_OFF, 3'b0, `MIP_MSIP_OFF, 3'b0};
     end else begin
-        csr_mip <= {20'b0, irq_external, 3'b0, irq_timer, 3'b0, irq_software};
+        csr_mip <= {20'b0, irq_external, 3'b0, irq_timer, 3'b0, irq_software, 3'b0};
     end
 end
 
@@ -112,7 +112,7 @@ end
 //      UTIE(1), MSIE(1), WPRI(1), SSIE(1), USIE(1)}
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        csr_mie <= {20'b0, `MIE_MEIE_OFF, 3'b0, `MIE_MTIE_OFF, 3'b0, `MIE_MSIE_OFF};
+        csr_mie <= {20'b0, `MIE_MEIE_OFF, 3'b0, `MIE_MTIE_OFF, 3'b0, `MIE_MSIE_OFF, 3'b0};
     end else if (csr_w_en && (csr_w_addr == `CSR_ADDR_MIE)) begin
         csr_mie <= csr_w_data;
     end

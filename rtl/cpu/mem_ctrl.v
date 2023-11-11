@@ -1,8 +1,5 @@
 `ifndef SIICPU_MEM_CTRL
 `define SIICPU_MEM_CTRL
-
-`ifndef SIICPU_MEM_CTRL
-`define SIICPU_MEM_CTRL
 `include "define.v"
 
 module mem_ctrl (

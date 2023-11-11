@@ -54,8 +54,7 @@ riscv64-linux-gnu-objdump main.o -d > out
 2. qemu-system-riscv32 -m 2G -nographic -machine virt -kernel sum.elf -s -S -bios none
 3. gdb-multiarch ./sum.elf
 4. target remote localhost:1234
-5. breakpoint *80000000
-6. continue
+5. b *80000000  // breakpoint
 7. layout asm
 8. si
 9. info reg

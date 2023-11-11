@@ -5,7 +5,7 @@ array.o:     file format elf32-littleriscv
 Disassembly of section .text:
 
 00000000 <main>:
-   0:	fa010113          	addi	sp,sp,-96
+   0:	fa010113          	addi	sp,sp,-96       
    4:	04812e23          	sw	s0,92(sp)
    8:	06010413          	addi	s0,sp,96
    c:	fe042623          	sw	zero,-20(s0)
@@ -43,8 +43,8 @@ Disassembly of section .text:
 
 00000084 <.L2>:
   84:	fec42703          	lw	a4,-20(s0)     
-  88:	00900793          	li	a5,9
-  8c:	f8e7d4e3          	bge	a5,a4,14 <.L3>
+  88:	00900793          	li	a5,9               
+  8c:	f8e7d4e3          	bge	a5,a4,14 <.L3>  
   90:	fa042703          	lw	a4,-96(s0)
   94:	00900793          	li	a5,9
   98:	00e7ca63          	blt	a5,a4,ac <.L4>

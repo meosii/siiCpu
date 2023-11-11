@@ -58,7 +58,17 @@ initial begin
     #20 begin
        cpu_en = 1; 
     end
-    #100000
+    #1000 begin
+        irq_external = 1;
+        irq_timer = 0;
+        irq_software = 0;
+    end
+    #TIME_CLK begin
+        irq_external = 0;
+        irq_timer = 0;
+        irq_software = 0;
+    end
+    #10000
     $finish;
 end
 

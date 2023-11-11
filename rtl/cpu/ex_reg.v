@@ -69,38 +69,44 @@ always @(posedge clk or negedge rst_n) begin
         ex_store_data       <= `WORD_WIDTH'b0;
         ex_store_byteena    <= 4'b0000;
         ex_exp_code         <= `DATA_WIDTH_ISA_EXP'b0;
+    end else if (cpu_en) begin
+        if (ex_flush) begin
+            ex_pc               <= `PC_WIDTH'b0;
+            ex_insn             <= `WORD_WIDTH'b0;
+            ex_en               <= 1'b0;
+            ex_gpr_we_          <= 1'b0;
+            ex_dst_addr         <= `GPR_ADDR_WIDTH'b0;
+            ex_csr_to_gpr_data  <= `WORD_WIDTH'b0;
+            ex_alu_out          <= `DATA_WIDTH_ALU_OP'b0;
+            ex_mem_op           <= `DATA_WIDTH_MEM_OP'b0;
+            ex_memory_we_en     <= 1'b0;
+            ex_memory_rd_en     <= 1'b0;
+            ex_store_data       <= `WORD_WIDTH'b0;
+            ex_store_byteena    <= 4'b0000;
+            ex_exp_code         <= `DATA_WIDTH_ISA_EXP'b0;
+        end else if (!ex_stall) begin
+            ex_pc               <= id_pc;
+            ex_insn             <= id_insn;
+            ex_en               <= id_en;
+            ex_gpr_we_          <= id_gpr_we_;
+            ex_dst_addr         <= id_dst_addr;
+            ex_csr_to_gpr_data  <= id_csr_to_gpr_data;
+            ex_alu_out          <= alu_out;
+            ex_mem_op           <= id_mem_op;
+            ex_memory_we_en     <= id_memory_we_en;
+            ex_memory_rd_en     <= id_memory_rd_en;
+            ex_store_data       <= id_store_data;
+            ex_store_byteena    <= id_store_byteena;
+            ex_exp_code         <= id_exp_code;
+        end
+    end
+end
+
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
         ex_ebreak_en        <= `DISABLE;
         ex_ecall_en         <= `DISABLE;
-    end else if (ex_flush) begin
-        ex_pc               <= `PC_WIDTH'b0;
-        ex_insn             <= `WORD_WIDTH'b0;
-        ex_en               <= 1'b0;
-        ex_gpr_we_          <= 1'b0;
-        ex_dst_addr         <= `GPR_ADDR_WIDTH'b0;
-        ex_csr_to_gpr_data  <= `WORD_WIDTH'b0;
-        ex_alu_out          <= `DATA_WIDTH_ALU_OP'b0;
-        ex_mem_op           <= `DATA_WIDTH_MEM_OP'b0;
-        ex_memory_we_en     <= 1'b0;
-        ex_memory_rd_en     <= 1'b0;
-        ex_store_data       <= `WORD_WIDTH'b0;
-        ex_store_byteena    <= 4'b0000;
-        ex_exp_code         <= `DATA_WIDTH_ISA_EXP'b0;
-        ex_ebreak_en        <= `DISABLE;
-        ex_ecall_en         <= `DISABLE;  
     end else if (cpu_en && !ex_stall) begin
-        ex_pc               <= id_pc;
-        ex_insn             <= id_insn;
-        ex_en               <= id_en;
-        ex_gpr_we_          <= id_gpr_we_;
-        ex_dst_addr         <= id_dst_addr;
-        ex_csr_to_gpr_data  <= id_csr_to_gpr_data;
-        ex_alu_out          <= alu_out;
-        ex_mem_op           <= id_mem_op;
-        ex_memory_we_en     <= id_memory_we_en;
-        ex_memory_rd_en     <= id_memory_rd_en;
-        ex_store_data       <= id_store_data;
-        ex_store_byteena    <= id_store_byteena;
-        ex_exp_code         <= id_exp_code;
         ex_ebreak_en        <= id_ebreak_en;
         ex_ecall_en         <= id_ecall_en;
     end

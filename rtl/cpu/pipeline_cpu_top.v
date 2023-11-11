@@ -73,6 +73,7 @@ wire [`WORD_WIDTH - 1 : 0]              id_alu_in_1;
 wire [`WORD_WIDTH - 1 : 0]              id_csr_to_gpr_data;
 wire [`DATA_WIDTH_MEM_OP - 1 : 0]       id_mem_op;
 wire                                    id_memory_we_en;
+wire                                    id_memory_rd_en;
 wire [`WORD_WIDTH - 1 : 0]              id_store_data;
 wire [3 : 0]                            id_store_byteena;
 wire [`WORD_WIDTH - 1 : 0]              id_insn;
@@ -101,13 +102,14 @@ wire [`WORD_WIDTH - 1 : 0]              ex_alu_out;
 wire [`WORD_WIDTH - 1 : 0]              ex_csr_to_gpr_data;
 wire [`DATA_WIDTH_MEM_OP - 1 : 0]       ex_mem_op;
 wire                                    ex_memory_we_en;
+wire                                    ex_memory_rd_en;
 wire [`WORD_WIDTH - 1 : 0]              ex_store_data;
 wire [3 : 0]                            ex_store_byteena;
 wire [`DATA_WIDTH_ISA_EXP - 1 : 0]      ex_exp_code;
 wire                                    ex_ebreak_en;
 wire                                    ex_ecall_en;
 // mem_ctrl
-wire [`WORD_ADDR_BUS]                   memory_addr;
+wire [`WORD_WIDTH - 1 : 0]              memory_addr;
 wire [`WORD_WIDTH - 1 : 0]              spm_rd_data; // mem_to gpr
 wire                                    loading_after_store_en;
 wire [`DATA_WIDTH_ISA_EXP - 1 : 0]      ex_exp_code_mem_ctrl;

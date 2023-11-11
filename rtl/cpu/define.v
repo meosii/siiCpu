@@ -2,6 +2,7 @@
 `define SIICPU_DEFINE
 
 `define WORD_WIDTH          32
+`define PC_WIDTH            32
 `define DATA_HIGH_GPR       32
 `define GPR_ADDR_WIDTH      5
 
@@ -11,14 +12,9 @@
 `define DATA_WIDTH_OFFSET   2
 `define DATA_WIDTH_ISA_EXP  5
 
-`define PC_WIDTH            32
-
-`define WORD_ADDR_BUS       29 : 0
-`define WORD_ADDR_WIDTH     30
 // In memory, each address stores 8 bits(1 byte),
-// While, in a 32-bit cpu, each instruction has 32 bits(4 bytes),
-`define WORD_ADDR_LOC       31 : 2 // So, the cpu internally addresses the high 30 bits as a word 
-`define BYTE_OFFSET_LOC     1 : 0 // and the low 2 bits as a byte shift
+// While, in a 32-bit cpu, each instruction has 32 bits(4 bytes)
+`define BYTE_OFFSET_LOC     1 : 0 // the low 2 bits as a byte shift
 `define BYTE_OFFSET_WORD    2'b00 // to judge "miss_align"
 
 `define READ                1'b1
@@ -122,8 +118,6 @@
 `define MEM_OP_SW           4'd6
 `define MEM_OP_SH           4'd7
 `define MEM_OP_SB           4'd8
-
-`define CTRL_OP_NOP         0
 
 `define ISA_EXP_NO_EXP              5'd0 // No exceptions
 `define ISA_EXP_PC_MISALIGNED       5'd1 // pc addr is not aligned
@@ -307,7 +301,7 @@
 `define MCAUSE_ALU_OVERFLOW                     31'd16 // defined by myself
 
 // config by myself
-`define MTVEC_RESET_BASE        30'h400     //1024
-`define MTVEC_RESET_MODE        2'b0        //DIRECT
+`define MTVEC_RESET_BASE        30'hff      //'d255 = 'b11111111; disk_addr = pc[:2] = 'b11111111; pc = 'b1111111100; pc[:2] = BASE[XLEN-1:2] = 'b11111111
+`define MTVEC_RESET_MODE        2'b0        //DIRECT: All exceptions set pc to BASE
 
 `endif
