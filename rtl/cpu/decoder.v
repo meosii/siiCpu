@@ -135,12 +135,12 @@ always @(*) begin
             imm             = {{20{if_insn[`S_TYPE_IMM_11]}}, if_insn[`S_TYPE_IMM_11_5], if_insn[`S_TYPE_IMM_4_0]};
         end
         `OP_SYSTEM: begin
-            gpr_we_         = (if_en) ? `WRITE : `DIS_WRITE;
-            gpr_rd_en       = (if_en)?  `READ  : `DISABLE;
-            gpr_rd_addr_0   = if_insn[`I_TYPE_RS1];
+            gpr_we_         = ((if_insn[`I_TYPE_FUNCT3] != 3'b000) && if_en) ? `WRITE : `DIS_WRITE;
+            gpr_rd_en       = ((if_insn[`I_TYPE_FUNCT3] != 3'b000) && if_en)?  `READ  : `DISABLE;
+            gpr_rd_addr_0   = (if_insn[`I_TYPE_FUNCT3] != 3'b000)? if_insn[`I_TYPE_RS1] : `GPR_ADDR_WIDTH'b0;
             gpr_rd_addr_1   = `GPR_ADDR_WIDTH'b0;
-            dst_addr        = if_insn[`I_TYPE_RD];
-            imm             = {{20{if_insn[`INSN_MSB]}}, if_insn[`I_TYPE_IMM]};
+            dst_addr        = (if_insn[`I_TYPE_FUNCT3] != 3'b000)? if_insn[`I_TYPE_RD] : `GPR_ADDR_WIDTH'b0;
+            imm             = (if_insn[`I_TYPE_FUNCT3] != 3'b000)? {{20{if_insn[`INSN_MSB]}}, if_insn[`I_TYPE_IMM]} : `WORD_WIDTH'b0;
         end
         default: begin
             gpr_we_         = `DIS_WRITE;
@@ -302,7 +302,7 @@ assign alu_op = (!if_en)? `ALU_OP_NOP :
                 ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == 7'b0100000) && (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_SRA)             )? `ALU_OP_SRA      :
                 ((opcode == `OP_JAL) || (opcode == `OP_JALR) || (opcode == `OP_LOAD) || (opcode == `OP_STORE)                       )? `ALU_OP_ADD      : `ALU_OP_NOP;
 
-
+// ebreak ecall and mret
 assign ebreak_en = ((if_en) && (if_insn == `EBREAK_INSN))?  `ENABLE : `DISABLE;
 assign ecall_en  = ((if_en) && (if_insn == `ECALL_INSN) )?  `ENABLE : `DISABLE;
 assign mret_en   = ((if_en) && (if_insn == `MRET_INSN)  )?  `ENABLE : `DISABLE;
@@ -336,7 +336,8 @@ assign exp_code = (!if_en)? `ISA_EXP_NO_EXP :
                 ||  (opcode == `OP_JALR     )
                 ||  (opcode == `OP_BRANCH   )
                 ||  (opcode == `OP_LOAD     )
-                ||  (opcode == `OP_STORE    ))? `ISA_EXP_NO_EXP : `ISA_EXP_UNDEF_INSN;
+                ||  (opcode == `OP_STORE    )
+                ||  (opcode == `OP_SYSTEM   ))? `ISA_EXP_NO_EXP : `ISA_EXP_UNDEF_INSN;
 
 // jump and branch
 wire                        br_taken_tmp;

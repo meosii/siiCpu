@@ -94,14 +94,14 @@ assign predt_pc    = predt_pc_add_op1 + predt_pc_add_op2;
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         pc <= `PC_WIDTH'b0;
-    end else if (cpu_en && !pc_stall) begin
+    end else if (cpu_en) begin
         if (trap_happened || mret_en) begin
             pc <= ctrl_pc;
-        end else if (br_taken) begin
+        end else if (br_taken && !pc_stall) begin
             pc <= br_addr;
-        end else if (predt_br_taken) begin
+        end else if (predt_br_taken && !pc_stall) begin
             pc <= predt_pc;
-        end else begin
+        end else if (!pc_stall) begin
             pc <= pc + 4;
         end
     end

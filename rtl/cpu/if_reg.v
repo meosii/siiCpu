@@ -24,16 +24,18 @@ always @(posedge clk or negedge rst_n) begin
         if_pc               <= `PC_WIDTH'b0;
         if_insn             <= `WORD_WIDTH'b0;
         if_predt_br_taken   <= 1'b0;
-    end else if (if_flush) begin
-        if_en               <= 1'b0;
-        if_pc               <= `PC_WIDTH'b0;
-        if_insn             <= `WORD_WIDTH'b0;
-        if_predt_br_taken   <= 1'b0;
-    end else if (cpu_en && !if_stall) begin
-        if_en               <= 1'b1;
-        if_pc               <= pc;
-        if_insn             <= insn;
-        if_predt_br_taken   <= predt_br_taken;
+    end else if (cpu_en) begin
+        if (if_flush) begin
+            if_en               <= 1'b0;
+            if_pc               <= `PC_WIDTH'b0;
+            if_insn             <= `WORD_WIDTH'b0;
+            if_predt_br_taken   <= 1'b0;
+        end else if (!if_stall) begin
+            if_en               <= 1'b1;
+            if_pc               <= pc;
+            if_insn             <= insn;
+            if_predt_br_taken   <= predt_br_taken;
+        end
     end
 end
 

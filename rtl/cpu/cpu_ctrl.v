@@ -7,7 +7,7 @@ module cpu_ctrl (
     input wire                                  rst_n,
     input wire [`PC_WIDTH - 1 : 0]              mem_pc,
     // hazard from decoder
-    input wire                               load_hazard_in_id_ex,
+    input wire                                  load_hazard_in_id_ex,
     input wire                                  load_hazard_in_ex_mem,
     input wire                                  contral_hazard,
     // exception excuted in the mem stage
@@ -136,19 +136,19 @@ assign id_stall = (1'b0)? 1'b1 : 1'b0;
 assign ex_stall = (1'b0)? 1'b1 : 1'b0; 
 assign mem_stall = (1'b0)? 1'b1 : 1'b0; 
 
-assign if_flush =   contral_hazard  ||                                      // hazard in decoder
-                    exp_in_decoder  || exp_in_alu || exp_in_mem_ctrl ||  // exception happened in each stage
-                    trap_happened   || mret_en;                             // pc jump after mem_stage
+assign if_flush =   contral_hazard  ||                                  // hazard in decoder
+                    exp_in_decoder  || exp_in_alu || exp_in_mem_ctrl || // exception happened in each stage
+                    trap_happened   || mret_en;                         // pc jump after mem_stage
 
-assign id_flush =   load_hazard_in_id_ex || load_hazard_in_ex_mem ||  // hazard in decoder
-                    exp_in_decoder || exp_in_alu || exp_in_mem_ctrl ||  // exception happened in each stage
-                    trap_happened || mret_en;                             // pc jump after mem_stage
+assign id_flush =   load_hazard_in_id_ex || load_hazard_in_ex_mem ||    // hazard in decoder
+                    exp_in_alu || exp_in_mem_ctrl ||                    // exception happened in each stage
+                    trap_happened || mret_en;                           // pc jump after mem_stage
 
-assign ex_flush =   exp_in_alu || exp_in_mem_ctrl ||                   // exception happened in each stage
-                    trap_happened || mret_en;                             // pc jump after mem_stage
+assign ex_flush =   exp_in_alu || exp_in_mem_ctrl ||                    // exception happened in each stage
+                    trap_happened;                           // pc jump after mem_stage
 
-assign mem_flush =  exp_in_mem_ctrl ||                                      // exception happened in each stage
-                    trap_happened || mret_en;                             // pc jump after mem_stage
+assign mem_flush =  exp_in_mem_ctrl ||                                  // exception happened in each stage
+                    trap_happened;                           // pc jump after mem_stage
 
 endmodule
 `endif

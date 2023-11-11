@@ -47,28 +47,34 @@ always @(posedge clk or negedge rst_n) begin
         mem_dst_addr        <= `GPR_ADDR_WIDTH'b0;
         mem_csr_to_gpr_data <= `WORD_WIDTH'b0;
         mem_exp_code        <= `DATA_WIDTH_ISA_EXP'b0;
-        mem_ebreak_en       <= `DISABLE;
-        mem_ecall_en        <= `DISABLE;
-    end else if (mem_flush) begin
-        mem_pc              <= `PC_WIDTH'b0;
-        mem_insn            <= `WORD_WIDTH'b0;
-        mem_en              <= 1'b0;
-        mem_alu_out         <= `WORD_WIDTH'b0;
-        mem_gpr_we_         <= 1'b0;
-        mem_dst_addr        <= `GPR_ADDR_WIDTH'b0;
-        mem_csr_to_gpr_data <= `WORD_WIDTH'b0; 
-        mem_exp_code        <= `DATA_WIDTH_ISA_EXP'b0;
+    end else if (cpu_en) begin
+        if (mem_flush) begin
+            mem_pc              <= `PC_WIDTH'b0;
+            mem_insn            <= `WORD_WIDTH'b0;
+            mem_en              <= 1'b0;
+            mem_alu_out         <= `WORD_WIDTH'b0;
+            mem_gpr_we_         <= 1'b0;
+            mem_dst_addr        <= `GPR_ADDR_WIDTH'b0;
+            mem_csr_to_gpr_data <= `WORD_WIDTH'b0; 
+            mem_exp_code        <= `DATA_WIDTH_ISA_EXP'b0;
+        end else if (!mem_stall) begin
+            mem_pc              <= ex_pc;
+            mem_insn            <= ex_insn;
+            mem_en              <= ex_en;
+            mem_alu_out         <= ex_alu_out;
+            mem_gpr_we_         <= ex_gpr_we_;
+            mem_dst_addr        <= ex_dst_addr;
+            mem_csr_to_gpr_data <= ex_csr_to_gpr_data;
+            mem_exp_code        <= ex_exp_code_mem_ctrl;
+        end
+    end
+end
+
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
         mem_ebreak_en       <= `DISABLE;
         mem_ecall_en        <= `DISABLE;
     end else if (cpu_en && !mem_stall) begin
-        mem_pc              <= ex_pc;
-        mem_insn            <= ex_insn;
-        mem_en              <= ex_en;
-        mem_alu_out         <= ex_alu_out;
-        mem_gpr_we_         <= ex_gpr_we_;
-        mem_dst_addr        <= ex_dst_addr;
-        mem_csr_to_gpr_data <= ex_csr_to_gpr_data;
-        mem_exp_code        <= ex_exp_code_mem_ctrl;
         mem_ebreak_en       <= ex_ebreak_en;
         mem_ecall_en        <= ex_ecall_en;
     end
