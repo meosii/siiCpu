@@ -10,6 +10,8 @@ module cpu_ctrl (
     input wire                                  load_hazard_in_id_ex,
     input wire                                  load_hazard_in_ex_mem,
     input wire                                  contral_hazard,
+    // ahb bus
+    input wire                                  ahb_bus_wait,
     // exception excuted in the mem stage
     // exception
     input wire [`DATA_WIDTH_ISA_EXP - 1 : 0]    exp_code,               // from decoder
@@ -130,11 +132,11 @@ always @(*) begin
 end
 
 // stall and flush
-assign pc_stall = (load_hazard_in_id_ex || load_hazard_in_ex_mem)? 1'b1 : 1'b0; 
-assign if_stall = (load_hazard_in_id_ex || load_hazard_in_ex_mem)? 1'b1 : 1'b0; 
-assign id_stall = (1'b0)? 1'b1 : 1'b0; 
-assign ex_stall = (1'b0)? 1'b1 : 1'b0; 
-assign mem_stall = (1'b0)? 1'b1 : 1'b0; 
+assign pc_stall = load_hazard_in_id_ex || load_hazard_in_ex_mem || ahb_bus_wait; 
+assign if_stall = load_hazard_in_id_ex || load_hazard_in_ex_mem || ahb_bus_wait; 
+assign id_stall = ahb_bus_wait; 
+assign ex_stall = ahb_bus_wait; 
+assign mem_stall = ahb_bus_wait; 
 
 assign if_flush =   contral_hazard  ||                                  // hazard in decoder
                     exp_in_decoder  || exp_in_alu || exp_in_mem_ctrl || // exception happened in each stage
@@ -145,10 +147,10 @@ assign id_flush =   load_hazard_in_id_ex || load_hazard_in_ex_mem ||    // hazar
                     trap_happened || mret_en;                           // pc jump after mem_stage
 
 assign ex_flush =   exp_in_alu || exp_in_mem_ctrl ||                    // exception happened in each stage
-                    trap_happened;                           // pc jump after mem_stage
+                    trap_happened;                                      // pc jump after mem_stage
 
 assign mem_flush =  exp_in_mem_ctrl ||                                  // exception happened in each stage
-                    trap_happened;                           // pc jump after mem_stage
+                    trap_happened;                                      // pc jump after mem_stage
 
 endmodule
 `endif

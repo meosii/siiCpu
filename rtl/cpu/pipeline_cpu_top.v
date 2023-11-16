@@ -12,7 +12,19 @@ module pipeline_cpu_top (
     // insn and pc
     input  wire [`WORD_WIDTH - 1 : 0]   insn,
     output wire                         rd_insn_en,
-    output wire [`PC_WIDTH - 1 : 0]     pc
+    output wire [`PC_WIDTH - 1 : 0]     pc,
+    // from AHB
+    input wire [`WORD_WIDTH - 1 : 0]    D_HRDATA,
+    input wire                          D_HREADY,
+    input wire [1 : 0]                  D_HRESP,
+    // to AHB
+    output wire [`WORD_WIDTH - 1 : 0]   D_HADDR,
+    output wire                         D_HWRITE,
+    output wire [2 : 0]                 D_HSIZE,
+    output wire [2 : 0]                 D_HBURST,
+    output wire [1 : 0]                 D_HTRANS,
+    output wire                         D_HMASTLOCK,
+    output wire [`WORD_WIDTH - 1 : 0]   D_HWDATA
 );
 
 assign rd_insn_en = (cpu_en)? 1'b1:1'b0;
@@ -42,10 +54,10 @@ wire 								    id_en;
 wire 								    ex_en;
 wire									mem_en;
 
-wire									gpr_we_;
-wire									id_gpr_we_;
-wire									ex_gpr_we_;
-wire									mem_gpr_we_;
+wire									gpr_we_n;
+wire									id_gpr_we_n;
+wire									ex_gpr_we_n;
+wire									mem_gpr_we_n;
 // csr
 wire                                    csr_rd_en;
 wire [`CSR_ADDR_WIDTH - 1 : 0]          csr_rd_addr;
@@ -88,7 +100,6 @@ wire [`WORD_WIDTH - 1 : 0]              gpr_rd_data_0;
 wire [`WORD_WIDTH - 1 : 0]              gpr_rd_data_1;
 wire [`GPR_ADDR_WIDTH - 1 : 0]          dst_addr;
 wire [`WORD_WIDTH - 1 : 0]              gpr_wr_data;
-wire [`WORD_WIDTH - 1 : 0]              load_data;
 // alu
 wire [`DATA_WIDTH_ALU_OP - 1 : 0]       alu_op;
 wire [`WORD_WIDTH - 1 : 0]              alu_in_0;
@@ -110,14 +121,27 @@ wire                                    ex_ebreak_en;
 wire                                    ex_ecall_en;
 // mem_ctrl
 wire [`WORD_WIDTH - 1 : 0]              memory_addr;
-wire [`WORD_WIDTH - 1 : 0]              spm_rd_data; // mem_to gpr
 wire                                    loading_after_store_en;
 wire [`DATA_WIDTH_ISA_EXP - 1 : 0]      ex_exp_code_mem_ctrl;
 wire [`WORD_WIDTH - 1 : 0]              prev_ex_store_data;
+wire [`WORD_WIDTH - 1 : 0]              load_data;
+wire [`WORD_WIDTH - 1 : 0]              load_rd_data;
+//ahb
+wire                                    bus_ahb_enable;
+wire                                    trans_end_en;
+// spm
+wire [3 : 0]                            spm_store_byteena;
+wire [`WORD_WIDTH - 1 : 0]              spm_write_data;
+wire [`WORD_WIDTH - 1 : 0]              spm_rdaddress;
+wire                                    spm_rden;
+wire [`WORD_WIDTH - 1 : 0]              spm_wraddress;
+wire                                    spm_wren;
+wire [`WORD_WIDTH - 1 : 0]              spm_rd_data; // mem_to gpr
 // mem
 wire [`PC_WIDTH - 1 : 0]                mem_pc;
 wire [`WORD_WIDTH - 1 : 0]              mem_insn;
 wire [`WORD_WIDTH - 1 : 0]              mem_alu_out;
+wire                                    mem_bus_ahb_enable;
 wire [`GPR_ADDR_WIDTH - 1 : 0]          mem_dst_addr;
 wire [`WORD_WIDTH - 1 : 0]              mem_csr_to_gpr_data;
 wire [`DATA_WIDTH_ISA_EXP - 1 : 0]      mem_exp_code;
@@ -129,12 +153,14 @@ wire                                    mret_en;
 wire                                    load_hazard_in_id_ex;
 wire                                    load_hazard_in_ex_mem;
 wire                                    contral_hazard;
+wire                                    ahb_bus_wait;
 //
 wire                                    load_in_id_ex;
 wire                                    load_in_ex_mem;
 wire                                    alu2gpr_in_id_ex;
 wire                                    alu2gpr_in_ex_mem;
 wire                                    load_after_storing_en;
+wire                                    loading_after_store_en_r1;
 //
 wire                                    mstatus_mie_clear_en;
 wire                                    mstatus_mie_set_en;
@@ -180,7 +206,7 @@ pc u_pc(
     .predt_gpr_rd_data      (gpr_rd_data_1          ),
     .gpr_x1                 (gpr_x1                 ),
     // ra hazard
-    .gpr_we_                (gpr_we_                ),
+    .gpr_we_n               (gpr_we_n               ),
     .load_in_id_ex          (load_in_id_ex          ),
     .load_in_ex_mem         (load_in_ex_mem         ),
     .alu2gpr_in_id_ex       (alu2gpr_in_id_ex       ),
@@ -231,7 +257,7 @@ decoder u_decoder(
     .gpr_rd_addr_0          (gpr_rd_addr_0          ),
     .gpr_rd_addr_1          (gpr_rd_addr_1          ),
     .dst_addr               (dst_addr               ),
-    .gpr_we_                (gpr_we_                ),
+    .gpr_we_n               (gpr_we_n               ),
     // csr
     //out
     .csr_to_gpr_data        (csr_to_gpr_data        ),
@@ -325,7 +351,7 @@ id_reg u_id_reg(
     .if_pc                  (if_pc                  ),
     .if_insn                (if_insn                ),
     .if_en                  (if_en                  ),
-    .gpr_we_                (gpr_we_                ),
+    .gpr_we_n               (gpr_we_n               ),
     .dst_addr               (dst_addr               ), 
     .csr_to_gpr_data        (csr_to_gpr_data        ),
     .alu_op                 (alu_op                 ),
@@ -343,7 +369,7 @@ id_reg u_id_reg(
     .id_pc                  (id_pc                  ),
     .id_insn                (id_insn                ),
     .id_en                  (id_en                  ),
-    .id_gpr_we_             (id_gpr_we_             ),
+    .id_gpr_we_n            (id_gpr_we_n            ),
     .id_dst_addr            (id_dst_addr            ),
     .id_csr_to_gpr_data     (id_csr_to_gpr_data     ),
     .id_alu_op              (id_alu_op              ),
@@ -364,22 +390,49 @@ id_reg u_id_reg(
 
 wire [`GPR_ADDR_WIDTH - 1 : 0] gpr_rd_addr_1_in;
 assign gpr_rd_addr_1_in = ((gpr_rd_addr_1 == `GPR_ADDR_WIDTH'b0) && predt_gpr_rd_en)? predt_gpr_rd_addr : gpr_rd_addr_1;
+wire                            gpr_we_n_in;
+wire [`GPR_ADDR_WIDTH - 1 :0]   gpr_wr_addr_in;
+wire [`WORD_WIDTH - 1 : 0]      gpr_wr_data_in;
 
+reg                             wb_gpr_we_n;
+reg [`GPR_ADDR_WIDTH - 1 : 0]   wb_dst_addr;
+
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        wb_gpr_we_n <= 1'b1;
+        wb_dst_addr <= `GPR_ADDR_WIDTH'b0;
+    end else if (!ahb_bus_wait) begin
+        wb_gpr_we_n <= mem_gpr_we_n;
+        wb_dst_addr <= mem_dst_addr;
+    end
+end
+
+assign gpr_we_n_in      =   (   !mem_bus_ahb_enable                                                             // 1. Do not read bus
+                            || (mem_bus_ahb_enable && trans_end_en && !ahb_bus_wait)                            // 2. Read the bus in a single cycle
+                            || loading_after_store_en_r1                            )?  mem_gpr_we_n :          // 3. loading_after_store
+                                                                                        !(trans_end_en && !wb_gpr_we_n);  // Reading the bus and requiring multiple cycles of wait
+
+assign gpr_wr_addr_in   =   (   !mem_bus_ahb_enable
+                            || (mem_bus_ahb_enable && trans_end_en && !ahb_bus_wait)
+                            || loading_after_store_en_r1                            )?  mem_dst_addr :
+                                                                                        wb_dst_addr;
+                                                                                        
+assign gpr_wr_data_in   =   (!mem_bus_ahb_enable && (mem_insn[`ALL_TYPE_OPCODE] == `OP_LOAD))? load_data : 
+                            (!mem_bus_ahb_enable && (mem_insn[`ALL_TYPE_OPCODE] == `OP_SYSTEM))? mem_csr_to_gpr_data : 
+                            (!mem_bus_ahb_enable)? mem_alu_out : load_data;
+									 
 gpr u_gpr(
     .clk                    (clk                    ),
     .rst_n                  (rst_n                  ),
-    .we_                    (mem_gpr_we_            ),
-    .wr_addr                (mem_dst_addr           ),
-    .wr_data                (gpr_wr_data            ),
+    .we_n                   (gpr_we_n_in            ),
+    .wr_addr                (gpr_wr_addr_in         ),
+    .wr_data                (gpr_wr_data_in         ),
     .rd_addr_0              (gpr_rd_addr_0          ),
     .rd_addr_1              (gpr_rd_addr_1_in       ),
     .rd_data_0              (gpr_rd_data_0          ),
     .rd_data_1              (gpr_rd_data_1          ),
     .gpr_x1                 (gpr_x1                 )
 );
-
-assign gpr_wr_data = (mem_insn[`ALL_TYPE_OPCODE] == `OP_LOAD)? load_data : 
-                     (mem_insn[`ALL_TYPE_OPCODE] == `OP_SYSTEM)? mem_csr_to_gpr_data : mem_alu_out;
 
 alu u_alu(
     .alu_op                 (id_alu_op              ),
@@ -398,7 +451,7 @@ ex_reg u_ex_reg(
     .id_pc                  (id_pc                  ),
     .id_insn                (id_insn                ),
     .id_en                  (id_en                  ),
-    .id_gpr_we_             (id_gpr_we_             ),
+    .id_gpr_we_n            (id_gpr_we_n            ),
     .id_dst_addr            (id_dst_addr            ),
     .id_csr_to_gpr_data     (id_csr_to_gpr_data     ),
     .alu_out                (alu_out                ),
@@ -414,7 +467,7 @@ ex_reg u_ex_reg(
     .ex_pc                  (ex_pc                  ),
     .ex_insn                (ex_insn                ),
     .ex_en                  (ex_en                  ),
-    .ex_gpr_we_             (ex_gpr_we_             ),
+    .ex_gpr_we_n            (ex_gpr_we_n            ),
     .ex_dst_addr            (ex_dst_addr            ),
     .ex_csr_to_gpr_data     (ex_csr_to_gpr_data     ),
     .ex_alu_out             (ex_alu_out             ),
@@ -433,32 +486,65 @@ ex_reg u_ex_reg(
 
 mem_ctrl u_mem_ctrl(
     // inputs
+    .clk                        (clk                        ),
+    .rst_n                      (rst_n                      ),
+    .ex_en                      (ex_en                      ),
+    .ex_insn                    (ex_insn                    ),
+    .ex_exp_code                (ex_exp_code                ),
+    .ex_mem_op                  (ex_mem_op                  ),
+    .ex_memory_we_en            (ex_memory_we_en            ),
+    .ex_memory_rd_en            (ex_memory_rd_en            ),
+    .ex_alu_out                 (ex_alu_out                 ),
+    .ex_store_data              (ex_store_data              ),
+    .ex_store_byteena           (ex_store_byteena           ),
+    // load after store
+    .load_in_id_ex              (load_in_id_ex              ),
+    .load_in_ex_mem             (load_in_ex_mem             ),
+    .alu_out                    (alu_out                    ),
+    // from spm
+    .load_rd_data               (load_rd_data               ), //mem to gpr (load_rd_data -> load_data)
+    // outputs
+    .memory_addr                (memory_addr                ), // from alu_out to spm
+    .load_data                  (load_data                  ), // to gpr
+    // load after store
+    .prev_ex_store_data         (prev_ex_store_data         ),
+    .load_after_storing_en      (load_after_storing_en      ),
+    .loading_after_store_en     (loading_after_store_en     ),
+    .loading_after_store_en_r1  (loading_after_store_en_r1  ),
+    // exp
+    .ex_exp_code_mem_ctrl       (ex_exp_code_mem_ctrl       )
+);
+
+ahb_mem_ctrl u_ahb_mem_ctrl(
     .clk                    (clk                    ),
     .rst_n                  (rst_n                  ),
-    .ex_en                  (ex_en                  ),
-    .ex_insn                (ex_insn                ),
-    .ex_exp_code            (ex_exp_code            ),
-    .ex_mem_op              (ex_mem_op              ),
     .ex_memory_we_en        (ex_memory_we_en        ),
     .ex_memory_rd_en        (ex_memory_rd_en        ),
-    .ex_alu_out             (ex_alu_out             ),
+    .memory_addr            (memory_addr            ),
     .ex_store_data          (ex_store_data          ),
     .ex_store_byteena       (ex_store_byteena       ),
-    // load after store
-    .load_in_id_ex          (load_in_id_ex          ),
-    .load_in_ex_mem         (load_in_ex_mem         ),
-    .alu_out                (alu_out                ),
-    // from spm
-    .spm_rd_data            (spm_rd_data            ), //mem to gpr (spm_rd_data -> load_data)
-    // outputs
-    .memory_addr            (memory_addr            ), // from alu_out to spm
-    .load_data              (load_data              ), // to gpr
-    // load after store
-    .prev_ex_store_data     (prev_ex_store_data     ),
+    .D_HRDATA               (D_HRDATA               ),
+    .D_HREADY               (D_HREADY               ),
+    .D_HRESP                (D_HRESP                ),
+    .spm_rd_data            (spm_rd_data            ),
     .loading_after_store_en (loading_after_store_en ),
-    .load_after_storing_en  (load_after_storing_en  ),
-    // exp
-    .ex_exp_code_mem_ctrl   (ex_exp_code_mem_ctrl   )
+    .D_HADDR                (D_HADDR                ),
+    .D_HWRITE               (D_HWRITE               ),
+    .D_HSIZE                (D_HSIZE                ),
+    .D_HBURST               (D_HBURST               ),
+    .D_HTRANS               (D_HTRANS               ),
+    .D_HMASTLOCK            (D_HMASTLOCK            ),
+    .D_HWDATA               (D_HWDATA               ),
+    .spm_store_byteena      (spm_store_byteena      ),
+    .spm_write_data         (spm_write_data         ),
+    .spm_rdaddress          (spm_rdaddress          ),
+    .spm_rden               (spm_rden               ),
+    .spm_wraddress          (spm_wraddress          ),
+    .spm_wren               (spm_wren               ),
+    .load_rd_data           (load_rd_data           ),
+    .ahb_bus_wait           (ahb_bus_wait           ),
+    .bus_ahb_enable         (bus_ahb_enable         ),
+    .trans_end_en           (trans_end_en           )
 );
 
 mem_reg u_mem_reg (
@@ -471,9 +557,10 @@ mem_reg u_mem_reg (
     .ex_pc                  (ex_pc                  ),
     .ex_insn                (ex_insn                ),
     .ex_en                  (ex_en                  ),
-    .ex_gpr_we_             (ex_gpr_we_             ),
+    .ex_gpr_we_n            (ex_gpr_we_n            ),
     .ex_dst_addr            (ex_dst_addr            ),
     .ex_alu_out             (ex_alu_out             ),
+    .bus_ahb_enable         (bus_ahb_enable         ),
     .ex_csr_to_gpr_data     (ex_csr_to_gpr_data     ),
     .ex_exp_code_mem_ctrl   (ex_exp_code_mem_ctrl   ),
     .ex_ebreak_en           (ex_ebreak_en           ),
@@ -482,9 +569,10 @@ mem_reg u_mem_reg (
     .mem_pc                 (mem_pc                 ),
     .mem_insn               (mem_insn               ),
     .mem_en                 (mem_en                 ),
-    .mem_gpr_we_            (mem_gpr_we_            ),
+    .mem_gpr_we_n           (mem_gpr_we_n           ),
     .mem_dst_addr           (mem_dst_addr           ),
     .mem_alu_out            (mem_alu_out            ),
+    .mem_bus_ahb_enable     (mem_bus_ahb_enable     ),
     .mem_csr_to_gpr_data    (mem_csr_to_gpr_data    ),
     .mem_exp_code           (mem_exp_code           ),
     .mem_ebreak_en          (mem_ebreak_en          ),
@@ -492,14 +580,14 @@ mem_reg u_mem_reg (
 );
 
 ip_spm u_ip_spm(
-	.byteena_a              (ex_store_byteena       ),
-	.clock                  (clk                    ),
-	.data                   (ex_store_data          ),
-	.rdaddress              (memory_addr[13 : 2]    ),
-	.rden                   (ex_memory_rd_en        ),
-	.wraddress              (memory_addr[13 : 2]    ),
-	.wren                   (ex_memory_we_en        ),
-	.q                      (spm_rd_data            )
+	.byteena_a              (spm_store_byteena              ),
+	.clock                  (clk                            ),
+	.data                   (spm_write_data                 ),
+	.rdaddress              (spm_rdaddress[`SPM_ADDR_LOCA]  ),
+	.rden                   (spm_rden                       ),
+	.wraddress              (spm_wraddress[`SPM_ADDR_LOCA]  ),
+	.wren                   (spm_wren                       ),
+	.q                      (spm_rd_data                    )
 );
 
 cpu_ctrl u_cpu_ctrl(
@@ -510,6 +598,7 @@ cpu_ctrl u_cpu_ctrl(
     .load_hazard_in_id_ex   (load_hazard_in_id_ex   ),
     .load_hazard_in_ex_mem  (load_hazard_in_ex_mem  ),
     .contral_hazard         (contral_hazard         ),
+    .ahb_bus_wait           (ahb_bus_wait           ),
     // exp
     .exp_code               (exp_code               ),
     .ex_exp_code_mem_ctrl   (ex_exp_code_mem_ctrl   ),

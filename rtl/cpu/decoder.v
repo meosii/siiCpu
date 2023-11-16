@@ -16,7 +16,7 @@ module decoder (
     output reg [`GPR_ADDR_WIDTH - 1 : 0]        gpr_rd_addr_0,
     output reg [`GPR_ADDR_WIDTH - 1 : 0]        gpr_rd_addr_1,
     output reg [`GPR_ADDR_WIDTH - 1 : 0]        dst_addr,
-    output reg                                  gpr_we_,
+    output reg                                  gpr_we_n,
     //csr to gpr
     output reg [`WORD_WIDTH - 1 : 0]            csr_to_gpr_data,
     //to csr
@@ -87,15 +87,15 @@ assign opcode = if_insn[`ALL_TYPE_OPCODE];
 always @(*) begin
     case(opcode)
         `OP_IMM,`OP_JALR,`OP_LOAD: begin
-            gpr_we_         = (if_en) ? `WRITE : `DIS_WRITE;
-            gpr_rd_en       = (if_en)?  `READ  : `DISABLE;
+            gpr_we_n        = (if_en) ? `GPR_WRITE : `DIS_GPR_WRITE;
+            gpr_rd_en       = (if_en)?  `GPR_READ  : `DISABLE;
             gpr_rd_addr_0   = if_insn[`I_TYPE_RS1];
             gpr_rd_addr_1   = `GPR_ADDR_WIDTH'b0;
             dst_addr        = if_insn[`I_TYPE_RD];
             imm             = {{20{if_insn[`INSN_MSB]}}, if_insn[`I_TYPE_IMM]};
         end
         `OP_LUI,`OP_AUIPC: begin
-            gpr_we_         = (if_en) ? `WRITE : `DIS_WRITE;
+            gpr_we_n        = (if_en) ? `GPR_WRITE : `DIS_GPR_WRITE;
             gpr_rd_en       = `DISABLE;
             gpr_rd_addr_0   = `GPR_ADDR_WIDTH'b0;
             gpr_rd_addr_1   = `GPR_ADDR_WIDTH'b0;
@@ -103,47 +103,47 @@ always @(*) begin
             imm             = {if_insn[`U_TYPE_IMM], 12'b0};
         end
         `OP: begin
-            gpr_we_         = (if_en) ? `WRITE : `DIS_WRITE;
-            gpr_rd_en       = (if_en)?  `READ  : `DISABLE;
+            gpr_we_n        = (if_en) ? `GPR_WRITE : `DIS_GPR_WRITE;
+            gpr_rd_en       = (if_en)?  `GPR_READ  : `DISABLE;
             gpr_rd_addr_0   = if_insn[`R_TYPE_RS1];
             gpr_rd_addr_1   = if_insn[`R_TYPE_RS2];
             dst_addr        = if_insn[`R_TYPE_RD];
             imm             = `WORD_WIDTH'b0;
         end
         `OP_JAL: begin
-            gpr_we_         = (if_en) ? `WRITE : `DIS_WRITE;
-            gpr_rd_en       = (if_en)?  `READ  : `DISABLE;
+            gpr_we_n        = (if_en) ? `GPR_WRITE : `DIS_GPR_WRITE;
+            gpr_rd_en       = (if_en)?  `GPR_READ  : `DISABLE;
             gpr_rd_addr_0   = `GPR_ADDR_WIDTH'b0;
             gpr_rd_addr_1   = `GPR_ADDR_WIDTH'b0;
             dst_addr        = if_insn[`J_TYPE_RD];
             imm             = {{12{if_insn[`J_TYPE_IMM_20]}}, if_insn[`J_TYPE_IMM_19_12], if_insn[`J_TYPE_IMM_11], if_insn[`J_TYPE_IMM_10_1], 1'b0};
         end
         `OP_BRANCH: begin
-            gpr_we_         = `DIS_WRITE;
-            gpr_rd_en       = (if_en)?  `READ  : `DISABLE;
+            gpr_we_n        = `DIS_GPR_WRITE;
+            gpr_rd_en       = (if_en)?  `GPR_READ  : `DISABLE;
             gpr_rd_addr_0   = if_insn[`B_TYPE_RS1];
             gpr_rd_addr_1   = if_insn[`B_TYPE_RS2];
             dst_addr        = `GPR_ADDR_WIDTH'b0;
             imm             = {{20{if_insn[`B_TYPE_IMM_12]}}, if_insn[`B_TYPE_IMM_11], if_insn[`B_TYPE_IMM_10_5], if_insn[`B_TYPE_IMM_4_1], 1'b0 };
         end
         `OP_STORE: begin
-            gpr_we_         = `DIS_WRITE;
-            gpr_rd_en       = (if_en)?  `READ  : `DISABLE;
+            gpr_we_n        = `DIS_GPR_WRITE;
+            gpr_rd_en       = (if_en)?  `GPR_READ  : `DISABLE;
             gpr_rd_addr_0   = if_insn[`S_TYPE_RS1];
             gpr_rd_addr_1   = if_insn[`S_TYPE_RS2];
             dst_addr        = `GPR_ADDR_WIDTH'b0;
             imm             = {{20{if_insn[`S_TYPE_IMM_11]}}, if_insn[`S_TYPE_IMM_11_5], if_insn[`S_TYPE_IMM_4_0]};
         end
         `OP_SYSTEM: begin
-            gpr_we_         = ((if_insn[`I_TYPE_FUNCT3] != 3'b000) && if_en) ? `WRITE : `DIS_WRITE;
-            gpr_rd_en       = ((if_insn[`I_TYPE_FUNCT3] != 3'b000) && if_en)?  `READ  : `DISABLE;
+            gpr_we_n        = ((if_insn[`I_TYPE_FUNCT3] != 3'b000) && if_en) ? `GPR_WRITE : `DIS_GPR_WRITE;
+            gpr_rd_en       = ((if_insn[`I_TYPE_FUNCT3] != 3'b000) && if_en)?  `GPR_READ  : `DISABLE;
             gpr_rd_addr_0   = (if_insn[`I_TYPE_FUNCT3] != 3'b000)? if_insn[`I_TYPE_RS1] : `GPR_ADDR_WIDTH'b0;
             gpr_rd_addr_1   = `GPR_ADDR_WIDTH'b0;
             dst_addr        = (if_insn[`I_TYPE_FUNCT3] != 3'b000)? if_insn[`I_TYPE_RD] : `GPR_ADDR_WIDTH'b0;
             imm             = (if_insn[`I_TYPE_FUNCT3] != 3'b000)? {{20{if_insn[`INSN_MSB]}}, if_insn[`I_TYPE_IMM]} : `WORD_WIDTH'b0;
         end
         default: begin
-            gpr_we_         = `DIS_WRITE;
+            gpr_we_n        = `DIS_GPR_WRITE;
             gpr_rd_en       = `DISABLE;
             gpr_rd_addr_0   = `GPR_ADDR_WIDTH'b0;
             gpr_rd_addr_1   = `GPR_ADDR_WIDTH'b0;
@@ -397,7 +397,7 @@ assign store_data = (opcode != `OP_STORE)?                      `WORD_WIDTH'b0  
 
 // load hazard, forwarding
 
-assign rs1_data =   (gpr_rd_addr_0 == `GPR_ADDR_WIDTH'b0                        )?  `WORD_WIDTH'b0      :   // read x0 register in gpr
+assign rs1_data =   (gpr_rd_addr_0 == `GPR_ADDR_WIDTH'b0                        )?  `WORD_WIDTH'b0      :   // resd x0 register in gpr
                     (alu2gpr_in_id_ex && (id_dst_addr == gpr_rd_addr_0)         )?  alu_out             :   // forwarding from alu
                     (alu2gpr_in_ex_mem && (ex_dst_addr == gpr_rd_addr_0)        )?  ex_alu_out          :   // forwarding from ex_alu
                     (load_after_storing_en && (id_dst_addr == gpr_rd_addr_0)    )?  ex_store_data       :   // forwarding from mem_store_data
@@ -421,12 +421,12 @@ assign rs2_data_valid = (  gpr_rd_addr_1 == `GPR_ADDR_WIDTH'b0                  
 
 // The load_op in id-ex takes 2 cycles before spm_rd_data load to gpr
 // if-reg stall, id-reg flush(otherwise error gpr data to id_reg)
-assign load_hazard_in_id_ex =  if_en && (gpr_rd_en == `READ) && load_in_id_ex && !load_after_storing_en && // not store in mem-stage
+assign load_hazard_in_id_ex =  if_en && (gpr_rd_en == `GPR_READ) && load_in_id_ex && !load_after_storing_en && // not store in mem-stage
                                ((id_dst_addr == gpr_rd_addr_0) || (id_dst_addr == gpr_rd_addr_1));
 
 // The load_op in ex-id takes 1 cycles before spm_rd_data load to gpr
 // if-reg stall, id-reg flush(otherwise error gpr data to id_reg)
-assign load_hazard_in_ex_mem =  if_en && (gpr_rd_en == `READ) && load_in_ex_mem && !loading_after_store_en && //(store -> load ->  ...    ->  read gpr)
+assign load_hazard_in_ex_mem =  if_en && (gpr_rd_en == `GPR_READ) && load_in_ex_mem && !loading_after_store_en && //(store -> load ->  ...    ->  read gpr)
                                 ((ex_dst_addr == gpr_rd_addr_0) || (ex_dst_addr == gpr_rd_addr_1));
 
 
