@@ -9,7 +9,7 @@
 module gpr(
     input wire                                      clk,
     input wire                                      rst_n,
-    input wire                                      we_,    //we_ = 0, WRITE
+    input wire                                      we_n,    //we_n = 0, GPR_WRITE
     input wire  [`GPR_ADDR_WIDTH - 1 : 0]           wr_addr,
     input wire  [`WORD_WIDTH - 1:0]                 wr_data,
     input wire  [`GPR_ADDR_WIDTH - 1 : 0]           rd_addr_0,
@@ -23,8 +23,8 @@ module gpr(
 reg [`WORD_WIDTH - 1 : 0] gpr [0 : `DATA_HIGH_GPR - 1];
 integer i;
 
-assign rd_data_0 = ((we_ == `WRITE) && (wr_addr == rd_addr_0))? wr_data : gpr[rd_addr_0];
-assign rd_data_1 = ((we_ == `WRITE) && (wr_addr == rd_addr_1))? wr_data : gpr[rd_addr_1];
+assign rd_data_0 = ((we_n == `GPR_WRITE) && (wr_addr == rd_addr_0))? wr_data : gpr[rd_addr_0];
+assign rd_data_1 = ((we_n == `GPR_WRITE) && (wr_addr == rd_addr_1))? wr_data : gpr[rd_addr_1];
 assign gpr_x1    = gpr[1];
 
 always @(posedge clk or negedge rst_n) begin
@@ -32,7 +32,7 @@ always @(posedge clk or negedge rst_n) begin
         for (i = 0; i < `DATA_HIGH_GPR; i = i + 1) begin
             gpr[i] <= `WORD_WIDTH'b0;
         end
-    end else if (we_ == `WRITE) begin
+    end else if (we_n == `GPR_WRITE) begin
 		    gpr[wr_addr] <= wr_data;
     end
 end

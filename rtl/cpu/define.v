@@ -17,9 +17,9 @@
 `define BYTE_OFFSET_LOC     1 : 0 // the low 2 bits as a byte shift
 `define BYTE_OFFSET_WORD    2'b00 // to judge "miss_align"
 
-`define READ                1'b1
-`define WRITE               1'b0
-`define DIS_WRITE           1'b1
+`define GPR_READ            1'b1
+`define GPR_WRITE           1'b0
+`define DIS_GPR_WRITE       1'b1
 `define DISABLE             1'b0
 `define ENABLE              1'b1
 
@@ -300,8 +300,46 @@
 `define MCAUSE_STORE_PAGE_FAULT                 31'd15
 `define MCAUSE_ALU_OVERFLOW                     31'd16 // defined by myself
 
+// AHB define
+//HTRANS[1:0]
+`define HTRANS_IDLE 2'b00
+`define HTRANS_BUSY 2'b01
+`define HTRANS_NONSEQ 2'b10
+`define HTRANS_SEQ 2'b11
+//HBURST[2:0]
+`define HBRUST_SINGLE 3'b000
+`define HBRUST_INCR 3'b001
+`define HBRUST_WRAP4 3'b010
+`define HBRUST_INCR4 3'b011
+`define HBRUST_WRAP8 3'b100
+`define HBRUST_INCR8 3'b101
+`define HBRUST_WRAP16 3'b110
+`define HBRUST_INCR16 3'b111
+//HRESP[1:0]
+`define HRESP_OKAY 2'b00
+`define HRESP_ERROR 2'b01
+`define HRESP_RETRY 2'b10
+`define HRESP_SPLIT 2'b11
+//HSIZE[2:0]
+`define HSIZE_8    3'b000
+`define HSIZE_16   3'b001
+`define HSIZE_32   3'b010
+`define HSIZE_64   3'b011
+`define HSIZE_128  3'b100
+`define HSIZE_256  3'b101
+`define HSIZE_512  3'b110
+`define HSIZE_1024 3'b111
+//HWRITE
+`define HWRITE_WRITE    1'b1
+`define HWRITE_READ     1'b0
+
 // config by myself
 `define MTVEC_RESET_BASE        30'hff      //'d255 = 'b11111111; disk_addr = pc[:2] = 'b11111111; pc = 'b1111111100; pc[:2] = BASE[XLEN-1:2] = 'b11111111
 `define MTVEC_RESET_MODE        2'b0        //DIRECT: All exceptions set pc to BASE
+
+// bus addr
+`define SPM_ADDR_HIGH_LOCA  31:14
+`define SPM_ADDR_LOCA       13:2
+`define SPM_ADDR_HIGH       18'b1001_0000_0000_0000_00  // spm: 0x9000_0000 ~ 0x9000_3fff
 
 `endif

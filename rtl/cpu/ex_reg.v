@@ -15,7 +15,7 @@ module ex_reg (
     input wire [`WORD_WIDTH - 1 : 0]            id_insn,
     input wire                                  id_en,
     // to gpr
-    input wire                                  id_gpr_we_,
+    input wire                                  id_gpr_we_n,
     input wire [`GPR_ADDR_WIDTH - 1 : 0]        id_dst_addr,
     //csr to gpr
     input wire [`WORD_WIDTH - 1 : 0]            id_csr_to_gpr_data,
@@ -35,7 +35,7 @@ module ex_reg (
     output reg [`PC_WIDTH - 1 : 0]              ex_pc,
     output reg [`WORD_WIDTH - 1 : 0]            ex_insn,
     output reg                                  ex_en,
-    output reg                                  ex_gpr_we_,
+    output reg                                  ex_gpr_we_n,
     output reg [`GPR_ADDR_WIDTH - 1 : 0]        ex_dst_addr,
     output reg [`WORD_WIDTH - 1 : 0]            ex_csr_to_gpr_data,
     output reg [`WORD_WIDTH - 1 : 0]            ex_alu_out,
@@ -51,15 +51,15 @@ module ex_reg (
     output wire                                 alu2gpr_in_ex_mem
 );
 
-assign load_in_ex_mem           = (ex_insn[`ALL_TYPE_OPCODE] == `OP_LOAD) && ex_en && (ex_gpr_we_ == `WRITE);
-assign alu2gpr_in_ex_mem        = (ex_insn[`ALL_TYPE_OPCODE] != `OP_LOAD) && ex_en && (ex_gpr_we_ == `WRITE);
+assign load_in_ex_mem           = (ex_insn[`ALL_TYPE_OPCODE] == `OP_LOAD) && ex_en && (ex_gpr_we_n == `GPR_WRITE);
+assign alu2gpr_in_ex_mem        = (ex_insn[`ALL_TYPE_OPCODE] != `OP_LOAD) && ex_en && (ex_gpr_we_n == `GPR_WRITE);
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         ex_pc               <= `PC_WIDTH'b0;
         ex_insn             <= `WORD_WIDTH'b0;
         ex_en               <= 1'b0;
-        ex_gpr_we_          <= 1'b0;
+        ex_gpr_we_n         <= `DIS_GPR_WRITE;
         ex_dst_addr         <= `GPR_ADDR_WIDTH'b0;
         ex_csr_to_gpr_data  <= `WORD_WIDTH'b0;
         ex_alu_out          <= `DATA_WIDTH_ALU_OP'b0;
@@ -74,7 +74,7 @@ always @(posedge clk or negedge rst_n) begin
             ex_pc               <= `PC_WIDTH'b0;
             ex_insn             <= `WORD_WIDTH'b0;
             ex_en               <= 1'b0;
-            ex_gpr_we_          <= 1'b0;
+            ex_gpr_we_n         <= `DIS_GPR_WRITE;
             ex_dst_addr         <= `GPR_ADDR_WIDTH'b0;
             ex_csr_to_gpr_data  <= `WORD_WIDTH'b0;
             ex_alu_out          <= `DATA_WIDTH_ALU_OP'b0;
@@ -88,7 +88,7 @@ always @(posedge clk or negedge rst_n) begin
             ex_pc               <= id_pc;
             ex_insn             <= id_insn;
             ex_en               <= id_en;
-            ex_gpr_we_          <= id_gpr_we_;
+            ex_gpr_we_n         <= id_gpr_we_n;
             ex_dst_addr         <= id_dst_addr;
             ex_csr_to_gpr_data  <= id_csr_to_gpr_data;
             ex_alu_out          <= alu_out;

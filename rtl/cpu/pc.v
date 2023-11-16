@@ -20,7 +20,7 @@ module pc (
     input wire [`WORD_WIDTH - 1 : 0]        predt_gpr_rd_data,
     input wire [`WORD_WIDTH - 1 : 0]        gpr_x1,         // from gpr
     // ra hazard
-    input wire                              gpr_we_,
+    input wire                              gpr_we_n,
     input wire                              load_in_id_ex,
     input wire                              load_in_ex_mem,
     input wire                              alu2gpr_in_id_ex,
@@ -55,7 +55,7 @@ assign local_gpr_x1 =   (alu2gpr_in_id_ex && (id_dst_addr == `GPR_ADDR_WIDTH'd1)
                         (load_in_ex_mem && (ex_dst_addr == `GPR_ADDR_WIDTH'd1) && loading_after_store_en )? prev_ex_store_data  :   // forwarding from wb_stroe_data
                                                                                                             gpr_x1;
 
-assign local_gpr_x1_valid = !((gpr_we_ == `WRITE) && (dst_addr == `GPR_ADDR_WIDTH'd1)                           ) &&
+assign local_gpr_x1_valid = !((gpr_we_n == `GPR_WRITE) && (dst_addr == `GPR_ADDR_WIDTH'd1)                      ) &&
                             !(load_in_id_ex && (id_dst_addr == `GPR_ADDR_WIDTH'd1) && !load_after_storing_en    ) &&
                             !(load_in_ex_mem && (ex_dst_addr == `GPR_ADDR_WIDTH'd1) && loading_after_store_en   );
 
@@ -65,7 +65,7 @@ assign local_predt_gpr_rd_data =    (alu2gpr_in_id_ex && (id_dst_addr == predt_g
                                     (load_in_ex_mem && (ex_dst_addr == predt_gpr_rd_addr) && loading_after_store_en )?  prev_ex_store_data  :   // forwarding from wb_stroe_data
                                                                                                                         predt_gpr_rd_data   ;
 
-assign local_predt_gpr_rd_data_valid =  !((gpr_we_ == `WRITE) && (dst_addr == predt_gpr_rd_addr)                           ) &&
+assign local_predt_gpr_rd_data_valid =  !((gpr_we_n == `GPR_WRITE) && (dst_addr == predt_gpr_rd_addr)                      ) &&
                                         !(load_in_id_ex && (id_dst_addr == predt_gpr_rd_addr) && !load_after_storing_en    ) &&
                                         !(load_in_ex_mem && (ex_dst_addr == predt_gpr_rd_addr) && loading_after_store_en   );
 
