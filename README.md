@@ -1,4 +1,8 @@
 # siiCpu
+
+## 1. Design Specifications
+
+
 Here is an introduction to siiCpu
 
 - The CPU supports the complete rv32i instruction set, which can execute basic arithmetic, logic, shift, branch, jump, and other instructions.
@@ -15,11 +19,15 @@ Here is an introduction to siiCpu
 
 - The CPU uses simple static branch prediction. For conditional branch instructions, the immediate number in the instruction is used to determine whether to jump. If the jump address is after the instruction, the jump occurs. For unconditional jump instructions, it is predicted that they always jump. Since the `jr ra` instruction is a function return instruction and occurs frequently, an interface is directly designed to read the `ra` register in the general-purpose register.
 
-- The CPU adopts the Harvard architecture, and the instruction and data storage are separated and accessed by ITCM and DTCM, respectively. Single-cycle reading improves memory access efficiency.
+- The CPU adopts the Harvard architecture, and the instruction and data storage are separated and accessed by itcm and spm, respectively. Single-cycle reading improves memory access efficiency.
 
-- The data width of ITCM and DTCM is 32 bits, and one word of data can be read or written at a time. The capacity of ITCM and DTCM can be configured as needed.
+- The data width of itcm and spm is 32 bits, and one word of data can be read or written at a time. The capacity of itcm and spm can be configured as needed.
 
-## 1. General Purpose Registers
+- At the memory access module can access the bus and decide whether to access the spm or the bus by address decoding, where the bus satisfies the AHB-lite protocol.
+
+![Alt text](image.png)
+
+### 1.1 General Purpose Registers
 
 |reg|ABI name| description |Saver|
 |---|---|---|---|
@@ -37,7 +45,7 @@ Here is an introduction to siiCpu
 |x18-x27 | s2-s11 | Registers to save|Callee
 |x28-x31 | t3-t6 | Temporary registers|Caller
 
-## 2. Contral and State Registers
+### 1.2 Contral and State Registers
 
 |reg|address| read and write |
 |---|---|---|
@@ -50,7 +58,7 @@ Here is an introduction to siiCpu
 | mtval |0x343  |RW	|
 | mip |0x344| RW |
 
-## 3. Bus address space
+### 1.3 Bus Address Space
 |element|address|description|
 |---|---|---|
 |spm|0x9000_0000 ~ 0x9000_3fff|Data memory|
@@ -59,7 +67,7 @@ Here is an introduction to siiCpu
 |clint|0x0200_0000 ~ 0x0200_ffff|Core local interrupt controller|
 |uart0|0x1001_3000 ~ 0x1001_3fff|uart|
 
-## 4. Instructions
+### 1.4 Instructions
 
 1. Integer arithmetic instruction
 ``` arm
@@ -122,3 +130,33 @@ ecall
 ebreak
 mret
 ```
+
+## 2. Pipeline Processing
+
+Because of the existence of the pipeline, the internal general purpose register is accessed in the decoding stage, and the write back is performed in the fifth stage, which will inevitably lead to data hazard. 
+
+At the same time, the jump instruction can only be determined in the decoding stage. In the instruction fetch, the static branch prediction is used. If the prediction error is found in the decoding stage, there will be a control hazard, that is, an instruction that should not be executed after the jump instruction needs to be flushed. 
+
+Also, when accessing the bus, the slave device will ask to wait, the memory data cannot be read out, and the pipeline needs to be paused.
+
+### 2.1 Interrupt Exception
+
+- When an interrupt occurs, the mip in the csr register is pulled high, and the processor detects the interrupt and executes a jump. At this point, the instruction to mem has been executed, and the instruction to mem may be executed (memory access instruction) or not (write back register instruction). After the exception program completes, jump back to the first instruction that was flushed.
+
+![Alt text](image-2.png)
+
+- When an exception occurs, it is usually an exception instruction found in the decoding phase, or an ecall or ebreak instruction is presented, and the next instruction is flushed. When the exception instruction is executed in the mem phase, it jumps to the exception handler and flushes the entire pipeline. The mepc in the csr register saves the exception instruction, and the instruction +4 will be operated by the software.
+
+![Alt text](image-3.png)
+
+### 2.2 Branch Jump
+
+If the prediction is correct, the pipeline will execute correctly. If the prediction is wrong, an extra instruction will be fetched to flush the pipeline and execute the correct br_pc.
+
+![Alt text](image-1.png)
+
+### 2.3 AHB wait
+
+This cpu supports bus accesses that may need to wait, so in the write back phase it is necessary to determine whether the memory data read in the load instruction has already been read out, and if so, pause the pipeline.
+
+![Alt text](image-4.png)

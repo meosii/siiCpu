@@ -94,6 +94,9 @@ wire [`DATA_WIDTH_ISA_EXP - 1 : 0]      id_exp_code;
 wire                                    id_ebreak_en;
 wire                                    id_ecall_en;
 //gpr
+wire                                    wb_gpr_we_n;
+wire [`GPR_ADDR_WIDTH - 1 :0]           wb_gpr_wr_addr;
+wire [`WORD_WIDTH - 1 : 0]              wb_gpr_wr_data;
 wire [`GPR_ADDR_WIDTH - 1 : 0]          gpr_rd_addr_0;
 wire [`GPR_ADDR_WIDTH - 1 : 0]          gpr_rd_addr_1;
 wire [`WORD_WIDTH - 1 : 0]              gpr_rd_data_0;
@@ -147,7 +150,6 @@ wire [`WORD_WIDTH - 1 : 0]              mem_csr_to_gpr_data;
 wire [`DATA_WIDTH_ISA_EXP - 1 : 0]      mem_exp_code;
 wire                                    mem_ebreak_en;
 wire                                    mem_ecall_en;
-//wire [`WORD_WIDTH - 1 : 0]              mem_load_data;
 // cpu ctrl
 wire                                    mret_en;
 wire                                    load_hazard_in_id_ex;
@@ -388,45 +390,15 @@ id_reg u_id_reg(
     .alu2gpr_in_id_ex       (alu2gpr_in_id_ex       )
 );
 
-wire [`GPR_ADDR_WIDTH - 1 : 0] gpr_rd_addr_1_in;
-assign gpr_rd_addr_1_in = ((gpr_rd_addr_1 == `GPR_ADDR_WIDTH'b0) && predt_gpr_rd_en)? predt_gpr_rd_addr : gpr_rd_addr_1;
-wire                            gpr_we_n_in;
-wire [`GPR_ADDR_WIDTH - 1 :0]   gpr_wr_addr_in;
-wire [`WORD_WIDTH - 1 : 0]      gpr_wr_data_in;
+wire [`GPR_ADDR_WIDTH - 1 : 0]   gpr_rd_addr_1_in;
+assign gpr_rd_addr_1_in = ((gpr_rd_addr_1 == `GPR_ADDR_WIDTH'b0) && predt_gpr_rd_en)? predt_gpr_rd_addr : gpr_rd_addr_1;								 
 
-reg                             wb_gpr_we_n;
-reg [`GPR_ADDR_WIDTH - 1 : 0]   wb_dst_addr;
-
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        wb_gpr_we_n <= 1'b1;
-        wb_dst_addr <= `GPR_ADDR_WIDTH'b0;
-    end else if (!ahb_bus_wait) begin
-        wb_gpr_we_n <= mem_gpr_we_n;
-        wb_dst_addr <= mem_dst_addr;
-    end
-end
-
-assign gpr_we_n_in      =   (   !mem_bus_ahb_enable                                                             // 1. Do not read bus
-                            || (mem_bus_ahb_enable && trans_end_en && !ahb_bus_wait)                            // 2. Read the bus in a single cycle
-                            || loading_after_store_en_r1                            )?  mem_gpr_we_n :          // 3. loading_after_store
-                                                                                        !(trans_end_en && !wb_gpr_we_n);  // Reading the bus and requiring multiple cycles of wait
-
-assign gpr_wr_addr_in   =   (   !mem_bus_ahb_enable
-                            || (mem_bus_ahb_enable && trans_end_en && !ahb_bus_wait)
-                            || loading_after_store_en_r1                            )?  mem_dst_addr :
-                                                                                        wb_dst_addr;
-                                                                                        
-assign gpr_wr_data_in   =   (!mem_bus_ahb_enable && (mem_insn[`ALL_TYPE_OPCODE] == `OP_LOAD))? load_data : 
-                            (!mem_bus_ahb_enable && (mem_insn[`ALL_TYPE_OPCODE] == `OP_SYSTEM))? mem_csr_to_gpr_data : 
-                            (!mem_bus_ahb_enable)? mem_alu_out : load_data;
-									 
 gpr u_gpr(
     .clk                    (clk                    ),
     .rst_n                  (rst_n                  ),
-    .we_n                   (gpr_we_n_in            ),
-    .wr_addr                (gpr_wr_addr_in         ),
-    .wr_data                (gpr_wr_data_in         ),
+    .we_n                   (wb_gpr_we_n            ),
+    .wr_addr                (wb_gpr_wr_addr         ),
+    .wr_data                (wb_gpr_wr_data         ),
     .rd_addr_0              (gpr_rd_addr_0          ),
     .rd_addr_1              (gpr_rd_addr_1_in       ),
     .rd_data_0              (gpr_rd_data_0          ),
@@ -588,6 +560,28 @@ ip_spm u_ip_spm(
 	.wraddress              (spm_wraddress[`SPM_ADDR_LOCA]  ),
 	.wren                   (spm_wren                       ),
 	.q                      (spm_rd_data                    )
+);
+
+wb u_wb (
+    .clk                        (clk                       ),
+    .rst_n                      (rst_n                     ),
+    .gpr_rd_addr_1              (gpr_rd_addr_1             ),
+    .predt_gpr_rd_en            (predt_gpr_rd_en           ),
+    .predt_gpr_rd_addr          (predt_gpr_rd_addr         ),
+    .mem_gpr_we_n               (mem_gpr_we_n              ),
+    .mem_dst_addr               (mem_dst_addr              ),
+    .mem_bus_ahb_enable         (mem_bus_ahb_enable        ),
+    .trans_end_en               (trans_end_en              ),
+    .ahb_bus_wait               (ahb_bus_wait              ),
+    .loading_after_store_en_r1  (loading_after_store_en_r1 ),
+    .mem_insn                   (mem_insn                  ),
+    .load_data                  (load_data                 ),
+    .mem_csr_to_gpr_data        (mem_csr_to_gpr_data       ),
+    .mem_alu_out                (mem_alu_out               ),
+    // outputs                            
+    .wb_gpr_we_n                (wb_gpr_we_n               ),
+    .wb_gpr_wr_addr             (wb_gpr_wr_addr            ),
+    .wb_gpr_wr_data             (wb_gpr_wr_data            ) 
 );
 
 cpu_ctrl u_cpu_ctrl(
