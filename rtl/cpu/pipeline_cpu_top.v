@@ -201,7 +201,6 @@ pc u_pc(
     // from cpu_ctrl
     .ctrl_pc                (ctrl_pc                ),
     .trap_happened          (trap_happened          ),
-    .mret_en                (mret_en                ),
     .insn                   (insn                   ),
     // from gpr
     .gpr_rd_addr_1          (gpr_rd_addr_1          ),
@@ -226,6 +225,7 @@ pc u_pc(
     .predt_gpr_rd_en        (predt_gpr_rd_en        ),
     .predt_gpr_rd_addr      (predt_gpr_rd_addr      ),
     .predt_br_taken         (predt_br_taken         ),
+    .mret_en                (mret_en                ),
     .pc                     (pc                     )
 );
 
@@ -270,7 +270,6 @@ decoder u_decoder(
     .csr_w_data             (csr_w_data             ),
     .ebreak_en              (ebreak_en              ),
     .ecall_en               (ecall_en               ),
-    .mret_en                (mret_en                ),
     // in
     .csr_rd_data            (csr_rd_data            ),
     // outputs
@@ -600,7 +599,7 @@ cpu_ctrl u_cpu_ctrl(
     // ecall, ebreak, mret
     .ebreak_en              (ebreak_en              ),
     .ecall_en               (ecall_en               ),
-    .mret_en                (mret_en                ),
+    .mret_en                (mret_en                ),  // from pc (prediction)
     .mem_ebreak_en          (mem_ebreak_en          ),
     .mem_ecall_en           (mem_ecall_en           ),
     // from csrs

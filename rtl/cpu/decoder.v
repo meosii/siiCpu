@@ -28,7 +28,6 @@ module decoder (
     // to cpu ctrl
     output wire                                 ebreak_en,
     output wire                                 ecall_en,
-    output wire                                 mret_en,
     //from csr
     input wire [`WORD_WIDTH - 1 : 0]            csr_rd_data,
     //to alu
@@ -302,10 +301,9 @@ assign alu_op = (!if_en)? `ALU_OP_NOP :
                 ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == 7'b0100000) && (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_SRA)             )? `ALU_OP_SRA      :
                 ((opcode == `OP_JAL) || (opcode == `OP_JALR) || (opcode == `OP_LOAD) || (opcode == `OP_STORE)                       )? `ALU_OP_ADD      : `ALU_OP_NOP;
 
-// ebreak ecall and mret
+// ebreak ecall
 assign ebreak_en = ((if_en) && (if_insn == `EBREAK_INSN))?  `ENABLE : `DISABLE;
 assign ecall_en  = ((if_en) && (if_insn == `ECALL_INSN) )?  `ENABLE : `DISABLE;
-assign mret_en   = ((if_en) && (if_insn == `MRET_INSN)  )?  `ENABLE : `DISABLE;
 
 assign exp_code = (!if_en)? `ISA_EXP_NO_EXP :
                 (((opcode == `OP_IMM) && ((if_insn[`I_TYPE_FUNCT3] == `FUNCT3_ADDI    ) ||
