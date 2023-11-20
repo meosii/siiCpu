@@ -139,15 +139,15 @@ parameter TIME_CLK = 10;
 
 always #(TIME_CLK/2) clk = ~clk;
 
-reg [31:0] disk [0:1023];
+reg [31:0] itcm [0:1023];
 
 initial begin
-    $readmemh("disk.hex", disk);
+    $readmemh("itcm.hex", itcm);
 end
 
 always @(*) begin
     if (rd_insn_en) begin
-        insn = disk[pc[11:2]];
+        insn = itcm[pc[11:2]];
     end else begin
         insn = 0;
     end
@@ -165,7 +165,7 @@ initial begin
     #22 begin
         rst_n = 1;
     end
-    // after disk has insn
+    // after itcm has insn
     #20 begin
        cpu_en = 1; 
     end
