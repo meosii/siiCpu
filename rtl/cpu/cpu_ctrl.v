@@ -5,6 +5,7 @@
 module cpu_ctrl (
     input wire                                  clk,
     input wire                                  rst_n,
+    input wire [`PC_WIDTH - 1 : 0]              id_pc,
     input wire [`PC_WIDTH - 1 : 0]              mem_pc,
     // hazard from decoder
     input wire                                  load_hazard_in_id_ex,
@@ -64,7 +65,7 @@ wire    exp_in_decoder;
 wire    exp_in_alu;
 wire    exp_in_mem_ctrl;
 
-assign  exp_in_decoder  =       ebreak_en || ecall_en || mret_en || (exp_code == `ISA_EXP_UNDEF_INSN);
+assign  exp_in_decoder  =       ebreak_en || ecall_en || (exp_code == `ISA_EXP_UNDEF_INSN);
 assign  exp_in_alu      =       1'b0; //resevered
 assign  exp_in_mem_ctrl =       (ex_exp_code_mem_ctrl   == `ISA_EXP_LOAD_MISALIGNED )   ||
                                 (ex_exp_code_mem_ctrl   == `ISA_EXP_STORE_MISALIGNED);
@@ -73,18 +74,20 @@ assign  exp_in_mem_ctrl =       (ex_exp_code_mem_ctrl   == `ISA_EXP_LOAD_MISALIG
 wire        external_int_en;
 wire        timer_int_en;
 wire        software_int_en;
+wire        interrupt_en;
+wire        exception_mem_en;
 wire        mcause_set_cause_interrupt;
 wire [30:0] mcause_set_cause_expcode;
 
 assign external_int_en  = csr_mstatus_mie && (csr_mie_meie && csr_mip_meip);
 assign timer_int_en     = csr_mstatus_mie && (csr_mie_mtie && csr_mip_mtip);
 assign software_int_en  = csr_mstatus_mie && (csr_mie_msie && csr_mip_msip);
+assign interrupt_en = external_int_en || timer_int_en|| software_int_en;
+assign exception_mem_en = (mem_exp_code != `ISA_EXP_NO_EXP) || mem_ecall_en || mem_ebreak_en;
+assign trap_happened =  exception_mem_en || interrupt_en;
 
-assign trap_happened =  (mem_exp_code != `ISA_EXP_NO_EXP) || mem_ecall_en || mem_ebreak_en ||
-                        external_int_en || timer_int_en|| software_int_en;
-
-assign mcause_set_cause_interrupt = (external_int_en || timer_int_en|| software_int_en)? `MCAUSE_INTERRUPT :
-                                    ((mem_exp_code != `ISA_EXP_NO_EXP) || mem_ecall_en || mem_ebreak_en)? `MCAUSE_EXCEPTION : 1'b0;
+assign mcause_set_cause_interrupt = (interrupt_en)? `MCAUSE_INTERRUPT :
+                                    (exception_mem_en)? `MCAUSE_EXCEPTION : 1'b0;
 
 assign mcause_set_cause_expcode =   (external_int_en)?                              `MCAUSE_MACHINE_EXTERNAL_INT        :
                                     (timer_int_en)?                                 `MCAUSE_MACHINE_TIMER_INT           :
@@ -101,7 +104,7 @@ always @(*) begin
             mstatus_mie_clear_en    = `ENABLE;
             mstatus_mie_set_en      = `DISABLE;
             mepc_set_en             = `ENABLE;
-            mepc_set_pc             = (mcause_set_cause_interrupt)? mem_pc + 4 : mem_pc; // if exp is ecall, ebreak··· soft will change pc as (pc + 4)
+            mepc_set_pc             = (interrupt_en)? id_pc : mem_pc; // if exp is ecall, ebreak··· soft will change pc as (pc + 4)
             mcause_set_en           = `ENABLE;
             mcause_set_cause        = {mcause_set_cause_interrupt, mcause_set_cause_expcode};
             mtval_set_en            = `DISABLE; // reserved
@@ -140,17 +143,17 @@ assign mem_stall = ahb_bus_wait;
 
 assign if_flush =   contral_hazard  ||                                  // hazard in decoder
                     exp_in_decoder  || exp_in_alu || exp_in_mem_ctrl || // exception happened in each stage
-                    trap_happened   || mret_en;                         // pc jump after mem_stage
+                    trap_happened;                                      // pc jump after mem_stage
 
 assign id_flush =   load_hazard_in_id_ex || load_hazard_in_ex_mem ||    // hazard in decoder
                     exp_in_alu || exp_in_mem_ctrl ||                    // exception happened in each stage
-                    trap_happened || mret_en;                           // pc jump after mem_stage
+                    trap_happened;                                      // pc jump after mem_stage
 
 assign ex_flush =   exp_in_alu || exp_in_mem_ctrl ||                    // exception happened in each stage
                     trap_happened;                                      // pc jump after mem_stage
 
 assign mem_flush =  exp_in_mem_ctrl ||                                  // exception happened in each stage
-                    trap_happened;                                      // pc jump after mem_stage
+                    exception_mem_en;                                   // exception happened: pc jump after mem_stage
 
 endmodule
 `endif
