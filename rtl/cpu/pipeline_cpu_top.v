@@ -24,7 +24,11 @@ module pipeline_cpu_top (
     output wire [2 : 0]                 D_HBURST,
     output wire [1 : 0]                 D_HTRANS,
     output wire                         D_HMASTLOCK,
-    output wire [`WORD_WIDTH - 1 : 0]   D_HWDATA
+    output wire [`WORD_WIDTH - 1 : 0]   D_HWDATA,
+    // int clear
+    output wire                         external_int_clear,
+    output wire                         software_int_clear,
+    output wire                         timer_int_clear
 );
 
 assign rd_insn_en = (cpu_en)? 1'b1:1'b0;
@@ -49,15 +53,15 @@ wire [`DATA_WIDTH_ISA_EXP - 1 : 0]      exp_code;
 wire                                    ebreak_en;
 wire                                    ecall_en;
 
-wire									if_en;
-wire 								    id_en;
-wire 								    ex_en;
-wire									mem_en;
+wire                                    if_en;
+wire                                    id_en;
+wire                                    ex_en;
+wire                                    mem_en;
 
-wire									gpr_we_n;
-wire									id_gpr_we_n;
-wire									ex_gpr_we_n;
-wire									mem_gpr_we_n;
+wire                                    gpr_we_n;
+wire                                    id_gpr_we_n;
+wire                                    ex_gpr_we_n;
+wire                                    mem_gpr_we_n;
 // csr
 wire                                    csr_rd_en;
 wire [`CSR_ADDR_WIDTH - 1 : 0]          csr_rd_addr;
@@ -132,6 +136,7 @@ wire [`WORD_WIDTH - 1 : 0]              load_rd_data;
 //ahb
 wire                                    bus_ahb_enable;
 wire                                    trans_end_en;
+wire [`DATA_WIDTH_ISA_EXP - 1 : 0]      ahb_exp_code;
 // spm
 wire [3 : 0]                            spm_store_byteena;
 wire [`WORD_WIDTH - 1 : 0]              spm_write_data;
@@ -160,7 +165,9 @@ wire                                    ahb_bus_wait;
 wire                                    load_in_id_ex;
 wire                                    load_in_ex_mem;
 wire                                    alu2gpr_in_id_ex;
+wire                                    csr2gpr_in_id_ex;
 wire                                    alu2gpr_in_ex_mem;
+wire                                    csr2gpr_in_ex_mem;
 wire                                    load_after_storing_en;
 wire                                    loading_after_store_en_r1;
 //
@@ -169,7 +176,7 @@ wire                                    mstatus_mie_set_en;
 wire                                    mepc_set_en;
 wire [`PC_WIDTH - 1 :0]                 mepc_set_pc;
 wire                                    mcause_set_en;
-wire [`CSR_LOCA_MCAUSE_EXPCODE]         mcause_set_cause;
+wire [`WORD_WIDTH - 1 : 0]              mcause_set_cause;
 wire                                    mtval_set_en;
 wire [`WORD_WIDTH - 1 : 0]              mtval_set_tval;
 wire                                    pc_stall;
@@ -212,13 +219,17 @@ pc u_pc(
     .load_in_ex_mem         (load_in_ex_mem         ),
     .alu2gpr_in_id_ex       (alu2gpr_in_id_ex       ),
     .alu2gpr_in_ex_mem      (alu2gpr_in_ex_mem      ),
+    .csr2gpr_in_id_ex       (csr2gpr_in_id_ex       ),
+    .csr2gpr_in_ex_mem      (csr2gpr_in_ex_mem      ),
     .load_after_storing_en  (load_after_storing_en  ),
     .loading_after_store_en (loading_after_store_en ),
     .dst_addr               (dst_addr               ),
     .id_dst_addr            (id_dst_addr            ),
     .ex_dst_addr            (ex_dst_addr            ),
     .alu_out                (alu_out                ),
+    .id_csr_to_gpr_data     (id_csr_to_gpr_data     ),
     .ex_alu_out             (ex_alu_out             ),
+    .ex_csr_to_gpr_data     (ex_csr_to_gpr_data     ),
     .ex_store_data          (ex_store_data          ),
     .prev_ex_store_data     (prev_ex_store_data     ),
     // outputs
@@ -286,10 +297,12 @@ decoder u_decoder(
     // inputs
     // EX data
     .id_dst_addr            (id_dst_addr            ),
+    .id_csr_to_gpr_data     (id_csr_to_gpr_data     ),
     .alu_out                (alu_out                ),
     // MEM data
     .ex_dst_addr            (ex_dst_addr            ),
     .ex_alu_out             (ex_alu_out             ),
+    .ex_csr_to_gpr_data     (ex_csr_to_gpr_data     ),
     .load_after_storing_en  (load_after_storing_en  ),
     .loading_after_store_en (loading_after_store_en ),
     .ex_store_data          (ex_store_data          ),
@@ -298,7 +311,9 @@ decoder u_decoder(
     .load_in_id_ex          (load_in_id_ex          ),
     .load_in_ex_mem         (load_in_ex_mem         ),
     .alu2gpr_in_id_ex       (alu2gpr_in_id_ex       ),
+    .csr2gpr_in_id_ex       (csr2gpr_in_id_ex       ),
     .alu2gpr_in_ex_mem      (alu2gpr_in_ex_mem      ),
+    .csr2gpr_in_ex_mem      (csr2gpr_in_ex_mem      ),
     // outputs
     .exp_code               (exp_code               ),
     .load_hazard_in_id_ex   (load_hazard_in_id_ex   ),
@@ -386,7 +401,8 @@ id_reg u_id_reg(
     .id_ecall_en            (id_ecall_en            ),
     // outputs
     .load_in_id_ex          (load_in_id_ex          ),
-    .alu2gpr_in_id_ex       (alu2gpr_in_id_ex       )
+    .alu2gpr_in_id_ex       (alu2gpr_in_id_ex       ),
+    .csr2gpr_in_id_ex       (csr2gpr_in_id_ex       )
 );
 
 wire [`GPR_ADDR_WIDTH - 1 : 0]   gpr_rd_addr_1_in;
@@ -452,7 +468,8 @@ ex_reg u_ex_reg(
     .ex_ecall_en            (ex_ecall_en            ),
     //
     .load_in_ex_mem         (load_in_ex_mem         ),
-    .alu2gpr_in_ex_mem      (alu2gpr_in_ex_mem      )
+    .alu2gpr_in_ex_mem      (alu2gpr_in_ex_mem      ),
+    .csr2gpr_in_ex_mem      (csr2gpr_in_ex_mem      )
 );
 
 mem_ctrl u_mem_ctrl(
@@ -472,8 +489,9 @@ mem_ctrl u_mem_ctrl(
     .load_in_id_ex              (load_in_id_ex              ),
     .load_in_ex_mem             (load_in_ex_mem             ),
     .alu_out                    (alu_out                    ),
-    // from spm
+    // from ahb
     .load_rd_data               (load_rd_data               ), //mem to gpr (load_rd_data -> load_data)
+    .ahb_exp_code               (ahb_exp_code               ),
     // outputs
     .memory_addr                (memory_addr                ), // from alu_out to spm
     .load_data                  (load_data                  ), // to gpr
@@ -515,7 +533,8 @@ ahb_mem_ctrl u_ahb_mem_ctrl(
     .load_rd_data           (load_rd_data           ),
     .ahb_bus_wait           (ahb_bus_wait           ),
     .bus_ahb_enable         (bus_ahb_enable         ),
-    .trans_end_en           (trans_end_en           )
+    .trans_end_en           (trans_end_en           ),
+    .ahb_exp_code           (ahb_exp_code           )
 );
 
 mem_reg u_mem_reg (
@@ -586,6 +605,7 @@ wb u_wb (
 cpu_ctrl u_cpu_ctrl(
     .clk                    (clk                    ),
     .rst_n                  (rst_n                  ),
+    .id_pc                  (id_pc                  ),
     .mem_pc                 (mem_pc                 ),
     // inputs
     .load_hazard_in_id_ex   (load_hazard_in_id_ex   ),
@@ -636,7 +656,11 @@ cpu_ctrl u_cpu_ctrl(
     .if_flush               (if_flush               ),
     .id_flush               (id_flush               ),
     .ex_flush               (ex_flush               ),
-    .mem_flush              (mem_flush              )
+    .mem_flush              (mem_flush              ),
+    // int clear
+    .external_int_clear     (external_int_clear     ),
+    .software_int_clear     (software_int_clear     ),
+    .timer_int_clear        (timer_int_clear        )
 );
 
 endmodule

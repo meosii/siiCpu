@@ -25,7 +25,9 @@ Here is an introduction to siiCpu
 
 - At the memory access module can access the bus and decide whether to access the spm or the bus by address decoding, where the bus satisfies the AHB-lite protocol.
 
-![Alt text](image.png)
+- CLINT is used to generate software interrupts and timer interrupts. There is an `msip` register, which is triggered by software, and there is a 64-bit `mtime` timer, which is counted by a low-frequency clock and triggers the timer interrupt when its value is equal to the value in the `mtimecmp` register. All three registers can be read and written by the bus.
+
+![Alt text](image-5.png)
 
 ### 1.1 General Purpose Registers
 
@@ -66,6 +68,15 @@ Here is an introduction to siiCpu
 |plic|0x0c00_0000 ~ 0x0cff_ffff|Platform level interrupt controller|
 |clint|0x0200_0000 ~ 0x0200_ffff|Core local interrupt controller|
 |uart0|0x1001_3000 ~ 0x1001_3fff|uart|
+
+#### 1.3.1 clint memory mapped address
+|element|address|description|
+|---|---|---|
+|clint_mtime_high|0x0200_bfff|The high 32 bits of the timer|
+|clint_mtime_low|0x0200_bff8|The low 32 bits of the timer|
+|clint_mtimecmp_high|0x0200_4004|Config register comparison values|
+|clint_mtimecmp_low|0x0200_4000|Config register comparison values|
+|clint_msip|0x0200_0000|software interrupt|
 
 ### 1.4 Instructions
 

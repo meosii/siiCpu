@@ -52,11 +52,13 @@ module id_reg (
     output reg                                  id_ebreak_en,
     output reg                                  id_ecall_en,
     output wire                                 load_in_id_ex,
-    output wire                                 alu2gpr_in_id_ex
+    output wire                                 alu2gpr_in_id_ex,
+    output wire                                 csr2gpr_in_id_ex
 );
 
-assign load_in_id_ex = (id_insn[`ALL_TYPE_OPCODE] == `OP_LOAD) && id_en && (id_gpr_we_n == `GPR_WRITE);
-assign alu2gpr_in_id_ex  = (id_insn[`ALL_TYPE_OPCODE] != `OP_LOAD) && id_en && (id_gpr_we_n == `GPR_WRITE);
+assign load_in_id_ex        = (id_insn[`ALL_TYPE_OPCODE] == `OP_LOAD) && id_en && (id_gpr_we_n == `GPR_WRITE);
+assign alu2gpr_in_id_ex     = (id_insn[`ALL_TYPE_OPCODE] != `OP_LOAD) && (id_insn[`ALL_TYPE_OPCODE] != `OP_SYSTEM) && id_en && (id_gpr_we_n == `GPR_WRITE);
+assign csr2gpr_in_id_ex     = (id_insn[`ALL_TYPE_OPCODE] != `OP_LOAD) && id_en && (id_gpr_we_n == `GPR_WRITE) && (id_insn[`ALL_TYPE_OPCODE] == `OP_SYSTEM);
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
