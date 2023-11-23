@@ -1,10 +1,10 @@
 
-trap_handler.elf:     file format elf32-littleriscv
+trap_entry.elf:     file format elf32-littleriscv
 
 
 Disassembly of section .text:
 
-80000000 <trap_entry>:
+80000000 <_start>:
 80000000:	f8010113          	addi	sp,sp,-128
 80000004:	00112223          	sw	ra,4(sp)
 80000008:	00212423          	sw	sp,8(sp)
@@ -47,7 +47,7 @@ Disassembly of section .text:
 80000094:	0100006f          	j	800000a4 <asynchronous_return>
 
 80000098 <handle_synchronous>:
-80000098:	094000ef          	jal	ra,8000012c <exception_handler>
+80000098:	114000ef          	jal	ra,800001ac <exception_handler>
 8000009c:	00458593          	addi	a1,a1,4
 800000a0:	34159073          	csrw	mepc,a1
 
@@ -87,7 +87,49 @@ Disassembly of section .text:
 80000124:	30200073          	mret
 
 80000128 <interrupt_handler>:
-80000128:	0000006f          	j	80000128 <interrupt_handler>
+80000128:	00000913          	li	s2,0
+8000012c:	020009b7          	lui	s3,0x2000
+80000130:	00098993          	mv	s3,s3
+80000134:	0129a023          	sw	s2,0(s3) # 2000000 <_start-0x7e000000>
+80000138:	00000693          	li	a3,0
+8000013c:	0200b5b7          	lui	a1,0x200b
+80000140:	7ff58593          	addi	a1,a1,2047 # 200b7ff <_start-0x7dff4801>
+80000144:	7ff58593          	addi	a1,a1,2047
+80000148:	00158593          	addi	a1,a1,1
+8000014c:	00d5a023          	sw	a3,0(a1)
+80000150:	00000713          	li	a4,0
+80000154:	0200b5b7          	lui	a1,0x200b
+80000158:	7ff58593          	addi	a1,a1,2047 # 200b7ff <_start-0x7dff4801>
+8000015c:	7f958593          	addi	a1,a1,2041
+80000160:	00e5a023          	sw	a4,0(a1)
+80000164:	10f00513          	li	a0,271
+80000168:	11f00593          	li	a1,287
+8000016c:	12f00613          	li	a2,303
+80000170:	13f00693          	li	a3,319
+80000174:	14f00713          	li	a4,335
+80000178:	15f00793          	li	a5,351
+8000017c:	16f00813          	li	a6,367
+80000180:	17f00893          	li	a7,383
+80000184:	18f00913          	li	s2,399
+80000188:	19f00993          	li	s3,415
+8000018c:	20f00a13          	li	s4,527
+80000190:	21f00a93          	li	s5,543
+80000194:	22f00b13          	li	s6,559
+80000198:	23f00b93          	li	s7,575
+8000019c:	24f00c13          	li	s8,591
+800001a0:	25f00c93          	li	s9,607
+800001a4:	26f00d13          	li	s10,623
+800001a8:	efdff06f          	j	800000a4 <asynchronous_return>
 
-8000012c <exception_handler>:
-8000012c:	0000006f          	j	8000012c <exception_handler>
+800001ac <exception_handler>:
+800001ac:	10e00513          	li	a0,270
+800001b0:	11e00593          	li	a1,286
+800001b4:	12e00613          	li	a2,302
+800001b8:	13e00693          	li	a3,318
+800001bc:	14e00713          	li	a4,334
+800001c0:	15e00793          	li	a5,350
+800001c4:	16e00813          	li	a6,366
+800001c8:	17e00893          	li	a7,382
+800001cc:	00458593          	addi	a1,a1,4
+800001d0:	34159073          	csrw	mepc,a1
+800001d4:	ed1ff06f          	j	800000a4 <asynchronous_return>

@@ -15,7 +15,7 @@ module csr (
     input wire                              mepc_set_en,
     input wire [`PC_WIDTH - 1 :0]           mepc_set_pc,
     input wire                              mcause_set_en,
-    input wire [`CSR_LOCA_MCAUSE_EXPCODE]   mcause_set_cause,
+    input wire [`WORD_WIDTH - 1 : 0]        mcause_set_cause,
     input wire                              mtval_set_en,
     input wire [`WORD_WIDTH - 1 : 0]        mtval_set_tval,
     // read and write csrs

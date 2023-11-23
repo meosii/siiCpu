@@ -58,17 +58,21 @@ module cpu_ctrl (
     output wire                                 if_flush,
     output wire                                 id_flush,
     output wire                                 ex_flush,
-    output wire                                 mem_flush
+    output wire                                 mem_flush,
+    // to clint
+    output reg                                  external_int_clear,
+    output reg                                  software_int_clear,
+    output reg                                  timer_int_clear
 );
 
 wire    exp_in_decoder;
 wire    exp_in_alu;
 wire    exp_in_mem_ctrl;
 
-assign  exp_in_decoder  =       ebreak_en || ecall_en || (exp_code == `ISA_EXP_UNDEF_INSN);
-assign  exp_in_alu      =       1'b0; //resevered
-assign  exp_in_mem_ctrl =       (ex_exp_code_mem_ctrl   == `ISA_EXP_LOAD_MISALIGNED )   ||
-                                (ex_exp_code_mem_ctrl   == `ISA_EXP_STORE_MISALIGNED);
+assign  exp_in_decoder  =   ebreak_en || ecall_en || (exp_code == `ISA_EXP_UNDEF_INSN);
+assign  exp_in_alu      =   1'b0; //resevered
+assign  exp_in_mem_ctrl =   (ex_exp_code_mem_ctrl   == `ISA_EXP_LOAD_MISALIGNED )   ||
+                            (ex_exp_code_mem_ctrl   == `ISA_EXP_STORE_MISALIGNED);
 
 // trap
 wire        external_int_en;
@@ -78,26 +82,62 @@ wire        interrupt_en;
 wire        exception_mem_en;
 wire        mcause_set_cause_interrupt;
 wire [30:0] mcause_set_cause_expcode;
+wire [2:0]  int_clear;
 
 assign external_int_en  = csr_mstatus_mie && (csr_mie_meie && csr_mip_meip);
 assign timer_int_en     = csr_mstatus_mie && (csr_mie_mtie && csr_mip_mtip);
 assign software_int_en  = csr_mstatus_mie && (csr_mie_msie && csr_mip_msip);
-assign interrupt_en = external_int_en || timer_int_en|| software_int_en;
+assign interrupt_en     = external_int_en || timer_int_en|| software_int_en;
 assign exception_mem_en = (mem_exp_code != `ISA_EXP_NO_EXP) || mem_ecall_en || mem_ebreak_en;
-assign trap_happened =  exception_mem_en || interrupt_en;
+assign trap_happened    =  exception_mem_en || interrupt_en;
 
-assign mcause_set_cause_interrupt = (interrupt_en)? `MCAUSE_INTERRUPT :
-                                    (exception_mem_en)? `MCAUSE_EXCEPTION : 1'b0;
+assign mcause_set_cause_interrupt = (interrupt_en       )? `MCAUSE_INTERRUPT :
+                                    (exception_mem_en   )? `MCAUSE_EXCEPTION : 1'b0;
 
-assign mcause_set_cause_expcode =   (external_int_en)?                              `MCAUSE_MACHINE_EXTERNAL_INT        :
-                                    (timer_int_en)?                                 `MCAUSE_MACHINE_TIMER_INT           :
-                                    (software_int_en)?                              `MCAUSE_MACHINE_SOFTWARE_INT        :
-                                    (mem_ecall_en)?                                 `MCAUSE_ENVIRONMENT_CALL_FROM_M_MODE:
-                                    (mem_ebreak_en)?                                `MCAUSE_BREAKPOINT                  :
-                                    (mem_exp_code == `ISA_EXP_UNDEF_INSN)?          `MCAUSE_ILLEGAL_INSTRUCTION         :
-                                    (mem_exp_code == `ISA_EXP_ALU_OVERFLOW)?        `MCAUSE_ALU_OVERFLOW                :
-                                    (mem_exp_code == `ISA_EXP_LOAD_MISALIGNED)?     `MCAUSE_LOAD_ADDRESS_MISALIGNED     :
-                                    (mem_exp_code == `ISA_EXP_STORE_MISALIGNED)?    `MCAUSE_STORE_ADDRESS_MISALIGNED    : 31'b0;
+assign mcause_set_cause_expcode =   (external_int_en                            )?      `MCAUSE_MACHINE_EXTERNAL_INT        :
+                                    (timer_int_en                               )?      `MCAUSE_MACHINE_TIMER_INT           :
+                                    (software_int_en                            )?      `MCAUSE_MACHINE_SOFTWARE_INT        :
+                                    (mem_ecall_en                               )?      `MCAUSE_ENVIRONMENT_CALL_FROM_M_MODE:
+                                    (mem_ebreak_en                              )?      `MCAUSE_BREAKPOINT                  :
+                                    (mem_exp_code == `ISA_EXP_UNDEF_INSN        )?      `MCAUSE_ILLEGAL_INSTRUCTION         :
+                                    (mem_exp_code == `ISA_EXP_ALU_OVERFLOW      )?      `MCAUSE_ALU_OVERFLOW                :
+                                    (mem_exp_code == `ISA_EXP_LOAD_MISALIGNED   )?      `MCAUSE_LOAD_ADDRESS_MISALIGNED     :
+                                    (mem_exp_code == `ISA_EXP_STORE_MISALIGNED  )?      `MCAUSE_STORE_ADDRESS_MISALIGNED    : 31'b0;
+
+// int_clear = {timer_int_clear, software_int_clear, external_int_clear};
+assign int_clear =  (external_int_en    )?  3'b001  :
+                    (software_int_en    )?  3'b010  :
+                    (timer_int_en       )?  3'b100  : 3'b000;
+
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        external_int_clear <= 1'b0;
+    end else if (int_clear[0]) begin
+        external_int_clear <= 1'b1;
+    end else if (!csr_mip_meip) begin
+        external_int_clear <= 1'b0;
+    end
+end
+
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        software_int_clear <= 1'b0;
+    end else if (int_clear[1]) begin
+        software_int_clear <= 1'b1;
+    end else if (!csr_mip_msip) begin
+        software_int_clear <= 1'b0;
+    end
+end
+
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        timer_int_clear <= 1'b0;
+    end else if (int_clear[2]) begin
+        timer_int_clear <= 1'b1;
+    end else if (!csr_mip_mtip) begin
+        timer_int_clear <= 1'b0;
+    end
+end                     
 
 always @(*) begin
     if (trap_happened) begin

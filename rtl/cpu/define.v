@@ -124,8 +124,9 @@
 `define ISA_EXP_UNDEF_INSN          5'd2 // Undefined instructions
 `define ISA_EXP_LOAD_MISALIGNED     5'd4 // Addresses are not aligned
 `define ISA_EXP_STORE_MISALIGNED    5'd6 // Addresses are not aligned
+`define ISA_EXP_AHB_ERROR_STORE     5'd7 // hresp = error
+`define ISA_EXP_AHB_ERROR_LOAD      5'd5 // hresp = error
 `define ISA_EXP_ALU_OVERFLOW        5'd16 // alu overflow
-
 
 // Decoding of different instruction types
 `define INSN_MSB            31
@@ -271,8 +272,6 @@
 `define MIE_MSIE_ON             1'b1
 `define MIE_MSIE_OFF            1'b0
 // mcause
-`define CSR_LOCA_MCAUSE_INTERRUPT       31
-`define CSR_LOCA_MCAUSE_EXPCODE         30:0
 `define MCAUSE_INTERRUPT                1'b1
 `define MCAUSE_EXCEPTION                1'b0
 `define MCAUSE_USER_SOFTWARE_INT        31'd0
@@ -338,8 +337,26 @@
 `define MTVEC_RESET_MODE        2'b0        //DIRECT: All exceptions set pc to BASE
 
 // bus addr
-`define SPM_ADDR_HIGH_LOCA  31:14
-`define SPM_ADDR_LOCA       13:2
-`define SPM_ADDR_HIGH       18'b1001_0000_0000_0000_00  // spm: 0x9000_0000 ~ 0x9000_3fff
+// spm: 0x9000_0000 ~ 0x9000_3fff
+`define SPM_ADDR_HIGH_LOCA      31:14
+`define SPM_ADDR_LOCA           13:2
+`define SPM_ADDR_HIGH           18'b1001_0000_0000_0000_00
+// clint: 0x0200_0000 ~ 0x0200_ffff
+`define BUS_ADDR_CLINT_MSIP             32'h0200_0000
+`define BUS_ADDR_CLINT_MTIMECMP_LOW     32'h0200_4000
+`define BUS_ADDR_CLINT_MTIMECMP_HIGH    32'h0200_4004
+`define BUS_ADDR_CLINT_MTIME_LOW        32'h0200_bff8
+`define BUS_ADDR_CLINT_MTIME_HIGH       32'h0200_bfff
+`define BUS_ADDR_HIGH_CLINT_WIDTH       16
+`define BUS_ADDR_HIGH_CLINT             16'h0200
+// plic: 0x0c00_0000 ~ 0x0cff_ffff
+`define BUS_ADDR_HIGH_PLIC_WIDTH    8
+`define BUS_ADDR_HIGH_PLIC          8'h0c
+// uart0: 0x1001_3000 ~ 0x1001_3fff
+`define BUS_ADDR_HIGH_UART0_WIDTH   20
+`define BUS_ADDR_HIGH_UART0         20'h1001_3
+// spi0: 0x1001_4000 ~ 0x1001_4fff
+`define BUS_ADDR_HIGH_SPI0_WIDTH    20
+`define BUS_ADDR_HIGH_SPI0          20'h1001_4
 
 `endif

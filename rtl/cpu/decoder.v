@@ -47,10 +47,12 @@ module decoder (
     // forwarding
     // EX data
     input wire [`GPR_ADDR_WIDTH - 1 : 0]        id_dst_addr,
+    input wire [`WORD_WIDTH - 1 : 0]            id_csr_to_gpr_data,
     input wire [`WORD_WIDTH - 1 : 0]            alu_out,
     // MEM data
     input wire [`GPR_ADDR_WIDTH - 1 : 0]        ex_dst_addr,
     input wire [`WORD_WIDTH - 1 : 0]            ex_alu_out,
+    input wire [`WORD_WIDTH - 1 : 0]            ex_csr_to_gpr_data,
     input wire                                  load_after_storing_en,  // store in mem_stage, load in ex_stage
     input wire                                  loading_after_store_en, // load in mem_stage
     input wire [`WORD_WIDTH - 1 : 0]            ex_store_data,
@@ -59,7 +61,9 @@ module decoder (
     input wire                                  load_in_id_ex,
     input wire                                  load_in_ex_mem,
     input wire                                  alu2gpr_in_id_ex,
+    input wire                                  csr2gpr_in_id_ex,
     input wire                                  alu2gpr_in_ex_mem,
+    input wire                                  csr2gpr_in_ex_mem,
     
     // exception
     output wire [`DATA_WIDTH_ISA_EXP - 1 : 0]   exp_code,
@@ -396,14 +400,18 @@ assign store_data = (opcode != `OP_STORE)?                      `WORD_WIDTH'b0  
 // load hazard, forwarding
 
 assign rs1_data =   (gpr_rd_addr_0 == `GPR_ADDR_WIDTH'b0                        )?  `WORD_WIDTH'b0      :   // resd x0 register in gpr
+                    (csr2gpr_in_id_ex && (id_dst_addr == gpr_rd_addr_0)         )?  id_csr_to_gpr_data  :   // forwarding from id_csr
                     (alu2gpr_in_id_ex && (id_dst_addr == gpr_rd_addr_0)         )?  alu_out             :   // forwarding from alu
+                    (csr2gpr_in_ex_mem && (ex_dst_addr == gpr_rd_addr_0)        )?  ex_csr_to_gpr_data  :   // forwarding from ex_csr
                     (alu2gpr_in_ex_mem && (ex_dst_addr == gpr_rd_addr_0)        )?  ex_alu_out          :   // forwarding from ex_alu
                     (load_after_storing_en && (id_dst_addr == gpr_rd_addr_0)    )?  ex_store_data       :   // forwarding from mem_store_data
                     (loading_after_store_en && (ex_dst_addr == gpr_rd_addr_0)   )?  prev_ex_store_data  :   // forwarding from wb_stroe_data
                                                                                     gpr_rd_data_0;
 
 assign rs2_data =   (gpr_rd_addr_1 == `GPR_ADDR_WIDTH'b0                        )?  `WORD_WIDTH'b0      :
+                    (csr2gpr_in_id_ex && (id_dst_addr == gpr_rd_addr_1)         )?  id_csr_to_gpr_data  :
                     (alu2gpr_in_id_ex && (id_dst_addr == gpr_rd_addr_1)         )?  alu_out             :
+                    (csr2gpr_in_ex_mem && (ex_dst_addr == gpr_rd_addr_1)        )?  ex_csr_to_gpr_data  :   
                     (alu2gpr_in_ex_mem && (ex_dst_addr == gpr_rd_addr_1)        )?  ex_alu_out          :
                     (load_after_storing_en && (id_dst_addr == gpr_rd_addr_1)    )?  ex_store_data       :
                     (loading_after_store_en && (ex_dst_addr == gpr_rd_addr_1)   )?  prev_ex_store_data  : gpr_rd_data_1;

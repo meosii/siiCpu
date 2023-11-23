@@ -24,13 +24,17 @@ module pc (
     input wire                              load_in_ex_mem,
     input wire                              alu2gpr_in_id_ex,
     input wire                              alu2gpr_in_ex_mem,
+    input wire                              csr2gpr_in_id_ex,
+    input wire                              csr2gpr_in_ex_mem,
     input wire                              load_after_storing_en,
     input wire                              loading_after_store_en,
     input wire [`GPR_ADDR_WIDTH - 1 : 0]    dst_addr,
     input wire [`GPR_ADDR_WIDTH - 1 : 0]    id_dst_addr,
     input wire [`GPR_ADDR_WIDTH - 1 : 0]    ex_dst_addr,
     input wire [`WORD_WIDTH - 1 : 0]        alu_out,
+    input wire [`WORD_WIDTH - 1 : 0]        id_csr_to_gpr_data,
     input wire [`WORD_WIDTH - 1 : 0]        ex_alu_out,
+    input wire [`WORD_WIDTH - 1 : 0]        ex_csr_to_gpr_data,
     input wire [`WORD_WIDTH - 1 : 0]        ex_store_data,
     input wire [`WORD_WIDTH - 1 : 0]        prev_ex_store_data,
     // outputs
@@ -49,11 +53,13 @@ wire [`WORD_WIDTH - 1 : 0]  predt_pc_add_op1;
 wire [`WORD_WIDTH - 1 : 0]  predt_pc_add_op2;
 wire [`WORD_WIDTH - 1 : 0]  predt_pc;
 
-assign local_gpr_x1 =   (alu2gpr_in_id_ex && (id_dst_addr == `GPR_ADDR_WIDTH'd1)                         )? alu_out             :   // forwarding from alu
-                        (alu2gpr_in_ex_mem && (ex_dst_addr == `GPR_ADDR_WIDTH'd1)                        )? ex_alu_out          :   // forwarding from ex_alu
-                        (load_in_id_ex && (id_dst_addr == `GPR_ADDR_WIDTH'd1) && load_after_storing_en   )? ex_store_data       :   // forwarding from mem_store_data
-                        (load_in_ex_mem && (ex_dst_addr == `GPR_ADDR_WIDTH'd1) && loading_after_store_en )? prev_ex_store_data  :   // forwarding from wb_stroe_data
-                                                                                                            gpr_x1;
+assign local_gpr_x1 =   (alu2gpr_in_id_ex  && (id_dst_addr == `GPR_ADDR_WIDTH'd1)                           )?  alu_out             :   // forwarding from alu
+                        (alu2gpr_in_ex_mem && (ex_dst_addr == `GPR_ADDR_WIDTH'd1)                           )?  ex_alu_out          :   // forwarding from ex_alu
+                        (csr2gpr_in_id_ex  && (id_dst_addr == `GPR_ADDR_WIDTH'd1)                           )?  id_csr_to_gpr_data  :   // forwarding from id_csr
+                        (csr2gpr_in_ex_mem && (ex_dst_addr == `GPR_ADDR_WIDTH'd1)                           )?  ex_csr_to_gpr_data  :   // forwarding from ex_csr
+                        (load_in_id_ex     && (id_dst_addr == `GPR_ADDR_WIDTH'd1) && load_after_storing_en  )?  ex_store_data       :   // forwarding from mem_store_data
+                        (load_in_ex_mem    && (ex_dst_addr == `GPR_ADDR_WIDTH'd1) && loading_after_store_en )?  prev_ex_store_data  :   // forwarding from wb_stroe_data
+                                                                                                                gpr_x1;
 
 assign local_gpr_x1_valid = !((gpr_we_n == `GPR_WRITE) && (dst_addr == `GPR_ADDR_WIDTH'd1)                      ) &&
                             !(load_in_id_ex && (id_dst_addr == `GPR_ADDR_WIDTH'd1) && !load_after_storing_en    ) &&
@@ -61,6 +67,8 @@ assign local_gpr_x1_valid = !((gpr_we_n == `GPR_WRITE) && (dst_addr == `GPR_ADDR
 
 assign local_predt_gpr_rd_data =    (alu2gpr_in_id_ex && (id_dst_addr == predt_gpr_rd_addr)                         )?  alu_out             :   // forwarding from alu
                                     (alu2gpr_in_ex_mem && (ex_dst_addr == predt_gpr_rd_addr)                        )?  ex_alu_out          :   // forwarding from ex_alu
+                                    (csr2gpr_in_id_ex  && (id_dst_addr == predt_gpr_rd_addr)                        )?  id_csr_to_gpr_data  :   // forwarding from id_csr
+                                    (csr2gpr_in_ex_mem && (ex_dst_addr == predt_gpr_rd_addr)                        )?  ex_csr_to_gpr_data  :   // forwarding from ex_csr
                                     (load_in_id_ex && (id_dst_addr == predt_gpr_rd_addr) && load_after_storing_en   )?  ex_store_data       :   // forwarding from mem_store_data
                                     (load_in_ex_mem && (ex_dst_addr == predt_gpr_rd_addr) && loading_after_store_en )?  prev_ex_store_data  :   // forwarding from wb_stroe_data
                                                                                                                         predt_gpr_rd_data   ;

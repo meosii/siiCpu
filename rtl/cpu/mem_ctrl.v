@@ -18,8 +18,9 @@ module mem_ctrl (
     input wire                                  load_in_id_ex,
     input wire                                  load_in_ex_mem,
     input wire [`WORD_WIDTH - 1 : 0]            alu_out,
-    // from spm
+    // from ahb
     input wire [`WORD_WIDTH - 1 : 0]            load_rd_data,       // load_rd_data -> load_data
+    input wire [`DATA_WIDTH_ISA_EXP - 1 : 0]    ahb_exp_code,
     // to spm
     output wire [`WORD_WIDTH - 1 : 0]           memory_addr,
     // to gpr or decoder
@@ -33,7 +34,7 @@ module mem_ctrl (
 );
 
 wire [`DATA_WIDTH_OFFSET - 1 : 0]   offset;
-wire                                miss_align;
+wire                                miss_align_in_spm;
 wire [`WORD_WIDTH - 1 : 0]          load_data_tmp;
 
 // registers
@@ -66,12 +67,13 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-assign memory_addr  = ex_alu_out; // 31 : 0
-assign offset       = ex_alu_out[`BYTE_OFFSET_LOC];
-assign miss_align   = (ex_en && (offset == `BYTE_OFFSET_WORD))? 1'b0 : 1'b1;
-assign ex_exp_code_mem_ctrl =   (ex_exp_code != `ISA_EXP_NO_EXP)? ex_exp_code :
-                                (miss_align && (ex_insn[`ALL_TYPE_OPCODE] == `OP_LOAD))? `ISA_EXP_LOAD_MISALIGNED :
-                                (miss_align && (ex_insn[`ALL_TYPE_OPCODE] == `OP_STORE))? `ISA_EXP_STORE_MISALIGNED : `ISA_EXP_NO_EXP;
+assign memory_addr          =   ex_alu_out;
+assign offset               =   ex_alu_out[`BYTE_OFFSET_LOC];
+assign miss_align_in_spm    =   ((memory_addr[`SPM_ADDR_HIGH_LOCA] == `SPM_ADDR_HIGH) && ex_en && (offset != `BYTE_OFFSET_WORD))? 1'b1 : 1'b0;
+assign ex_exp_code_mem_ctrl =   (ex_exp_code != `ISA_EXP_NO_EXP                                 )? ex_exp_code                  :
+                                (ahb_exp_code != `ISA_EXP_NO_EXP                                )? ahb_exp_code                 :
+                                (miss_align_in_spm && (ex_insn[`ALL_TYPE_OPCODE] == `OP_LOAD)   )? `ISA_EXP_LOAD_MISALIGNED     :
+                                (miss_align_in_spm && (ex_insn[`ALL_TYPE_OPCODE] == `OP_STORE)  )? `ISA_EXP_STORE_MISALIGNED    : `ISA_EXP_NO_EXP;
 
 assign load_after_storing_en    =   load_in_id_ex &&            // load in ex_stage
                                     ex_en && (ex_memory_we_en == `ENABLE) && (ex_alu_out == alu_out) && (ex_store_byteena == 4'b1111);  // storing in mem_stage

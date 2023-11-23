@@ -48,11 +48,13 @@ module ex_reg (
     output reg                                  ex_ebreak_en,
     output reg                                  ex_ecall_en,
     output wire                                 load_in_ex_mem,
-    output wire                                 alu2gpr_in_ex_mem
+    output wire                                 alu2gpr_in_ex_mem,
+    output wire                                 csr2gpr_in_ex_mem
 );
 
-assign load_in_ex_mem           = (ex_insn[`ALL_TYPE_OPCODE] == `OP_LOAD) && ex_en && (ex_gpr_we_n == `GPR_WRITE);
-assign alu2gpr_in_ex_mem        = (ex_insn[`ALL_TYPE_OPCODE] != `OP_LOAD) && ex_en && (ex_gpr_we_n == `GPR_WRITE);
+assign load_in_ex_mem       = (ex_insn[`ALL_TYPE_OPCODE] == `OP_LOAD) && ex_en && (ex_gpr_we_n == `GPR_WRITE);
+assign alu2gpr_in_ex_mem    = (ex_insn[`ALL_TYPE_OPCODE] != `OP_LOAD) && (ex_insn[`ALL_TYPE_OPCODE] != `OP_SYSTEM) && ex_en && (ex_gpr_we_n == `GPR_WRITE);
+assign csr2gpr_in_ex_mem    = (ex_insn[`ALL_TYPE_OPCODE] == `OP_SYSTEM) && ex_en && (ex_gpr_we_n == `GPR_WRITE);
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
