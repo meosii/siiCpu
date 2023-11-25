@@ -11,9 +11,9 @@ module ahb_mem_ctrl(
     input wire [`WORD_WIDTH - 1 : 0]            ex_store_data,
     input wire [3 : 0]                          ex_store_byteena,
     // from AHB
-    input wire [`WORD_WIDTH - 1 : 0]            D_HRDATA,
-    input wire                                  D_HREADY,
-    input wire [1 : 0]                          D_HRESP,
+    input wire [`WORD_WIDTH - 1 : 0]            CPU_HRDATA,
+    input wire                                  CPU_HREADY,
+    input wire [1 : 0]                          CPU_HRESP,
     // from spm
     input wire [`WORD_WIDTH - 1 : 0]            spm_rd_data,
     // loading_after_store, need not to read    
@@ -21,13 +21,13 @@ module ahb_mem_ctrl(
 
     // outputs
     // to AHB
-    output wire [`WORD_WIDTH - 1 : 0]           D_HADDR,
-    output wire                                 D_HWRITE,
-    output wire [2 : 0]                         D_HSIZE,
-    output wire [2 : 0]                         D_HBURST,
-    output wire [1 : 0]                         D_HTRANS,
-    output wire                                 D_HMASTLOCK,
-    output wire [`WORD_WIDTH - 1 : 0]           D_HWDATA,
+    output wire [`WORD_WIDTH - 1 : 0]           CPU_HADDR,
+    output wire                                 CPU_HWRITE,
+    output wire [2 : 0]                         CPU_HSIZE,
+    output wire [2 : 0]                         CPU_HBURST,
+    output wire [1 : 0]                         CPU_HTRANS,
+    output wire                                 CPU_HMASTLOCK,
+    output wire [`WORD_WIDTH - 1 : 0]           CPU_HWDATA,
     // to spm
     output wire [3 : 0]                         spm_store_byteena,
     output wire [`WORD_WIDTH - 1 : 0]           spm_write_data,
@@ -65,10 +65,10 @@ assign  load_store_enable   = (ex_memory_rd_en || ex_memory_we_en);
 assign  bus_spm_enable      = (memory_addr[`SPM_ADDR_HIGH_LOCA] == `SPM_ADDR_HIGH) && load_store_enable;
 assign  bus_ahb_enable      = (ex_memory_rd_en && loading_after_store_en) ? 1'b0 : (!bus_spm_enable) && load_store_enable;
 
-assign  bus_trans_ready         =  D_HREADY  && (D_HRESP == `HRESP_OKAY);
-assign  bus_trans_wait          =  !D_HREADY && (D_HRESP == `HRESP_OKAY);
-assign  bus_trans_error_stage1  =  !D_HREADY && (D_HRESP == `HRESP_ERROR);
-assign  bus_trans_error_stage2  =  D_HREADY  && (D_HRESP == `HRESP_ERROR);
+assign  bus_trans_ready         =  CPU_HREADY  && (CPU_HRESP == `HRESP_OKAY);
+assign  bus_trans_wait          =  !CPU_HREADY && (CPU_HRESP == `HRESP_OKAY);
+assign  bus_trans_error_stage1  =  !CPU_HREADY && (CPU_HRESP == `HRESP_ERROR);
+assign  bus_trans_error_stage2  =  CPU_HREADY  && (CPU_HRESP == `HRESP_ERROR);
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -151,14 +151,14 @@ always @* begin
 end
 
 // Address phase
-assign D_HTRANS     =   (trans_start_en                                 )?   `HTRANS_NONSEQ : `HTRANS_IDLE;
-assign D_HADDR      =   (trans_start_en                                 )?   memory_addr    : `WORD_WIDTH'b0;
-assign D_HBURST     =   (trans_start_en                                 )?   `HBRUST_SINGLE : 3'b000;
-assign D_HMASTLOCK  =   (trans_start_en                                 )?   1'b1           : 1'b0;
-assign D_HWRITE     =   (ex_memory_we_en                                )?   `HWRITE_WRITE  : `HWRITE_READ;
-assign D_HSIZE      =   (ex_memory_we_en && ex_store_byteena == 4'b1111 )?   `HSIZE_32      :
-                        (ex_memory_we_en && ex_store_byteena == 4'b0011 )?   `HSIZE_16      :
-                        (ex_memory_we_en && ex_store_byteena == 4'b0001 )?   `HSIZE_8       : `HSIZE_32;
+assign CPU_HTRANS       =   (trans_start_en                                 )?   `HTRANS_NONSEQ : `HTRANS_IDLE;
+assign CPU_HADDR        =   (trans_start_en                                 )?   memory_addr    : `WORD_WIDTH'b0;
+assign CPU_HBURST       =   (trans_start_en                                 )?   `HBRUST_SINGLE : 3'b000;
+assign CPU_HMASTLOCK    =   (trans_start_en                                 )?   1'b1           : 1'b0;
+assign CPU_HWRITE       =   (ex_memory_we_en                                )?   `HWRITE_WRITE  : `HWRITE_READ;
+assign CPU_HSIZE        =   (ex_memory_we_en && ex_store_byteena == 4'b1111 )?   `HSIZE_32      :
+                            (ex_memory_we_en && ex_store_byteena == 4'b0011 )?   `HSIZE_16      :
+                            (ex_memory_we_en && ex_store_byteena == 4'b0001 )?   `HSIZE_8       : `HSIZE_32;
 						
 // ahb_reg
 
@@ -175,7 +175,7 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 // Data phase
-assign D_HWDATA = (c_trans_state == TRANSING)? ahb_wdata : `WORD_WIDTH'b0;
+assign CPU_HWDATA = (c_trans_state == TRANSING)? ahb_wdata : `WORD_WIDTH'b0;
 
 // to spm
 assign spm_rden             = (bus_spm_enable)? ex_memory_rd_en : 1'b0;
@@ -187,7 +187,7 @@ assign spm_wraddress        = memory_addr;
 
 // to mem_ctrl
 assign load_rd_data =   (bus_spm_enable_r1  )?  spm_rd_data : 
-                        (trans_end_en       )?  D_HRDATA    : `WORD_WIDTH'b0;
+                        (trans_end_en       )?  CPU_HRDATA  : `WORD_WIDTH'b0;
 // exception
 assign ahb_exp_en   =   ((c_trans_state == TRANSING) && (bus_trans_error_stage1))? 1'b1 : 1'b0;
 assign ahb_exp_code =   (ahb_exp_en && trans_write  )?  `ISA_EXP_AHB_ERROR_STORE    :

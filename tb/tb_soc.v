@@ -1,48 +1,30 @@
-`timescale 1ps/1ps
+`timescale 1ns/1ns
 `include "../rtl/define.v"
 module tb_soc ();
 
-reg                         cpu_en;
-reg                         clk;
-reg                         rst_n;
-reg                         io_rtcToggle;
+reg                         CPU_EN;
+reg                         CLK_IN;
+reg                         RST_N;
 wire                        rd_insn_en;
 wire [`PC_WIDTH - 1 : 0]    pc;
 reg [`WORD_WIDTH - 1 : 0]   insn;
+wire                        TX;
 
 soc_top u_soc_top(
-    .cpu_en         (cpu_en         ),
-    .clk            (clk            ),
-    .rst_n          (rst_n          ),
-    .io_rtcToggle   (io_rtcToggle   ),
+    .CPU_EN         (CPU_EN         ),
+    .CLK_IN         (CLK_IN         ),
+    .RST_N          (RST_N          ),
     .rd_insn_en     (rd_insn_en     ),
     .pc             (pc             ),
-    .insn           (insn           )
+    .insn           (insn           ),
+    .TX             (TX             )
 );
-reg [7 : 0] counter;
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        counter <= 8'b0;
-    end else begin
-        counter <= counter + 1;
-    end
-end
 
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        io_rtcToggle <= 1'b0;
-    end else if (counter == 8'h11) begin
-        io_rtcToggle <= 1'b1;
-    end else begin
-        io_rtcToggle <= 1'b0;
-    end
-end
+parameter TIME_CLK_IN = 20;
 
-parameter TIME_CLK = 10;
+always #(TIME_CLK_IN/2) CLK_IN = ~CLK_IN;
 
-always #(TIME_CLK/2) clk = ~clk;
-
-reg [31:0] itcm [0:1023];
+reg [31:0] itcm [0:8191];
 
 initial begin
     $readmemh("itcm.hex", itcm);
@@ -50,7 +32,7 @@ end
 
 always @(*) begin
     if (rd_insn_en) begin
-        insn = itcm[pc[11:2]];
+        insn = itcm[pc[15:2]];
     end else begin
         insn = 0;
     end
@@ -58,18 +40,18 @@ end
 
 initial begin
     #0 begin
-        clk = 0;
-        cpu_en = 0;
-        rst_n = 0;
+        CLK_IN = 0;
+        CPU_EN = 0;
+        RST_N = 0;
     end
     #22 begin
-        rst_n = 1;
+        RST_N = 1;
     end
     // after itcm has insn
     #20 begin
-       cpu_en = 1; 
+       CPU_EN = 1; 
     end
-    #10000
+    #50000
     $finish;
 end
 

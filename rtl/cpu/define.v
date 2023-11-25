@@ -333,29 +333,35 @@
 `define HWRITE_READ     1'b0
 
 // config by myself
-`define MTVEC_RESET_BASE        30'hff      //'d255 = 'b11111111; disk_addr = pc[:2] = 'b11111111; pc = 'b1111111100; pc[:2] = BASE[XLEN-1:2] = 'b11111111
+`define MTVEC_RESET_BASE        30'h1f00    //'d7936; itcm_addr = pc[:2] = BASE[XLEN-1:2]
 `define MTVEC_RESET_MODE        2'b0        //DIRECT: All exceptions set pc to BASE
 
 // bus addr
+
 // spm: 0x9000_0000 ~ 0x9000_3fff
 `define SPM_ADDR_HIGH_LOCA      31:14
 `define SPM_ADDR_LOCA           13:2
 `define SPM_ADDR_HIGH           18'b1001_0000_0000_0000_00
+
 // clint: 0x0200_0000 ~ 0x0200_ffff
+`define BUS_ADDR_HIGH_CLINT_WIDTH       16
+`define BUS_ADDR_HIGH_CLINT             16'h0200
 `define BUS_ADDR_CLINT_MSIP             32'h0200_0000
 `define BUS_ADDR_CLINT_MTIMECMP_LOW     32'h0200_4000
 `define BUS_ADDR_CLINT_MTIMECMP_HIGH    32'h0200_4004
 `define BUS_ADDR_CLINT_MTIME_LOW        32'h0200_bff8
 `define BUS_ADDR_CLINT_MTIME_HIGH       32'h0200_bfff
-`define BUS_ADDR_HIGH_CLINT_WIDTH       16
-`define BUS_ADDR_HIGH_CLINT             16'h0200
+
 // plic: 0x0c00_0000 ~ 0x0cff_ffff
 `define BUS_ADDR_HIGH_PLIC_WIDTH    8
 `define BUS_ADDR_HIGH_PLIC          8'h0c
-// uart0: 0x1001_3000 ~ 0x1001_3fff
+
+// uart: 0x1001_3000 ~ 0x1001_3fff
 `define BUS_ADDR_HIGH_UART0_WIDTH   20
 `define BUS_ADDR_HIGH_UART0         20'h1001_3
-// spi0: 0x1001_4000 ~ 0x1001_4fff
+`define BUS_ADDR_UART_TRANSDATA     32'h1001_3000
+
+// spi: 0x1001_4000 ~ 0x1001_4fff
 `define BUS_ADDR_HIGH_SPI0_WIDTH    20
 `define BUS_ADDR_HIGH_SPI0          20'h1001_4
 

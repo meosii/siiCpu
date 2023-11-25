@@ -82,7 +82,7 @@ wire        interrupt_en;
 wire        exception_mem_en;
 wire        mcause_set_cause_interrupt;
 wire [30:0] mcause_set_cause_expcode;
-wire [2:0]  int_clear;
+reg [2:0]   int_handler; //int_handler = {timer_int_handler, software_int_handler, external_int_handler};
 
 assign external_int_en  = csr_mstatus_mie && (csr_mie_meie && csr_mip_meip);
 assign timer_int_en     = csr_mstatus_mie && (csr_mie_mtie && csr_mip_mtip);
@@ -104,17 +104,28 @@ assign mcause_set_cause_expcode =   (external_int_en                            
                                     (mem_exp_code == `ISA_EXP_LOAD_MISALIGNED   )?      `MCAUSE_LOAD_ADDRESS_MISALIGNED     :
                                     (mem_exp_code == `ISA_EXP_STORE_MISALIGNED  )?      `MCAUSE_STORE_ADDRESS_MISALIGNED    : 31'b0;
 
-// int_clear = {timer_int_clear, software_int_clear, external_int_clear};
-assign int_clear =  (external_int_en    )?  3'b001  :
-                    (software_int_en    )?  3'b010  :
-                    (timer_int_en       )?  3'b100  : 3'b000;
+// int_clear
+// which kind of int is handling
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        int_handler <= 3'b000;
+    end else if (external_int_en) begin     // External interrupt handler begins
+        int_handler <= 3'b001;
+    end else if (software_int_en) begin     // Software interrupt handler begins
+        int_handler <= 3'b010;
+    end else if (timer_int_en) begin        // Timer interrupt handler begins
+        int_handler <= 3'b100;
+    end else if (mret_en) begin             // The interrupt handler completes
+        int_handler <= 3'b000;
+    end
+end
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         external_int_clear <= 1'b0;
-    end else if (int_clear[0]) begin
-        external_int_clear <= 1'b1;
-    end else if (!csr_mip_meip) begin
+    end else if (int_handler[0] && mret_en) begin   // The external interrupt handler completes
+        external_int_clear <= 1'b1;                 // Hardware reset
+    end else if (!csr_mip_meip) begin               // Software also writes registers in interrupt handlers to clear interrupts
         external_int_clear <= 1'b0;
     end
 end
@@ -122,7 +133,7 @@ end
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         software_int_clear <= 1'b0;
-    end else if (int_clear[1]) begin
+    end else if (int_handler[1] && mret_en) begin   // The software interrupt handler completes
         software_int_clear <= 1'b1;
     end else if (!csr_mip_msip) begin
         software_int_clear <= 1'b0;
@@ -132,7 +143,7 @@ end
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         timer_int_clear <= 1'b0;
-    end else if (int_clear[2]) begin
+    end else if (int_handler[2] && mret_en) begin   // The timer interrupt handler completes
         timer_int_clear <= 1'b1;
     end else if (!csr_mip_mtip) begin
         timer_int_clear <= 1'b0;

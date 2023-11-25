@@ -67,16 +67,22 @@ Here is an introduction to siiCpu
 |itcm|0x8000_0000 ~ 0x8000_3fff|Insn memory|
 |plic|0x0c00_0000 ~ 0x0cff_ffff|Platform level interrupt controller|
 |clint|0x0200_0000 ~ 0x0200_ffff|Core local interrupt controller|
-|uart0|0x1001_3000 ~ 0x1001_3fff|uart|
+|uart|0x1001_3000 ~ 0x1001_3fff|uart|
 
 #### 1.3.1 clint memory mapped address
-|element|address|description|
-|---|---|---|
-|clint_mtime_high|0x0200_bfff|The high 32 bits of the timer|
-|clint_mtime_low|0x0200_bff8|The low 32 bits of the timer|
-|clint_mtimecmp_high|0x0200_4004|Config register comparison values|
-|clint_mtimecmp_low|0x0200_4000|Config register comparison values|
-|clint_msip|0x0200_0000|software interrupt|
+|element|address|description|Read and Write|
+|---|---|---|---|
+|clint_mtime_high|0x0200_bfff|The high 32 bits of the timer|RW|
+|clint_mtime_low|0x0200_bff8|The low 32 bits of the timer|RW|
+|clint_mtimecmp_high|0x0200_4004|Config register comparison values|RW|
+|clint_mtimecmp_low|0x0200_4000|Config register comparison values|RW|
+|clint_msip|0x0200_0000|software interrupt|RW|
+
+#### 1.3.2 uart memory mapped address
+|element|address|description|Read and Write|
+|---|---|---|---|
+|uart_TransData|0x1001_3000|Transfer data register: The cpu writes data to this register, and then the data is output by the uart tx|WO|
+
 
 ### 1.4 Instructions
 

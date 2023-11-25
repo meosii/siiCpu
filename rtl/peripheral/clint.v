@@ -3,6 +3,7 @@
 `include "define.v"
 `include "sii_sync.v"
 `include "sii_pos.v"
+// Core Local Interrupt Controller
 module clint (
     input wire                          clk,
     input wire                          rst_n,

@@ -17,28 +17,12 @@ _int_en:
     lw a1, 4(sp)
     lw t0, 8(sp)
     addi sp, sp, 12
-addi x10,x0,10
-addi x11,x0,11
-addi x12,x0,12
-addi x13,x0,13
-addi x14,x0,14
-addi x15,x0,15
-addi x16,x0,16
-addi x17,x0,17
-addi x18,x0,18
-addi x19,x0,19
-addi x20,x0,20
-addi x21,x0,21
-addi x22,x0,22
-addi x23,x0,23
-addi x24,x0,24
-addi x25,x0,25
-addi x26,x0,26
-addi x27,x0,27
-addi x28,x0,28
-addi x29,x0,29
-addi x30,x0,30
-addi x31,x0,31
+    li x10, 0x11111111
+    li x11, 0x22222222
+    li x12, 0x33333333
+    li x13, 0x44444444
+    li x14, 0x55555555
+    li x15, 0x66666666
 _timer_irq:
     addi sp, sp, -20
     sw x10, 0(sp)
@@ -71,57 +55,40 @@ _timer_irq:
     lw x13, 12(sp)
     lw x14, 16(sp)
     addi sp, sp, 20
-addi x10,x0,0x10a
-addi x11,x0,0x11a
-addi x12,x0,0x12a
-addi x13,x0,0x13a
-addi x14,x0,0x14a
-addi x15,x0,0x15a
-addi x16,x0,0x16a
-addi x17,x0,0x17a
-addi x18,x0,0x18a
-addi x19,x0,0x19a
-addi x20,x0,0x20a
-addi x21,x0,0x21a
-addi x22,x0,0x22a
-addi x23,x0,0x23a
-addi x24,x0,0x24a
-addi x25,x0,0x25a
-addi x26,x0,0x26a
-addi x27,x0,0x27a
-addi x28,x0,0x28a
-addi x29,x0,0x29a
-addi x30,x0,0x30a
-addi x31,x0,0x31a
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
+    li x10, 0x00220022
+    li x11, 0x03030303
+    li x12, 0x04040404
+    li x13, 0x05050505
+    li x14, 0x44444444
+    li x15, 0x55555555
+    li x16, 0x66666666
+    li x17, 0x77777777
+    li x18, 0x88888888
+    li x19, 0x99999999
+    li x20, 0xaaaaaaaa
+_software_irq:
+    addi sp, sp, -12
+    sw x15, 0(sp)
+    sw x11, 4(sp)
+    addi x15, x0, 1
+    lui x11, 0x2000
+    addi x11, x11, 0
+    sw x15, 0(x11)      /*msip(0x0200_0000) = 1*/
+    addi x15, x0, 0
+    lui x11, 0x2000
+    addi x11, x11, 0
+    sw x15, 0(x11)      /*msip(0x0200_0000) = 0*/
+    lw x15, 0(sp)
+    lw x11, 4(sp)
+    addi sp, sp, 12
+    li x10, 0x1
+    li x11, 0x2
+    li x12, 0x3
+    li x13, 0x4
+    li x14, 0x5
+    li x15, 0x6
+    li x16, 0x7
+    li x17, 0x8
+    li x18, 0x9
+    li x19, 0xa
+    li x20, 0xb
