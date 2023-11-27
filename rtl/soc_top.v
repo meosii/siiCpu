@@ -5,11 +5,7 @@ module soc_top (
     input wire                          CPU_EN,
     input wire                          CLK_IN,
     input wire                          RST_N,
-    // insn and pc
-    input  wire [`WORD_WIDTH - 1 : 0]   insn,
-    output wire                         rd_insn_en,
-    output wire [`PC_WIDTH - 1 : 0]     pc,
-    //
+    // outputs
     output wire                         TX
 );
 
@@ -18,6 +14,10 @@ wire                            clk_50;         // 50MHz
 wire                            clk_5;          // 5MHz
 wire                            chip_rst_n;
 wire                            io_rtcToggle;   // to clint timer
+// itcm
+wire [`WORD_WIDTH - 1 : 0]      insn;
+wire                            rd_insn_en;
+wire [`PC_WIDTH - 1 : 0]        pc;
 // cpu
 wire [`WORD_WIDTH - 1 : 0]      CPU_HRDATA;
 wire                            CPU_HREADY;
@@ -68,6 +68,13 @@ assign PLIC_HRESP   = `HRESP_ERROR;
 assign SPI_HRDATA   = 32'b0;
 assign SPI_HREADY   = 1'b0;
 assign SPI_HRESP    = `HRESP_ERROR;
+
+ip_itcm u_ip_itcm(
+    .address    (pc[14:2]       ),
+    .clock      (clk_50         ),
+    .rden       (rd_insn_en     ),
+    .q          (insn           )
+);
 
 clock_manager u_clock_manager(
     .CLK_IN         (CLK_IN         ),

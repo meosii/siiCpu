@@ -31,7 +31,9 @@ localparam UART_DATA_WIDTH  = 8;
 localparam UART_CHECK_WIDTH = 1;
 localparam UART_STOP_WIDTH  = 1;
 localparam UART_CODE_WIDTH  = UART_START_WIDTH + UART_DATA_WIDTH + UART_CHECK_WIDTH + UART_STOP_WIDTH;
-localparam BPS_115200       = 8;  //The number of T cycles it takes to send a bit of data
+localparam BPS_115200       = 434;  // The number of T cycles it takes to send a bit of data
+                                    // In serial communication, the bit rate is equal to the baud rate,
+                                    // and one symbol is one bit.
 
 // ahb write or read
 wire                            uart_tx_wen;
@@ -253,6 +255,22 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 // tx output
+
+// without check_bit
+//always @(posedge clk or negedge rst_n) begin
+//    if (!rst_n) begin
+//        tx_data_1 <= 8'b0;
+//        tx_data_2 <= 8'b0;
+//        tx_data_3 <= 8'b0;
+//        tx_data_4 <= 8'b0;
+//    end else if (tx_fifo_rdreq_r1) begin    // hold in one 4transing
+//        tx_data_1 <= {1'b1, tx_fifo_rdata[7:0]  , 1'b0};   // Concatenate stop bit and start bit
+//        tx_data_2 <= {1'b1, tx_fifo_rdata[15:8] , 1'b0};   // {stop bit, data, start bit}
+//        tx_data_3 <= {1'b1, tx_fifo_rdata[23:16], 1'b0};   // Small endian transmission
+//        tx_data_4 <= {1'b1, tx_fifo_rdata[31:24], 1'b0};
+//    end
+//end
+
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         tx_data_1 <= 8'b0;

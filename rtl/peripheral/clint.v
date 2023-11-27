@@ -1,5 +1,3 @@
-`ifndef CLINT
-`define CLINT
 `include "define.v"
 `include "sii_sync.v"
 `include "sii_pos.v"
@@ -18,8 +16,8 @@ module clint (
     input wire                          HMASTLOCK,  // not used
     input wire [`WORD_WIDTH - 1 : 0]    HWDATA,
     // int clear
-    input wire                          software_int_clear,
-    input wire                          timer_int_clear,
+    input wire                          software_int_clear, // Hardware reset
+    input wire                          timer_int_clear,    // Hardware reset
     // outputs
     output reg                          irq_timer,
     output reg                          irq_software,
