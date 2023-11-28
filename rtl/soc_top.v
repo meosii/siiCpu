@@ -6,7 +6,15 @@ module soc_top (
     input wire                          CLK_IN,
     input wire                          RST_N,
     // outputs
-    output wire                         TX
+    // uart
+    output wire                         TX,
+    // dtube
+    output wire [7 : 0]                 DTUBE_HEX0,
+    output wire [7 : 0]                 DTUBE_HEX1,
+    output wire [7 : 0]                 DTUBE_HEX2,
+    output wire [7 : 0]                 DTUBE_HEX3,
+    output wire [7 : 0]                 DTUBE_HEX4,
+    output wire [7 : 0]                 DTUBE_HEX5
 );
 
 // clock_manager
@@ -34,6 +42,7 @@ wire                            HSEL_CLINT;         // clint
 wire                            HSEL_PLIC;          // plic
 wire                            HSEL_UART;          // uart0
 wire                            HSEL_SPI;           // spi0
+wire                            HSEL_DTUBE;
 // clint
 wire [`WORD_WIDTH - 1 : 0]      CLINT_HRDATA;
 wire                            CLINT_HREADY;
@@ -50,6 +59,10 @@ wire [1 : 0]                    UART_HRESP;
 wire [`WORD_WIDTH - 1 : 0]      SPI_HRDATA;
 wire                            SPI_HREADY;
 wire [1 : 0]                    SPI_HRESP;
+// dtube
+wire [`WORD_WIDTH - 1 : 0]      DTUBE_HRDATA;
+wire                            DTUBE_HREADY;
+wire [1 : 0]                    DTUBE_HRESP;
 // interrupt
 wire                            irq_external;   // from plic
 wire                            irq_timer;      // from clint
@@ -134,11 +147,16 @@ ahb_bus_decoder u_ahb_bus_decoder(
     .SPI_HRDATA         (SPI_HRDATA         ),
     .SPI_HREADY         (SPI_HREADY         ),
     .SPI_HRESP          (SPI_HRESP          ),
+    // dtube
+    .DTUBE_HRDATA       (DTUBE_HRDATA       ),
+    .DTUBE_HREADY       (DTUBE_HREADY       ),
+    .DTUBE_HRESP        (DTUBE_HRESP        ),
     // outputs
     .HSEL_CLINT         (HSEL_CLINT         ), // clint
     .HSEL_PLIC          (HSEL_PLIC          ), // plic
     .HSEL_UART          (HSEL_UART          ), // uart0
     .HSEL_SPI           (HSEL_SPI           ), // spi
+    .HSEL_DTUBE         (HSEL_DTUBE         ), // dtube
     .CPU_HRDATA         (CPU_HRDATA         ),
     .CPU_HREADY         (CPU_HREADY         ),
     .CPU_HRESP          (CPU_HRESP          )
@@ -184,6 +202,29 @@ uart_tx u_uart_tx(
     .HRESP          (UART_HRESP     ),
     .TX             (TX             ),
     .irq_uart       (irq_uart       )
+);
+
+dtube u_dtube(
+    .clk            (clk_50         ),
+    .rst_n          (chip_rst_n     ),
+    .HSELx          (HSEL_DTUBE     ),
+    .HADDR          (CPU_HADDR      ),
+    .HWRITE         (CPU_HWRITE     ),
+    .HSIZE          (CPU_HSIZE      ),
+    .HBURST         (CPU_HBURST     ),
+    .HTRANS         (CPU_HTRANS     ),
+    .HMASTLOCK      (CPU_HMASTLOCK  ),
+    .HWDATA         (CPU_HWDATA     ),
+    .HRDATA         (DTUBE_HRDATA   ),
+    .HREADY         (DTUBE_HREADY   ),
+    .HRESP          (DTUBE_HRESP    ),
+    // outputs
+    .DTUBE_HEX0     (DTUBE_HEX0     ),
+    .DTUBE_HEX1     (DTUBE_HEX1     ),
+    .DTUBE_HEX2     (DTUBE_HEX2     ),
+    .DTUBE_HEX3     (DTUBE_HEX3     ),
+    .DTUBE_HEX4     (DTUBE_HEX4     ),
+    .DTUBE_HEX5     (DTUBE_HEX5     ) 
 );
 
 endmodule

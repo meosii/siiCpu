@@ -9,6 +9,17 @@
 `define DATA_WIDTH_ALU_OP   5
 `define DATA_WIDTH_MEM_OP   4
 `define DATA_WIDTH_CTRL_OP  2
+`ifndef SIICPU_DEFINE
+`define SIICPU_DEFINE
+
+`define WORD_WIDTH          32
+`define PC_WIDTH            32
+`define DATA_HIGH_GPR       32
+`define GPR_ADDR_WIDTH      5
+
+`define DATA_WIDTH_ALU_OP   5
+`define DATA_WIDTH_MEM_OP   4
+`define DATA_WIDTH_CTRL_OP  2
 `define DATA_WIDTH_OFFSET   2
 `define DATA_WIDTH_ISA_EXP  5
 
@@ -364,5 +375,15 @@
 // spi: 0x1001_4000 ~ 0x1001_4fff
 `define BUS_ADDR_HIGH_SPI0_WIDTH    20
 `define BUS_ADDR_HIGH_SPI0          20'h1001_4
+
+// dtube: 0x4000_0000 ~0x4000_0fff
+`define BUS_ADDR_HIGH_DTUBE_WIDTH   20
+`define BUS_ADDR_HIGH_DTUBE         20'h4000_0
+`define BUS_ADDR_DTUBE_HEX0NUM      32'h4000_0000
+`define BUS_ADDR_DTUBE_HEX1NUM      32'h4000_0004
+`define BUS_ADDR_DTUBE_HEX2NUM      32'h4000_0008
+`define BUS_ADDR_DTUBE_HEX3NUM      32'h4000_000c
+`define BUS_ADDR_DTUBE_HEX4NUM      32'h4000_0010
+`define BUS_ADDR_DTUBE_HEX5NUM      32'h4000_0014
 
 `endif

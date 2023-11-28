@@ -7,11 +7,24 @@ reg                         CLK_IN;
 reg                         RST_N;
 wire                        TX;
 
+wire [7 : 0]                DTUBE_HEX0;
+wire [7 : 0]                DTUBE_HEX1;
+wire [7 : 0]                DTUBE_HEX2;
+wire [7 : 0]                DTUBE_HEX3;
+wire [7 : 0]                DTUBE_HEX4;
+wire [7 : 0]                DTUBE_HEX5;
+
 soc_top u_soc_top(
     .CPU_EN         (CPU_EN         ),
     .CLK_IN         (CLK_IN         ),
     .RST_N          (RST_N          ),
-    .TX             (TX             )
+    .TX             (TX             ),
+    .DTUBE_HEX0     (DTUBE_HEX0     ),
+    .DTUBE_HEX1     (DTUBE_HEX1     ),
+    .DTUBE_HEX2     (DTUBE_HEX2     ),
+    .DTUBE_HEX3     (DTUBE_HEX3     ),
+    .DTUBE_HEX4     (DTUBE_HEX4     ),
+    .DTUBE_HEX5     (DTUBE_HEX5     )
 );
 
 parameter TIME_CLK_IN = 20;

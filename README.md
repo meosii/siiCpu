@@ -28,7 +28,6 @@ Here is an introduction to siiCpu
 
 - Supports uart transmission, 115200 baud rate, transmission based on one start bit, eight data bits, one odd parity bit and one end bit. Since the design is a 32-bit processor, each 32-bit data is transmitted in four times. At the same time, there is a 32-bit FIFO with a depth of 8 in the uart module, which can store 8 uart-tx data.
 
-
 ![Alt text](image.png)
 
 ### 1.1 General Purpose Registers
@@ -67,6 +66,7 @@ Here is an introduction to siiCpu
 |element|address|description|
 |---|---|---|
 |spm|0x9000_0000 ~ 0x9000_3fff|Data memory|
+|dtube|0x4000_0000 ~ 0x4000_0fff|FPGA digital tube display|
 |plic|0x0c00_0000 ~ 0x0cff_ffff|Platform level interrupt controller|
 |clint|0x0200_0000 ~ 0x0200_ffff|Core local interrupt controller|
 |uart|0x1001_3000 ~ 0x1001_3fff|uart|
@@ -88,6 +88,17 @@ Note: itcm does not hang on the bus, its address space size is 8192*32bits.
 |element|address|description|Read and Write|
 |---|---|---|---|
 |uart_TransData|0x1001_3000|Transfer data register: The cpu writes data to this register, and then the data is output by the uart tx|WO|
+
+#### 1.3.3 Dtube Memory Mapped Address
+
+|element|address|description|Read and Write|
+|---|---|---|---|
+|dtube_Hex0Num|0x4000_0000|FPGE digital tube hex0|RW|
+|dtube_Hex1Num|0x4000_0004|FPGE digital tube hex1|RW|
+|dtube_Hex2Num|0x4000_0008|FPGE digital tube hex2|RW|
+|dtube_Hex3Num|0x4000_000c|FPGE digital tube hex3|RW|
+|dtube_Hex4Num|0x4000_0010|FPGE digital tube hex4|RW|
+|dtube_Hex5Num|0x4000_0014|FPGE digital tube hex5|RW|
 
 ### 1.4 Clock Configuration
 
@@ -198,3 +209,9 @@ This cpu supports bus accesses that may need to wait, so in the write back phase
 - RST_EN: KEY0
 - CPU_EN: SW0
 - TX: GPIO_0
+- DTUBE_HEX0: HEX0
+- DTUBE_HEX1: HEX1
+- DTUBE_HEX2: HEX2
+- DTUBE_HEX3: HEX3
+- DTUBE_HEX4: HEX4
+- DTUBE_HEX5: HEX5
