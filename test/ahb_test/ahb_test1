@@ -6,7 +6,7 @@ Disassembly of section .text:
 
 80000000 <_start>:
 80000000:	90004137          	lui	sp,0x90004
-80000004:	fc010113          	addi	sp,sp,-64 # 90003fc0 <__global_pointer$+0x100026ec>
+80000004:	fc010113          	addi	sp,sp,-64 # 90003fc0 <__global_pointer$+0x100025f4>
 
 80000008 <_int_en>:
 80000008:	ff410113          	addi	sp,sp,-12
@@ -25,24 +25,24 @@ Disassembly of section .text:
 8000003c:	00c10113          	addi	sp,sp,12
 
 80000040 <_algebra>:
-80000040:	00800513          	li	a0,8
+80000040:	00a00513          	li	a0,10
 80000044:	00a12023          	sw	a0,0(sp)
 80000048:	00000513          	li	a0,0
 8000004c:	00000493          	li	s1,0
 80000050:	00910133          	add	sp,sp,s1
 80000054:	00012503          	lw	a0,0(sp)
 80000058:	00150493          	addi	s1,a0,1
-8000005c:	ffe48593          	addi	a1,s1,-2
+8000005c:	00048593          	mv	a1,s1
 80000060:	00b12223          	sw	a1,4(sp)
 80000064:	00412603          	lw	a2,4(sp)
-80000068:	fff60613          	addi	a2,a2,-1
+80000068:	00160613          	addi	a2,a2,1
 8000006c:	40000237          	lui	tp,0x40000
 80000070:	00c22023          	sw	a2,0(tp) # 40000000 <_start-0x40000000>
 80000074:	00022683          	lw	a3,0(tp) # 0 <_start-0x80000000>
-80000078:	fff68693          	addi	a3,a3,-1
+80000078:	00168693          	addi	a3,a3,1
 8000007c:	00022703          	lw	a4,0(tp) # 0 <_start-0x80000000>
-80000080:	ffe70713          	addi	a4,a4,-2
-80000084:	00300793          	li	a5,3
+80000080:	00270713          	addi	a4,a4,2
+80000084:	00f00793          	li	a5,15
 
 80000088 <_dtube>:
 80000088:	40000237          	lui	tp,0x40000
@@ -63,6 +63,70 @@ Disassembly of section .text:
 800000c4:	00e42023          	sw	a4,0(s0)
 800000c8:	00f4a023          	sw	a5,0(s1)
 
-800000cc <_empty>:
-800000cc:	00000013          	nop
-800000d0:	ffdff06f          	j	800000cc <_empty>
+800000cc <_uart_tx>:
+800000cc:	10013437          	lui	s0,0x10013
+800000d0:	40302537          	lui	a0,0x40302
+800000d4:	01050513          	addi	a0,a0,16 # 40302010 <_start-0x3fcfdff0>
+800000d8:	d0c0b5b7          	lui	a1,0xd0c0b
+800000dc:	0a058593          	addi	a1,a1,160 # d0c0b0a0 <__global_pointer$+0x50c096d4>
+800000e0:	05040637          	lui	a2,0x5040
+800000e4:	30260613          	addi	a2,a2,770 # 5040302 <_start-0x7afbfcfe>
+800000e8:	0a0a16b7          	lui	a3,0xa0a1
+800000ec:	a0a68693          	addi	a3,a3,-1526 # a0a0a0a <_start-0x75f5f5f6>
+800000f0:	b0b0b737          	lui	a4,0xb0b0b
+800000f4:	0b070713          	addi	a4,a4,176 # b0b0b0b0 <__global_pointer$+0x30b096e4>
+800000f8:	111117b7          	lui	a5,0x11111
+800000fc:	11178793          	addi	a5,a5,273 # 11111111 <_start-0x6eeeeeef>
+80000100:	22222837          	lui	a6,0x22222
+80000104:	22280813          	addi	a6,a6,546 # 22222222 <_start-0x5dddddde>
+80000108:	333338b7          	lui	a7,0x33333
+8000010c:	33388893          	addi	a7,a7,819 # 33333333 <_start-0x4ccccccd>
+80000110:	40302937          	lui	s2,0x40302
+80000114:	01090913          	addi	s2,s2,16 # 40302010 <_start-0x3fcfdff0>
+80000118:	d0c0b9b7          	lui	s3,0xd0c0b
+8000011c:	0a098993          	addi	s3,s3,160 # d0c0b0a0 <__global_pointer$+0x50c096d4>
+80000120:	decbba37          	lui	s4,0xdecbb
+80000124:	990a0a13          	addi	s4,s4,-1648 # decba990 <__global_pointer$+0x5ecb8fc4>
+80000128:	99009ab7          	lui	s5,0x99009
+8000012c:	800a8a93          	addi	s5,s5,-2048 # 99008800 <__global_pointer$+0x19006e34>
+80000130:	ddbbbb37          	lui	s6,0xddbbb
+80000134:	abbb0b13          	addi	s6,s6,-1349 # ddbbaabb <__global_pointer$+0x5dbb90ef>
+80000138:	01010bb7          	lui	s7,0x1010
+8000013c:	101b8b93          	addi	s7,s7,257 # 1010101 <_start-0x7efefeff>
+80000140:	07070c37          	lui	s8,0x7070
+80000144:	707c0c13          	addi	s8,s8,1799 # 7070707 <_start-0x78f8f8f9>
+80000148:	55555cb7          	lui	s9,0x55555
+8000014c:	555c8c93          	addi	s9,s9,1365 # 55555555 <_start-0x2aaaaaab>
+80000150:	dddded37          	lui	s10,0xdddde
+80000154:	dddd0d13          	addi	s10,s10,-547 # dddddddd <__global_pointer$+0x5dddc411>
+80000158:	babacdb7          	lui	s11,0xbabac
+8000015c:	abad8d93          	addi	s11,s11,-1350 # babababa <__global_pointer$+0x3abaa0ee>
+80000160:	9999ae37          	lui	t3,0x9999a
+80000164:	999e0e13          	addi	t3,t3,-1639 # 99999999 <__global_pointer$+0x19997fcd>
+80000168:	66666eb7          	lui	t4,0x66666
+8000016c:	666e8e93          	addi	t4,t4,1638 # 66666666 <_start-0x1999999a>
+80000170:	00a42023          	sw	a0,0(s0) # 10013000 <_start-0x6ffed000>
+80000174:	00b42023          	sw	a1,0(s0)
+80000178:	00c42023          	sw	a2,0(s0)
+8000017c:	00d42023          	sw	a3,0(s0)
+80000180:	00e42023          	sw	a4,0(s0)
+80000184:	00f42023          	sw	a5,0(s0)
+80000188:	01042023          	sw	a6,0(s0)
+8000018c:	01142023          	sw	a7,0(s0)
+80000190:	01242023          	sw	s2,0(s0)
+80000194:	01342023          	sw	s3,0(s0)
+80000198:	01442023          	sw	s4,0(s0)
+8000019c:	01542023          	sw	s5,0(s0)
+800001a0:	01642023          	sw	s6,0(s0)
+800001a4:	01742023          	sw	s7,0(s0)
+800001a8:	01842023          	sw	s8,0(s0)
+800001ac:	01942023          	sw	s9,0(s0)
+800001b0:	01a42023          	sw	s10,0(s0)
+800001b4:	01b42023          	sw	s11,0(s0)
+800001b8:	01c42023          	sw	t3,0(s0)
+800001bc:	01d42023          	sw	t4,0(s0)
+800001c0:	00042283          	lw	t0,0(s0)
+
+800001c4 <_empty>:
+800001c4:	00000013          	nop
+800001c8:	ffdff06f          	j	800001c4 <_empty>

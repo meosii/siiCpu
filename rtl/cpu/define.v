@@ -9,17 +9,6 @@
 `define DATA_WIDTH_ALU_OP   5
 `define DATA_WIDTH_MEM_OP   4
 `define DATA_WIDTH_CTRL_OP  2
-`ifndef SIICPU_DEFINE
-`define SIICPU_DEFINE
-
-`define WORD_WIDTH          32
-`define PC_WIDTH            32
-`define DATA_HIGH_GPR       32
-`define GPR_ADDR_WIDTH      5
-
-`define DATA_WIDTH_ALU_OP   5
-`define DATA_WIDTH_MEM_OP   4
-`define DATA_WIDTH_CTRL_OP  2
 `define DATA_WIDTH_OFFSET   2
 `define DATA_WIDTH_ISA_EXP  5
 
@@ -368,9 +357,13 @@
 `define BUS_ADDR_HIGH_PLIC          8'h0c
 
 // uart: 0x1001_3000 ~ 0x1001_3fff
-`define BUS_ADDR_HIGH_UART0_WIDTH   20
-`define BUS_ADDR_HIGH_UART0         20'h1001_3
-`define BUS_ADDR_UART_TRANSDATA     32'h1001_3000
+`define BUS_ADDR_HIGH_UART_WIDTH    20
+`define BUS_ADDR_HIGH_UART          20'h1001_3
+`define BUS_ADDR_LOCA_UART_TXRX     11
+`define BUS_ADDR_UART_TX            1'b0
+`define BUS_ADDR_UART_RX            1'b1
+`define BUS_ADDR_UART_TRANSDATA     32'h1001_3000   // tx
+`define BUS_ADDR_UART_RECEIVEDATA   32'h1001_3800   // rx
 
 // spi: 0x1001_4000 ~ 0x1001_4fff
 `define BUS_ADDR_HIGH_SPI0_WIDTH    20

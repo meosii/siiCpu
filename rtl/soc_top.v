@@ -5,6 +5,7 @@ module soc_top (
     input wire                          CPU_EN,
     input wire                          CLK_IN,
     input wire                          RST_N,
+    input wire                          RX,
     // outputs
     // uart
     output wire                         TX,
@@ -67,14 +68,17 @@ wire [1 : 0]                    DTUBE_HRESP;
 wire                            irq_external;   // from plic
 wire                            irq_timer;      // from clint
 wire                            irq_software;   // from clint
-wire                            irq_uart;       // from uart
+wire                            irq_uartTx;     // from uart_tx
+wire                            irq_uartRx;     // from uart_rx
 wire                            external_int_clear;
 wire                            software_int_clear;
 wire                            timer_int_clear;
-wire                            uart_int_clear;
+wire                            uartTx_int_clear;
+wire                            uartRx_int_clear;
 
 assign irq_external     = 1'b0;
-assign uart_int_clear   = 1'b0;
+assign uartTx_int_clear   = 1'b0;
+assign uartRx_int_clear   = 1'b0;
 assign PLIC_HRDATA  = 32'b0;
 assign PLIC_HREADY  = 1'b0;
 assign PLIC_HRESP   = `HRESP_ERROR;
@@ -184,24 +188,27 @@ clint u_clint(
     .HRESP              (CLINT_HRESP        )
 );
 
-uart_tx u_uart_tx(
-    .clk            (clk_50         ),
-    .rst_n          (chip_rst_n     ),
-    .HSELx          (HSEL_UART      ),
-    .HADDR          (CPU_HADDR      ),
-    .HWRITE         (CPU_HWRITE     ),
-    .HSIZE          (CPU_HSIZE      ),
-    .HBURST         (CPU_HBURST     ),
-    .HTRANS         (CPU_HTRANS     ),
-    .HMASTLOCK      (CPU_HMASTLOCK  ),
-    .HWDATA         (CPU_HWDATA     ),
-    .uart_int_clear (uart_int_clear ),
+uart u_uart(
+    .clk                (clk_50             ),
+    .rst_n              (chip_rst_n         ),
+    .HSELx              (HSEL_UART          ),
+    .HADDR              (CPU_HADDR          ),
+    .HWRITE             (CPU_HWRITE         ),
+    .HSIZE              (CPU_HSIZE          ),
+    .HBURST             (CPU_HBURST         ),
+    .HTRANS             (CPU_HTRANS         ),
+    .HMASTLOCK          (CPU_HMASTLOCK      ),
+    .HWDATA             (CPU_HWDATA         ),
+    .RX                 (RX                 ),
+    .uartTx_int_clear   (uartTx_int_clear   ),
+    .uartRx_int_clear   (uartRx_int_clear   ),
     // outputs
-    .HRDATA         (UART_HRDATA    ),
-    .HREADY         (UART_HREADY    ),
-    .HRESP          (UART_HRESP     ),
-    .TX             (TX             ),
-    .irq_uart       (irq_uart       )
+    .HRDATA             (UART_HRDATA        ),
+    .HREADY             (UART_HREADY        ),
+    .HRESP              (UART_HRESP         ),
+    .TX                 (TX                 ),
+    .irq_uartTx         (irq_uartTx         ),
+    .irq_uartRx         (irq_uartRx         )
 );
 
 dtube u_dtube(

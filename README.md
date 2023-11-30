@@ -88,6 +88,7 @@ Note: itcm does not hang on the bus, its address space size is 8192*32bits.
 |element|address|description|Read and Write|
 |---|---|---|---|
 |uart_TransData|0x1001_3000|Transfer data register: The cpu writes data to this register, and then the data is output by the uart tx|WO|
+|uart_ReceiveData|0x1001_3800|Receive data register: The data written by the pc side to the soc|RO|
 
 #### 1.3.3 Dtube Memory Mapped Address
 
@@ -99,6 +100,22 @@ Note: itcm does not hang on the bus, its address space size is 8192*32bits.
 |dtube_Hex3Num|0x4000_000c|FPGE digital tube hex3|RW|
 |dtube_Hex4Num|0x4000_0010|FPGE digital tube hex4|RW|
 |dtube_Hex5Num|0x4000_0014|FPGE digital tube hex5|RW|
+
+#### 1.3.4 Plic Memory Mapped Address
+
+|element|address|description|Read and Write|
+|---|---|---|---|
+|Sour1_Prior|0x0c00_0000|source1 priority|RW|
+|Sour2_Prior|0x0c00_0004|source2 priority|RW|
+|Sour3_Prior|0x0c00_0008|source3 priority|RW|
+
+- Interrupt Allocation Table (External Irq)
+
+|PLIC Source Interrupt Num|Source|
+|---|---|
+|source1|uart|
+|source2|FPGA irq button|
+
 
 ### 1.4 Clock Configuration
 
@@ -209,6 +226,7 @@ This cpu supports bus accesses that may need to wait, so in the write back phase
 - RST_EN: KEY0
 - CPU_EN: SW0
 - TX: GPIO_0
+- RX: GPIO_1
 - DTUBE_HEX0: HEX0
 - DTUBE_HEX1: HEX1
 - DTUBE_HEX2: HEX2

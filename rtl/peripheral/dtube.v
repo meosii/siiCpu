@@ -37,6 +37,13 @@ localparam SIX_DISPLAY      = 8'b10000010;
 localparam SEVEN_DISPLAY    = 8'b11111000;
 localparam EIGHT_DISPLAY    = 8'b10000000;
 localparam NINE_DISPLAY     = 8'b10010000;
+localparam A_DISPLAY        = 8'b10001000;
+localparam B_DISPLAY        = 8'b10000011;
+localparam C_DISPLAY        = 8'b11000110;
+localparam D_DISPLAY        = 8'b10100001;
+localparam E_DISPLAY        = 8'b10000110;
+localparam F_DISPLAY        = 8'b10001110;
+
 
 wire dtube_wen;
 wire dtube_ren;
@@ -194,65 +201,102 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 // digital tube display
-assign DTUBE_HEX0 = (dtube_Hex0Num[7:0] == 8'd1)?   ONE_DISPLAY     :
-                    (dtube_Hex0Num[7:0] == 8'd2)?   TWO_DISPLAY     :
-                    (dtube_Hex0Num[7:0] == 8'd3)?   THREE_DISPLAY   :
-                    (dtube_Hex0Num[7:0] == 8'd4)?   FOUR_DISPLAY    :
-                    (dtube_Hex0Num[7:0] == 8'd5)?   FIVE_DISPLAY    :
-                    (dtube_Hex0Num[7:0] == 8'd6)?   SIX_DISPLAY     :
-                    (dtube_Hex0Num[7:0] == 8'd7)?   SEVEN_DISPLAY   :
-                    (dtube_Hex0Num[7:0] == 8'd8)?   EIGHT_DISPLAY   :
-                    (dtube_Hex0Num[7:0] == 8'd9)?   NINE_DISPLAY    :   8'b1111_1111;
+assign DTUBE_HEX0 = (dtube_Hex0Num[3:0] == 4'd1)?   ONE_DISPLAY     :
+                    (dtube_Hex0Num[3:0] == 4'd2)?   TWO_DISPLAY     :
+                    (dtube_Hex0Num[3:0] == 4'd3)?   THREE_DISPLAY   :
+                    (dtube_Hex0Num[3:0] == 4'd4)?   FOUR_DISPLAY    :
+                    (dtube_Hex0Num[3:0] == 4'd5)?   FIVE_DISPLAY    :
+                    (dtube_Hex0Num[3:0] == 4'd6)?   SIX_DISPLAY     :
+                    (dtube_Hex0Num[3:0] == 4'd7)?   SEVEN_DISPLAY   :
+                    (dtube_Hex0Num[3:0] == 4'd8)?   EIGHT_DISPLAY   :
+                    (dtube_Hex0Num[3:0] == 4'd9)?   NINE_DISPLAY    :   
+                    (dtube_Hex0Num[3:0] == 4'd10)?  A_DISPLAY       :   
+                    (dtube_Hex0Num[3:0] == 4'd11)?  B_DISPLAY       :   
+                    (dtube_Hex0Num[3:0] == 4'd12)?  C_DISPLAY       :   
+                    (dtube_Hex0Num[3:0] == 4'd13)?  D_DISPLAY       :   
+                    (dtube_Hex0Num[3:0] == 4'd14)?  E_DISPLAY       :   
+                    (dtube_Hex0Num[3:0] == 4'd15)?  F_DISPLAY       :   8'b1111_1111;
 
-assign DTUBE_HEX1 = (dtube_Hex1Num[7:0] == 8'd1)?   ONE_DISPLAY     :
-                    (dtube_Hex1Num[7:0] == 8'd2)?   TWO_DISPLAY     :
-                    (dtube_Hex1Num[7:0] == 8'd3)?   THREE_DISPLAY   :
-                    (dtube_Hex1Num[7:0] == 8'd4)?   FOUR_DISPLAY    :
-                    (dtube_Hex1Num[7:0] == 8'd5)?   FIVE_DISPLAY    :
-                    (dtube_Hex1Num[7:0] == 8'd6)?   SIX_DISPLAY     :
-                    (dtube_Hex1Num[7:0] == 8'd7)?   SEVEN_DISPLAY   :
-                    (dtube_Hex1Num[7:0] == 8'd8)?   EIGHT_DISPLAY   :
-                    (dtube_Hex1Num[7:0] == 8'd9)?   NINE_DISPLAY    :   8'b1111_1111;
+assign DTUBE_HEX1 = (dtube_Hex1Num[3:0] == 4'd1)?   ONE_DISPLAY     :
+                    (dtube_Hex1Num[3:0] == 4'd2)?   TWO_DISPLAY     :
+                    (dtube_Hex1Num[3:0] == 4'd3)?   THREE_DISPLAY   :
+                    (dtube_Hex1Num[3:0] == 4'd4)?   FOUR_DISPLAY    :
+                    (dtube_Hex1Num[3:0] == 4'd5)?   FIVE_DISPLAY    :
+                    (dtube_Hex1Num[3:0] == 4'd6)?   SIX_DISPLAY     :
+                    (dtube_Hex1Num[3:0] == 4'd7)?   SEVEN_DISPLAY   :
+                    (dtube_Hex1Num[3:0] == 4'd8)?   EIGHT_DISPLAY   :
+                    (dtube_Hex1Num[3:0] == 4'd9)?   NINE_DISPLAY    :   
+                    (dtube_Hex1Num[3:0] == 4'd10)?  A_DISPLAY       :   
+                    (dtube_Hex1Num[3:0] == 4'd11)?  B_DISPLAY       :   
+                    (dtube_Hex1Num[3:0] == 4'd12)?  C_DISPLAY       :   
+                    (dtube_Hex1Num[3:0] == 4'd13)?  D_DISPLAY       :   
+                    (dtube_Hex1Num[3:0] == 4'd14)?  E_DISPLAY       :   
+                    (dtube_Hex1Num[3:0] == 4'd15)?  F_DISPLAY       :   8'b1111_1111;
 
-assign DTUBE_HEX2 = (dtube_Hex2Num[7:0] == 8'd1)?   ONE_DISPLAY     :
-                    (dtube_Hex2Num[7:0] == 8'd2)?   TWO_DISPLAY     :
-                    (dtube_Hex2Num[7:0] == 8'd3)?   THREE_DISPLAY   :
-                    (dtube_Hex2Num[7:0] == 8'd4)?   FOUR_DISPLAY    :
-                    (dtube_Hex2Num[7:0] == 8'd5)?   FIVE_DISPLAY    :
-                    (dtube_Hex2Num[7:0] == 8'd6)?   SIX_DISPLAY     :
-                    (dtube_Hex2Num[7:0] == 8'd7)?   SEVEN_DISPLAY   :
-                    (dtube_Hex2Num[7:0] == 8'd8)?   EIGHT_DISPLAY   :
-                    (dtube_Hex2Num[7:0] == 8'd9)?   NINE_DISPLAY    :   8'b1111_1111;
 
-assign DTUBE_HEX3 = (dtube_Hex3Num[7:0] == 8'd1)?   ONE_DISPLAY     :
-                    (dtube_Hex3Num[7:0] == 8'd2)?   TWO_DISPLAY     :
-                    (dtube_Hex3Num[7:0] == 8'd3)?   THREE_DISPLAY   :
-                    (dtube_Hex3Num[7:0] == 8'd4)?   FOUR_DISPLAY    :
-                    (dtube_Hex3Num[7:0] == 8'd5)?   FIVE_DISPLAY    :
-                    (dtube_Hex3Num[7:0] == 8'd6)?   SIX_DISPLAY     :
-                    (dtube_Hex3Num[7:0] == 8'd7)?   SEVEN_DISPLAY   :
-                    (dtube_Hex3Num[7:0] == 8'd8)?   EIGHT_DISPLAY   :
-                    (dtube_Hex3Num[7:0] == 8'd9)?   NINE_DISPLAY    :   8'b1111_1111;                    
+assign DTUBE_HEX2 = (dtube_Hex2Num[3:0] == 4'd1)?   ONE_DISPLAY     :
+                    (dtube_Hex2Num[3:0] == 4'd2)?   TWO_DISPLAY     :
+                    (dtube_Hex2Num[3:0] == 4'd3)?   THREE_DISPLAY   :
+                    (dtube_Hex2Num[3:0] == 4'd4)?   FOUR_DISPLAY    :
+                    (dtube_Hex2Num[3:0] == 4'd5)?   FIVE_DISPLAY    :
+                    (dtube_Hex2Num[3:0] == 4'd6)?   SIX_DISPLAY     :
+                    (dtube_Hex2Num[3:0] == 4'd7)?   SEVEN_DISPLAY   :
+                    (dtube_Hex2Num[3:0] == 4'd8)?   EIGHT_DISPLAY   :
+                    (dtube_Hex2Num[3:0] == 4'd9)?   NINE_DISPLAY    :   
+                    (dtube_Hex2Num[3:0] == 4'd10)?  A_DISPLAY       :   
+                    (dtube_Hex2Num[3:0] == 4'd11)?  B_DISPLAY       :   
+                    (dtube_Hex2Num[3:0] == 4'd12)?  C_DISPLAY       :   
+                    (dtube_Hex2Num[3:0] == 4'd13)?  D_DISPLAY       :   
+                    (dtube_Hex2Num[3:0] == 4'd14)?  E_DISPLAY       :   
+                    (dtube_Hex2Num[3:0] == 4'd15)?  F_DISPLAY       :   8'b1111_1111;
 
-assign DTUBE_HEX4 = (dtube_Hex4Num[7:0] == 8'd1)?   ONE_DISPLAY     :
-                    (dtube_Hex4Num[7:0] == 8'd2)?   TWO_DISPLAY     :
-                    (dtube_Hex4Num[7:0] == 8'd3)?   THREE_DISPLAY   :
-                    (dtube_Hex4Num[7:0] == 8'd4)?   FOUR_DISPLAY    :
-                    (dtube_Hex4Num[7:0] == 8'd5)?   FIVE_DISPLAY    :
-                    (dtube_Hex4Num[7:0] == 8'd6)?   SIX_DISPLAY     :
-                    (dtube_Hex4Num[7:0] == 8'd7)?   SEVEN_DISPLAY   :
-                    (dtube_Hex4Num[7:0] == 8'd8)?   EIGHT_DISPLAY   :
-                    (dtube_Hex4Num[7:0] == 8'd9)?   NINE_DISPLAY    :   8'b1111_1111;
+assign DTUBE_HEX3 = (dtube_Hex3Num[3:0] == 4'd1)?   ONE_DISPLAY     :
+                    (dtube_Hex3Num[3:0] == 4'd2)?   TWO_DISPLAY     :
+                    (dtube_Hex3Num[3:0] == 4'd3)?   THREE_DISPLAY   :
+                    (dtube_Hex3Num[3:0] == 4'd4)?   FOUR_DISPLAY    :
+                    (dtube_Hex3Num[3:0] == 4'd5)?   FIVE_DISPLAY    :
+                    (dtube_Hex3Num[3:0] == 4'd6)?   SIX_DISPLAY     :
+                    (dtube_Hex3Num[3:0] == 4'd7)?   SEVEN_DISPLAY   :
+                    (dtube_Hex3Num[3:0] == 4'd8)?   EIGHT_DISPLAY   :
+                    (dtube_Hex3Num[3:0] == 4'd9)?   NINE_DISPLAY    :   
+                    (dtube_Hex3Num[3:0] == 4'd10)?  A_DISPLAY       :   
+                    (dtube_Hex3Num[3:0] == 4'd11)?  B_DISPLAY       :   
+                    (dtube_Hex3Num[3:0] == 4'd12)?  C_DISPLAY       :   
+                    (dtube_Hex3Num[3:0] == 4'd13)?  D_DISPLAY       :   
+                    (dtube_Hex3Num[3:0] == 4'd14)?  E_DISPLAY       :   
+                    (dtube_Hex3Num[3:0] == 4'd15)?  F_DISPLAY       :   8'b1111_1111;
 
-assign DTUBE_HEX5 = (dtube_Hex5Num[7:0] == 8'd1)?   ONE_DISPLAY     :
-                    (dtube_Hex5Num[7:0] == 8'd2)?   TWO_DISPLAY     :
-                    (dtube_Hex5Num[7:0] == 8'd3)?   THREE_DISPLAY   :
-                    (dtube_Hex5Num[7:0] == 8'd4)?   FOUR_DISPLAY    :
-                    (dtube_Hex5Num[7:0] == 8'd5)?   FIVE_DISPLAY    :
-                    (dtube_Hex5Num[7:0] == 8'd6)?   SIX_DISPLAY     :
-                    (dtube_Hex5Num[7:0] == 8'd7)?   SEVEN_DISPLAY   :
-                    (dtube_Hex5Num[7:0] == 8'd8)?   EIGHT_DISPLAY   :
-                    (dtube_Hex5Num[7:0] == 8'd9)?   NINE_DISPLAY    :   8'b1111_1111;
+assign DTUBE_HEX4 = (dtube_Hex4Num[3:0] == 4'd1)?   ONE_DISPLAY     :
+                    (dtube_Hex4Num[3:0] == 4'd2)?   TWO_DISPLAY     :
+                    (dtube_Hex4Num[3:0] == 4'd3)?   THREE_DISPLAY   :
+                    (dtube_Hex4Num[3:0] == 4'd4)?   FOUR_DISPLAY    :
+                    (dtube_Hex4Num[3:0] == 4'd5)?   FIVE_DISPLAY    :
+                    (dtube_Hex4Num[3:0] == 4'd6)?   SIX_DISPLAY     :
+                    (dtube_Hex4Num[3:0] == 4'd7)?   SEVEN_DISPLAY   :
+                    (dtube_Hex4Num[3:0] == 4'd8)?   EIGHT_DISPLAY   :
+                    (dtube_Hex4Num[3:0] == 4'd9)?   NINE_DISPLAY    :   
+                    (dtube_Hex4Num[3:0] == 4'd10)?  A_DISPLAY       :   
+                    (dtube_Hex4Num[3:0] == 4'd11)?  B_DISPLAY       :   
+                    (dtube_Hex4Num[3:0] == 4'd12)?  C_DISPLAY       :   
+                    (dtube_Hex4Num[3:0] == 4'd13)?  D_DISPLAY       :   
+                    (dtube_Hex4Num[3:0] == 4'd14)?  E_DISPLAY       :   
+                    (dtube_Hex4Num[3:0] == 4'd15)?  F_DISPLAY       :   8'b1111_1111;
+
+assign DTUBE_HEX5 = (dtube_Hex5Num[3:0] == 4'd1)?   ONE_DISPLAY     :
+                    (dtube_Hex5Num[3:0] == 4'd2)?   TWO_DISPLAY     :
+                    (dtube_Hex5Num[3:0] == 4'd3)?   THREE_DISPLAY   :
+                    (dtube_Hex5Num[3:0] == 4'd4)?   FOUR_DISPLAY    :
+                    (dtube_Hex5Num[3:0] == 4'd5)?   FIVE_DISPLAY    :
+                    (dtube_Hex5Num[3:0] == 4'd6)?   SIX_DISPLAY     :
+                    (dtube_Hex5Num[3:0] == 4'd7)?   SEVEN_DISPLAY   :
+                    (dtube_Hex5Num[3:0] == 4'd8)?   EIGHT_DISPLAY   :
+                    (dtube_Hex5Num[3:0] == 4'd9)?   NINE_DISPLAY    :   
+                    (dtube_Hex5Num[3:0] == 4'd10)?  A_DISPLAY       :   
+                    (dtube_Hex5Num[3:0] == 4'd11)?  B_DISPLAY       :   
+                    (dtube_Hex5Num[3:0] == 4'd12)?  C_DISPLAY       :   
+                    (dtube_Hex5Num[3:0] == 4'd13)?  D_DISPLAY       :   
+                    (dtube_Hex5Num[3:0] == 4'd14)?  E_DISPLAY       :   
+                    (dtube_Hex5Num[3:0] == 4'd15)?  F_DISPLAY       :   8'b1111_1111;
 
 endmodule
 `endif
