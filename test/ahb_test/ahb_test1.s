@@ -17,111 +17,81 @@ _int_en:
     lw a1, 4(sp)
     lw t0, 8(sp)
     addi sp, sp, 12
-addi x10,x0,10
-addi x11,x0,11
-addi x12,x0,12
-addi x13,x0,13
-addi x14,x0,14
-addi x15,x0,15
-addi x16,x0,16
-addi x17,x0,17
-addi x18,x0,18
-addi x19,x0,19
-addi x20,x0,20
-addi x21,x0,21
-addi x22,x0,22
-addi x23,x0,23
-addi x24,x0,24
-addi x25,x0,25
-addi x26,x0,26
-addi x27,x0,27
-addi x28,x0,28
-addi x29,x0,29
-addi x30,x0,30
-addi x31,x0,31
-_timer_irq:
-    addi sp, sp, -20
+_algebra:
+    addi x10,x0,0xa
     sw x10, 0(sp)
+    li x10, 0       /*x10=0xa*/
+    addi x9,x0,0
+    add sp,sp,x9
+    lw x10,0(sp)
+    addi x9, x10, 1
+    addi x11,x9,0 /*x11=b*/
     sw x11, 4(sp)
-    sw x12, 8(sp)
-    sw x13, 12(sp)
-    sw x14, 16(sp)
-    addi x10, x0, 1
-    lui x11, 0x2004
-    addi x11, x11, 0x004
-    sw x10, 0(x11)      /* mtimecmp_high(0x0200_4004) = 1*/
-    addi x12, x0, 0xa
-    lui x11, 0x2004
-    addi x11, x11, 0x000
-    sw x12, 0(x11)      /* mtimecmp_low(0x0200_4000) = 0xa*/
-    addi x13, x0, 0x1
-    lui x11, 0x200b
-    addi x11, x11, 0x7ff
-    addi x11, x11, 0x7ff
-    addi x11, x11, 0x1
-    sw x13, 0(x11)      /*mtime_high(0x0200_bfff) = 0x1*/
-    addi x14, x0, 0x9
-    lui x11, 0x200b
-    addi x11, x11, 0x7ff
-    addi x11, x11, 0x7f9
-    sw x14, 0(x11)      /*mtime_low(0x0200_bff8) = 0x9*/
-    lw x10, 0(sp)
-    lw x11, 4(sp)
-    lw x12, 8(sp)
-    lw x13, 12(sp)
-    lw x14, 16(sp)
-    addi sp, sp, 20
-addi x10,x0,0x10a
-addi x11,x0,0x11a
-addi x12,x0,0x12a
-addi x13,x0,0x13a
-addi x14,x0,0x14a
-addi x15,x0,0x15a
-addi x16,x0,0x16a
-addi x17,x0,0x17a
-addi x18,x0,0x18a
-addi x19,x0,0x19a
-addi x20,x0,0x20a
-addi x21,x0,0x21a
-addi x22,x0,0x22a
-addi x23,x0,0x23a
-addi x24,x0,0x24a
-addi x25,x0,0x25a
-addi x26,x0,0x26a
-addi x27,x0,0x27a
-addi x28,x0,0x28a
-addi x29,x0,0x29a
-addi x30,x0,0x30a
-addi x31,x0,0x31a
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
-addi x0,x0,0
+    lw x12,4(sp)
+    addi x12,x12,1 /*x12=c*/
+    li x4, 1073741824 /*x4=0x4000_0000, (dtube_Hex0Num)*/
+    sw x12, 0(x4)
+    lw x13, 0(x4)
+    addi x13,x13,1 /*x13=d*/
+    lw x14, 0(x4)
+    addi x14,x14,2 /*x14=e*/
+    li x15, 0xf   /*x15=f*/
+_dtube:
+    li x4, 1073741824 /*x4=0x4000_0000, (dtube_Hex0Num)*/
+    li x5, 1073741828 /*x5=0x4000_0004, (dtube_Hex1Num)*/
+    li x6, 1073741832 /*x6=0x4000_0008, (dtube_Hex2Num)*/
+    li x7, 1073741836 /*x7=0x4000_000c, (dtube_Hex3Num)*/
+    li x8, 1073741840 /*x8=0x4000_0010, (dtube_Hex4Num)*/
+    li x9, 1073741844 /*x9=0x4000_0014, (dtube_Hex5Num)*/
+    sw x10, 0(x4)
+    sw x11, 0(x5)
+    sw x12, 0(x6)
+    sw x13, 0(x7)
+    sw x14, 0(x8)
+    sw x15, 0(x9)
+_uart_tx:
+    li x8, 268513280 /*x8=0x1001_3000, (uart_TransData)*/
+    li x10, 0x40302010
+    li x11, 0xd0c0b0a0
+    li x12, 0x05040302
+    li x13, 0x0a0a0a0a
+    li x14, 0xb0b0b0b0
+    li x15, 0x11111111
+    li x16, 0x22222222
+    li x17, 0x33333333
+    li x18, 0x40302010
+    li x19, 0xd0c0b0a0
+    li x20, 0xdecba990
+    li x21, 0x99008800
+    li x22, 0xddbbaabb
+    li x23, 0x01010101
+    li x24, 0x07070707
+    li x25, 0x55555555
+    li x26, 0xdddddddd
+    li x27, 0xbabababa
+    li x28, 0x99999999
+    li x29, 0x66666666
+    sw x10, 0(x8)
+    sw x11, 0(x8)
+    sw x12, 0(x8)
+    sw x13, 0(x8)
+    sw x14, 0(x8)
+    sw x15, 0(x8)
+    sw x16, 0(x8)
+    sw x17, 0(x8)
+    sw x18, 0(x8)
+    sw x19, 0(x8)
+    sw x20, 0(x8)
+    sw x21, 0(x8)
+    sw x22, 0(x8)
+    sw x23, 0(x8)
+    sw x24, 0(x8)
+    sw x25, 0(x8)
+    sw x26, 0(x8)
+    sw x27, 0(x8)
+    sw x28, 0(x8)
+    sw x29, 0(x8)
+    lw x5, 0(x8)
+_empty:
+    addi x0,x0,0
+    j _empty

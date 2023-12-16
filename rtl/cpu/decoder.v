@@ -2,13 +2,13 @@
 `define SIICPU_DECODER
 `include "define.v"
 module decoder (
-    input wire [`PC_WIDTH-1 : 0]                pc, // pc = (if_pc + 4) or br_addr_tmp
+//    input wire [`PC_WIDTH-1 : 0]                pc, // pc = (if_pc + 4) or br_addr_tmp
     //from if
     input wire                                  if_en,
     input wire [`PC_WIDTH-1 : 0]                if_pc,
     input wire [`WORD_WIDTH - 1 : 0]            if_insn,
-    // branch prediction
-    input wire                                  if_predt_br_taken,
+//    // branch prediction
+//    input wire                                  if_predt_br_taken,
     //from gpr
     input wire [`WORD_WIDTH - 1 : 0]            gpr_rd_data_0,
     input wire [`WORD_WIDTH - 1 : 0]            gpr_rd_data_1,
@@ -28,6 +28,7 @@ module decoder (
     // to cpu ctrl
     output wire                                 ebreak_en,
     output wire                                 ecall_en,
+    output wire                                 mret_en,
     //from csr
     input wire [`WORD_WIDTH - 1 : 0]            csr_rd_data,
     //to alu
@@ -308,6 +309,8 @@ assign alu_op = (!if_en)? `ALU_OP_NOP :
 // ebreak ecall
 assign ebreak_en = ((if_en) && (if_insn == `EBREAK_INSN))?  `ENABLE : `DISABLE;
 assign ecall_en  = ((if_en) && (if_insn == `ECALL_INSN) )?  `ENABLE : `DISABLE;
+// mret, jump return
+assign mret_en   = ((if_en) && (if_insn == `MRET_INSN))?  `ENABLE : `DISABLE;
 
 assign exp_code = (!if_en)? `ISA_EXP_NO_EXP :
                 (((opcode == `OP_IMM) && ((if_insn[`I_TYPE_FUNCT3] == `FUNCT3_ADDI    ) ||
@@ -344,8 +347,8 @@ assign exp_code = (!if_en)? `ISA_EXP_NO_EXP :
 // jump and branch
 wire                        br_taken_tmp;
 wire [`PC_WIDTH - 1 : 0]    br_addr_tmp;
-wire                        predt_br_success;
-wire                        predt_br_error;
+//wire                        predt_br_success;
+//wire                        predt_br_error;
 
 assign br_taken_tmp =   if_en &&
                         (   opcode == `OP_JAL                                                                                   ) || 
@@ -364,15 +367,19 @@ assign jr_target    =   (opcode == `OP_JAL)?    $signed({1'b0,if_pc})       + $s
 
 assign br_addr_tmp  =   (opcode == `OP_JALR)?   {jr_target[`PC_WIDTH-1 : 1], 1'b0}          :   jr_target[`PC_WIDTH-1 : 0];
 
-assign predt_br_success =   ((if_predt_br_taken && br_taken_tmp) && (pc == br_addr_tmp)) || (!if_predt_br_taken && !br_taken_tmp);
-assign predt_br_error   =   (if_predt_br_taken && !br_taken_tmp) || (!if_predt_br_taken && br_taken_tmp);
+//assign predt_br_success =   ((if_predt_br_taken && br_taken_tmp) && (pc == br_addr_tmp)) || (!if_predt_br_taken && !br_taken_tmp);
+//assign predt_br_error   =   (if_predt_br_taken && !br_taken_tmp) || (!if_predt_br_taken && br_taken_tmp);
+//assign br_taken         =   predt_br_error;
+//assign br_addr          =   (if_predt_br_taken && !br_taken_tmp)?   if_pc + 4   :
+//                            (!if_predt_br_taken && br_taken_tmp)?   br_addr_tmp : `PC_WIDTH'b0;
+//// contral hazard, pc != br_addr
+//assign contral_hazard   =   (predt_br_error)? 1'b1 : 1'b0;
 
-assign br_taken         =   predt_br_error;
-assign br_addr          =   (if_predt_br_taken && !br_taken_tmp)?   if_pc + 4   :
-                            (!if_predt_br_taken && br_taken_tmp)?   br_addr_tmp : `PC_WIDTH'b0;
+assign br_taken         =   br_taken_tmp;
+assign br_addr          =   (br_taken_tmp)?   br_addr_tmp : `PC_WIDTH'b0;
 
 // contral hazard, pc != br_addr
-assign contral_hazard   =   (predt_br_error)? 1'b1 : 1'b0;
+assign contral_hazard   =   (br_taken)? 1'b1 : 1'b0;
 
 // mem ctrl
 assign mem_op = (!if_en)? `MEM_OP_NOP :

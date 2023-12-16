@@ -14,17 +14,17 @@ module pipeline_cpu_top (
     output wire                         rd_insn_en,
     output wire [`PC_WIDTH - 1 : 0]     pc,
     // from AHB
-    input wire [`WORD_WIDTH - 1 : 0]    D_HRDATA,
-    input wire                          D_HREADY,
-    input wire [1 : 0]                  D_HRESP,
+    input wire [`WORD_WIDTH - 1 : 0]    CPU_HRDATA,
+    input wire                          CPU_HREADY,
+    input wire [1 : 0]                  CPU_HRESP,
     // to AHB
-    output wire [`WORD_WIDTH - 1 : 0]   D_HADDR,
-    output wire                         D_HWRITE,
-    output wire [2 : 0]                 D_HSIZE,
-    output wire [2 : 0]                 D_HBURST,
-    output wire [1 : 0]                 D_HTRANS,
-    output wire                         D_HMASTLOCK,
-    output wire [`WORD_WIDTH - 1 : 0]   D_HWDATA,
+    output wire [`WORD_WIDTH - 1 : 0]   CPU_HADDR,
+    output wire                         CPU_HWRITE,
+    output wire [2 : 0]                 CPU_HSIZE,
+    output wire [2 : 0]                 CPU_HBURST,
+    output wire [1 : 0]                 CPU_HTRANS,
+    output wire                         CPU_HMASTLOCK,
+    output wire [`WORD_WIDTH - 1 : 0]   CPU_HWDATA,
     // int clear
     output wire                         external_int_clear,
     output wire                         software_int_clear,
@@ -40,7 +40,7 @@ wire                                    predt_br_taken;
 wire [`WORD_WIDTH - 1 : 0]              predt_gpr_rd_data;
 wire [`PC_WIDTH - 1 : 0]                if_pc;
 wire [`WORD_WIDTH - 1 : 0]              if_insn;
-wire                                    if_predt_br_taken;
+//wire                                    if_predt_br_taken;
 //decoder
 wire [`PC_WIDTH - 1 : 0]                br_addr;
 wire                                    br_taken;
@@ -208,34 +208,34 @@ pc u_pc(
     // from cpu_ctrl
     .ctrl_pc                (ctrl_pc                ),
     .trap_happened          (trap_happened          ),
-    .insn                   (insn                   ),
-    // from gpr
-    .gpr_rd_addr_1          (gpr_rd_addr_1          ),
-    .predt_gpr_rd_data      (gpr_rd_data_1          ),
-    .gpr_x1                 (gpr_x1                 ),
-    // ra hazard
-    .gpr_we_n               (gpr_we_n               ),
-    .load_in_id_ex          (load_in_id_ex          ),
-    .load_in_ex_mem         (load_in_ex_mem         ),
-    .alu2gpr_in_id_ex       (alu2gpr_in_id_ex       ),
-    .alu2gpr_in_ex_mem      (alu2gpr_in_ex_mem      ),
-    .csr2gpr_in_id_ex       (csr2gpr_in_id_ex       ),
-    .csr2gpr_in_ex_mem      (csr2gpr_in_ex_mem      ),
-    .load_after_storing_en  (load_after_storing_en  ),
-    .loading_after_store_en (loading_after_store_en ),
-    .dst_addr               (dst_addr               ),
-    .id_dst_addr            (id_dst_addr            ),
-    .ex_dst_addr            (ex_dst_addr            ),
-    .alu_out                (alu_out                ),
-    .id_csr_to_gpr_data     (id_csr_to_gpr_data     ),
-    .ex_alu_out             (ex_alu_out             ),
-    .ex_csr_to_gpr_data     (ex_csr_to_gpr_data     ),
-    .ex_store_data          (ex_store_data          ),
-    .prev_ex_store_data     (prev_ex_store_data     ),
-    // outputs
-    .predt_gpr_rd_en        (predt_gpr_rd_en        ),
-    .predt_gpr_rd_addr      (predt_gpr_rd_addr      ),
-    .predt_br_taken         (predt_br_taken         ),
+//    .insn                   (insn                   ),
+//    // from gpr
+//    .gpr_rd_addr_1          (gpr_rd_addr_1          ),
+//    .predt_gpr_rd_data      (gpr_rd_data_1          ),
+//    .gpr_x1                 (gpr_x1                 ),
+//    // ra hazard
+//    .gpr_we_n               (gpr_we_n               ),
+//    .load_in_id_ex          (load_in_id_ex          ),
+//    .load_in_ex_mem         (load_in_ex_mem         ),
+//    .alu2gpr_in_id_ex       (alu2gpr_in_id_ex       ),
+//    .alu2gpr_in_ex_mem      (alu2gpr_in_ex_mem      ),
+//    .csr2gpr_in_id_ex       (csr2gpr_in_id_ex       ),
+//    .csr2gpr_in_ex_mem      (csr2gpr_in_ex_mem      ),
+//    .load_after_storing_en  (load_after_storing_en  ),
+//    .loading_after_store_en (loading_after_store_en ),
+//    .dst_addr               (dst_addr               ),
+//    .id_dst_addr            (id_dst_addr            ),
+//    .ex_dst_addr            (ex_dst_addr            ),
+//    .alu_out                (alu_out                ),
+//    .id_csr_to_gpr_data     (id_csr_to_gpr_data     ),
+//    .ex_alu_out             (ex_alu_out             ),
+//    .ex_csr_to_gpr_data     (ex_csr_to_gpr_data     ),
+//    .ex_store_data          (ex_store_data          ),
+//    .prev_ex_store_data     (prev_ex_store_data     ),
+//    // outputs
+//    .predt_gpr_rd_en        (predt_gpr_rd_en        ),
+//    .predt_gpr_rd_addr      (predt_gpr_rd_addr      ),
+//    .predt_br_taken         (predt_br_taken         ),
     .mret_en                (mret_en                ),
     .pc                     (pc                     )
 );
@@ -248,21 +248,21 @@ if_reg u_if_reg(
     .if_flush               (if_flush               ),
     .pc                     (pc                     ),
     .insn                   (insn                   ),
-    .predt_br_taken         (predt_br_taken         ),
+//    .predt_br_taken         (predt_br_taken         ),
     // outputs
     .if_pc                  (if_pc                  ),
     .if_insn                (if_insn                ),
-    .if_en                  (if_en                  ),
-    .if_predt_br_taken      (if_predt_br_taken      )
+    .if_en                  (if_en                  )
+//    .if_predt_br_taken      (if_predt_br_taken      )
 );
 
 decoder u_decoder(
     // in
-    .pc                     (pc                     ),
+//    .pc                     (pc                     ),
     .if_en                  (if_en                  ),
     .if_pc                  (if_pc                  ),
     .if_insn                (if_insn                ),
-    .if_predt_br_taken      (if_predt_br_taken      ),
+//    .if_predt_br_taken      (if_predt_br_taken      ),
     // from gpr
     .gpr_rd_data_0          (gpr_rd_data_0          ),
     .gpr_rd_data_1          (gpr_rd_data_1          ),
@@ -281,6 +281,7 @@ decoder u_decoder(
     .csr_w_data             (csr_w_data             ),
     .ebreak_en              (ebreak_en              ),
     .ecall_en               (ecall_en               ),
+	 .mret_en                (mret_en                ),
     // in
     .csr_rd_data            (csr_rd_data            ),
     // outputs
@@ -512,18 +513,18 @@ ahb_mem_ctrl u_ahb_mem_ctrl(
     .memory_addr            (memory_addr            ),
     .ex_store_data          (ex_store_data          ),
     .ex_store_byteena       (ex_store_byteena       ),
-    .D_HRDATA               (D_HRDATA               ),
-    .D_HREADY               (D_HREADY               ),
-    .D_HRESP                (D_HRESP                ),
+    .CPU_HRDATA             (CPU_HRDATA             ),
+    .CPU_HREADY             (CPU_HREADY             ),
+    .CPU_HRESP              (CPU_HRESP              ),
     .spm_rd_data            (spm_rd_data            ),
     .loading_after_store_en (loading_after_store_en ),
-    .D_HADDR                (D_HADDR                ),
-    .D_HWRITE               (D_HWRITE               ),
-    .D_HSIZE                (D_HSIZE                ),
-    .D_HBURST               (D_HBURST               ),
-    .D_HTRANS               (D_HTRANS               ),
-    .D_HMASTLOCK            (D_HMASTLOCK            ),
-    .D_HWDATA               (D_HWDATA               ),
+    .CPU_HADDR              (CPU_HADDR              ),
+    .CPU_HWRITE             (CPU_HWRITE             ),
+    .CPU_HSIZE              (CPU_HSIZE              ),
+    .CPU_HBURST             (CPU_HBURST             ),
+    .CPU_HTRANS             (CPU_HTRANS             ),
+    .CPU_HMASTLOCK          (CPU_HMASTLOCK          ),
+    .CPU_HWDATA             (CPU_HWDATA             ),
     .spm_store_byteena      (spm_store_byteena      ),
     .spm_write_data         (spm_write_data         ),
     .spm_rdaddress          (spm_rdaddress          ),

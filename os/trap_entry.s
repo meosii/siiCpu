@@ -46,12 +46,9 @@ test_if_asynchronous:
 	beq a2, x0, handle_synchronous		/* Branch past interrupt handing if not asynchronous. */
 
     call interrupt_handler
-    j asynchronous_return
 
 handle_synchronous:
     call exception_handler
-    addi a1, a1, 4
-    csrw mepc, a1
 
 asynchronous_return:
     lw x1, 1*4(sp)

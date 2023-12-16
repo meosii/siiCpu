@@ -2,7 +2,6 @@
 
 ## 1. Design Specifications
 
-
 Here is an introduction to siiCpu
 
 - The CPU supports the complete rv32i instruction set, which can execute basic arithmetic, logic, shift, branch, jump, and other instructions.
@@ -17,7 +16,7 @@ Here is an introduction to siiCpu
 
 - The CPU is designed with a five-stage pipeline, including fetch, decode, execute, memory access, and write back, connected by pipeline registers.
 
-- The CPU uses simple static branch prediction. For conditional branch instructions, the immediate number in the instruction is used to determine whether to jump. If the jump address is after the instruction, the jump occurs. For unconditional jump instructions, it is predicted that they always jump. Since the `jr ra` instruction is a function return instruction and occurs frequently, an interface is directly designed to read the `ra` register in the general-purpose register.
+- The CPU uses simple static branch prediction. For conditional branch instructions, the immediate number in the instruction is used to determine whether to jump. If the jump address is after the instruction, the jump occurs. For unconditional jump instructions, it is predicted that they always jump. Since the `jr ra` instruction is a function return instruction and occurs frequently, an interface is directly designed to read the `ra` register in the general-purpose register.(deleted)
 
 - The CPU adopts the Harvard architecture, and the instruction and data storage are separated and accessed by itcm and spm, respectively. Single-cycle reading improves memory access efficiency.
 
@@ -27,7 +26,9 @@ Here is an introduction to siiCpu
 
 - CLINT is used to generate software interrupts and timer interrupts. There is an `msip` register, which is triggered by software, and there is a 64-bit `mtime` timer, which is counted by a low-frequency clock and triggers the timer interrupt when its value is equal to the value in the `mtimecmp` register. All three registers can be read and written by the bus.
 
-![Alt text](image-5.png)
+- Supports uart transmission, 115200 baud rate, transmission based on one start bit, eight data bits, one odd parity bit and one end bit. Since the design is a 32-bit processor, each 32-bit data is transmitted in four times. At the same time, there is a 32-bit FIFO with a depth of 8 in the uart module, which can store 8 uart-tx data.
+
+![Alt text](image.png)
 
 ### 1.1 General Purpose Registers
 
@@ -61,24 +62,71 @@ Here is an introduction to siiCpu
 | mip |0x344| RW |
 
 ### 1.3 Bus Address Space
+
 |element|address|description|
 |---|---|---|
 |spm|0x9000_0000 ~ 0x9000_3fff|Data memory|
-|itcm|0x8000_0000 ~ 0x8000_3fff|Insn memory|
+|dtube|0x4000_0000 ~ 0x4000_0fff|FPGA digital tube display|
 |plic|0x0c00_0000 ~ 0x0cff_ffff|Platform level interrupt controller|
 |clint|0x0200_0000 ~ 0x0200_ffff|Core local interrupt controller|
-|uart0|0x1001_3000 ~ 0x1001_3fff|uart|
+|uart|0x1001_3000 ~ 0x1001_3fff|uart|
 
-#### 1.3.1 clint memory mapped address
-|element|address|description|
+Note: itcm does not hang on the bus, its address space size is 8192*32bits.
+
+#### 1.3.1 Clint Memory Mapped Address
+
+|element|address|description|Read and Write|
+|---|---|---|---|
+|clint_mtime_high|0x0200_bfff|The high 32 bits of the timer|RW|
+|clint_mtime_low|0x0200_bff8|The low 32 bits of the timer|RW|
+|clint_mtimecmp_high|0x0200_4004|Config register comparison values|RW|
+|clint_mtimecmp_low|0x0200_4000|Config register comparison values|RW|
+|clint_msip|0x0200_0000|software interrupt|RW|
+
+#### 1.3.2 Uart Memory Mapped Address
+
+|element|address|description|Read and Write|
+|---|---|---|---|
+|uart_TransData|0x1001_3000|Transfer data register: The cpu writes data to this register, and then the data is output by the uart tx|WO|
+|uart_ReceiveData|0x1001_3800|Receive data register: The data written by the pc side to the soc|RO|
+
+#### 1.3.3 Dtube Memory Mapped Address
+
+|element|address|description|Read and Write|
+|---|---|---|---|
+|dtube_Hex0Num|0x4000_0000|FPGE digital tube hex0|RW|
+|dtube_Hex1Num|0x4000_0004|FPGE digital tube hex1|RW|
+|dtube_Hex2Num|0x4000_0008|FPGE digital tube hex2|RW|
+|dtube_Hex3Num|0x4000_000c|FPGE digital tube hex3|RW|
+|dtube_Hex4Num|0x4000_0010|FPGE digital tube hex4|RW|
+|dtube_Hex5Num|0x4000_0014|FPGE digital tube hex5|RW|
+
+#### 1.3.4 Plic Memory Mapped Address
+
+|element|address|description|Read and Write|
+|---|---|---|---|
+|Sour1_Prior|0x0c00_0000|source1 priority|RW|
+|Sour2_Prior|0x0c00_0004|source2 priority|RW|
+|Sour3_Prior|0x0c00_0008|source3 priority|RW|
+
+- Interrupt Allocation Table (External Irq)
+
+|PLIC Source Interrupt Num|Source|
+|---|---|
+|source1|uart|
+|source2|FPGA irq button|
+
+
+### 1.4 Clock Configuration
+
+|clock_name|frequence|description|
 |---|---|---|
-|clint_mtime_high|0x0200_bfff|The high 32 bits of the timer|
-|clint_mtime_low|0x0200_bff8|The low 32 bits of the timer|
-|clint_mtimecmp_high|0x0200_4004|Config register comparison values|
-|clint_mtimecmp_low|0x0200_4000|Config register comparison values|
-|clint_msip|0x0200_0000|software interrupt|
+|CLK_IN|50MHz|From FPGA|
+|clk_50|50MHz|From CLK_IN, obtained from PLL without frequency division|
+|clk_5|5MHz|From CLK_IN, obtained from PLL tenth frequency|
 
-### 1.4 Instructions
+
+### 1.5 Instructions
 
 1. Integer arithmetic instruction
 ``` arm
@@ -171,3 +219,17 @@ If the prediction is correct, the pipeline will execute correctly. If the predic
 This cpu supports bus accesses that may need to wait, so in the write back phase it is necessary to determine whether the memory data read in the load instruction has already been read out, and if so, pause the pipeline.
 
 ![Alt text](image-4.png)
+
+## 3. FPGA Config
+
+- CLK_IN: 50MHz
+- RST_EN: KEY0
+- CPU_EN: SW0
+- TX: GPIO_0
+- RX: GPIO_1
+- DTUBE_HEX0: HEX0
+- DTUBE_HEX1: HEX1
+- DTUBE_HEX2: HEX2
+- DTUBE_HEX3: HEX3
+- DTUBE_HEX4: HEX4
+- DTUBE_HEX5: HEX5
