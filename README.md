@@ -26,7 +26,9 @@ Here is an introduction to siiCpu
 
 - CLINT is used to generate software interrupts and timer interrupts. There is an `msip` register, which is triggered by software, and there is a 64-bit `mtime` timer, which is counted by a low-frequency clock and triggers the timer interrupt when its value is equal to the value in the `mtimecmp` register. All three registers can be read and written by the bus.
 
-- Supports uart transmission, 115200 baud rate, transmission based on one start bit, eight data bits, one odd parity bit and one end bit. Since the design is a 32-bit processor, each 32-bit data is transmitted in four times. At the same time, there is a 32-bit FIFO with a depth of 8 in the uart module, which can store 8 uart-tx data.
+- Supports UART transmission, 115200 baud rate, transmission based on one start bit, eight data bits, one odd parity bit and one end bit. Since the design is a 32-bit processor, each 32-bit data is transmitted in four times. At the same time, there is a 32-bit FIFO with a depth of 8 in the uart module, which can store 8 uart-tx data.
+
+- Support digital display, CPU can read and write to digital register, support 0-f output.
 
 ![Alt text](image.png)
 
@@ -233,3 +235,14 @@ This cpu supports bus accesses that may need to wait, so in the write back phase
 - DTUBE_HEX3: HEX3
 - DTUBE_HEX4: HEX4
 - DTUBE_HEX5: HEX5
+
+## 4. 
+
+### Why AHB-lite? 
+Consider whether the instruction memory and Data memory should be hung on the bus, because the data and instructions in the same cycle are likely to read the bus, then the CPU contains an Int-master and a data-master.
+
+For the AHB protocol, only one master can access the bus at a time. It also requires arbitration between different masters, which takes a lot of time. 
+
+In AHB-martix, multiple masters are allowed to access the bus at the same time, but each slave has its own arbiter, which costs a lot of area. 
+
+Therefore, the instruction memory and data memory are directly connected to the cpu, and the other peripheral devices are connected to AHB-lite. This protocol only supports one master, does not need arbitration, and does not need transfer of bus ownership, which saves time.

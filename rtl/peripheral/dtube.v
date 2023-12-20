@@ -74,6 +74,13 @@ reg [`WORD_WIDTH - 1 :0] dtube_Hex3Num;
 reg [`WORD_WIDTH - 1 :0] dtube_Hex4Num;
 reg [`WORD_WIDTH - 1 :0] dtube_Hex5Num;
 
+reg Hex0_writen; // Before the digital tube is written, the digital tube outputs a low level
+reg Hex1_writen;
+reg Hex2_writen;
+reg Hex3_writen;
+reg Hex4_writen;
+reg Hex5_writen;
+
 assign  dtube_wen    = HSELx &&  HWRITE && (HTRANS == `HTRANS_NONSEQ);
 assign  dtube_ren    = HSELx && !HWRITE && (HTRANS == `HTRANS_NONSEQ);
 assign  dtube_Hex0Num_wen  = (HADDR == `BUS_ADDR_DTUBE_HEX0NUM) && dtube_wen;
@@ -110,52 +117,64 @@ end
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        dtube_Hex0Num <= 8'b0;
+        dtube_Hex0Num   <= `WORD_WIDTH'b0;
+        Hex0_writen     <= 1'b0;
     end else if (dtube_Hex0Num_wen_r1) begin
-        dtube_Hex0Num <= HWDATA;
+        dtube_Hex0Num   <= HWDATA;
+        Hex0_writen     <= 1'b1;
     end
 end
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        dtube_Hex1Num <= 8'b0;
+        dtube_Hex1Num   <= `WORD_WIDTH'b0;
+        Hex1_writen     <= 1'b0;
     end else if (dtube_Hex1Num_wen_r1) begin
-        dtube_Hex1Num <= HWDATA;
+        dtube_Hex1Num   <= HWDATA;
+        Hex1_writen     <= 1'b1;
     end
 end
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        dtube_Hex2Num <= 8'b0;
+        dtube_Hex2Num   <= `WORD_WIDTH'b0;
+        Hex2_writen     <= 1'b0;
     end else if (dtube_Hex2Num_wen_r1) begin
-        dtube_Hex2Num <= HWDATA;
+        dtube_Hex2Num   <= HWDATA;
+        Hex2_writen     <= 1'b1;
     end
 end
 
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        dtube_Hex3Num <= 8'b0;
+        dtube_Hex3Num   <= `WORD_WIDTH'b0;
+        Hex3_writen     <= 1'b0;
     end else if (dtube_Hex3Num_wen_r1) begin
-        dtube_Hex3Num <= HWDATA;
+        dtube_Hex3Num   <= HWDATA;
+        Hex3_writen     <= 1'b1;
     end
 end
 
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        dtube_Hex4Num <= 8'b0;
+        dtube_Hex4Num   <= `WORD_WIDTH'b0;
+        Hex4_writen     <= 1'b0;
     end else if (dtube_Hex4Num_wen_r1) begin
-        dtube_Hex4Num <= HWDATA;
+        dtube_Hex4Num   <= HWDATA;
+        Hex4_writen     <= 1'b1;
     end
 end
 
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        dtube_Hex5Num <= 8'b0;
+        dtube_Hex5Num   <= `WORD_WIDTH'b0;
+        Hex5_writen     <= 1'b0;
     end else if (dtube_Hex5Num_wen_r1) begin
-        dtube_Hex5Num <= HWDATA;
+        dtube_Hex5Num   <= HWDATA;
+        Hex5_writen     <= 1'b1;
     end
 end
 
@@ -201,7 +220,9 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 // digital tube display
-assign DTUBE_HEX0 = (dtube_Hex0Num[3:0] == 4'd1)?   ONE_DISPLAY     :
+assign DTUBE_HEX0 = (!Hex0_writen              )?   8'b1111_1111    :
+                    (dtube_Hex0Num[3:0] == 4'd0)?   ZERO_DISPLAY    :
+                    (dtube_Hex0Num[3:0] == 4'd1)?   ONE_DISPLAY     :
                     (dtube_Hex0Num[3:0] == 4'd2)?   TWO_DISPLAY     :
                     (dtube_Hex0Num[3:0] == 4'd3)?   THREE_DISPLAY   :
                     (dtube_Hex0Num[3:0] == 4'd4)?   FOUR_DISPLAY    :
@@ -217,7 +238,9 @@ assign DTUBE_HEX0 = (dtube_Hex0Num[3:0] == 4'd1)?   ONE_DISPLAY     :
                     (dtube_Hex0Num[3:0] == 4'd14)?  E_DISPLAY       :   
                     (dtube_Hex0Num[3:0] == 4'd15)?  F_DISPLAY       :   8'b1111_1111;
 
-assign DTUBE_HEX1 = (dtube_Hex1Num[3:0] == 4'd1)?   ONE_DISPLAY     :
+assign DTUBE_HEX1 = (!Hex1_writen              )?   8'b1111_1111    :
+                    (dtube_Hex1Num[3:0] == 4'd0)?   ZERO_DISPLAY    :
+                    (dtube_Hex1Num[3:0] == 4'd1)?   ONE_DISPLAY     :
                     (dtube_Hex1Num[3:0] == 4'd2)?   TWO_DISPLAY     :
                     (dtube_Hex1Num[3:0] == 4'd3)?   THREE_DISPLAY   :
                     (dtube_Hex1Num[3:0] == 4'd4)?   FOUR_DISPLAY    :
@@ -234,7 +257,9 @@ assign DTUBE_HEX1 = (dtube_Hex1Num[3:0] == 4'd1)?   ONE_DISPLAY     :
                     (dtube_Hex1Num[3:0] == 4'd15)?  F_DISPLAY       :   8'b1111_1111;
 
 
-assign DTUBE_HEX2 = (dtube_Hex2Num[3:0] == 4'd1)?   ONE_DISPLAY     :
+assign DTUBE_HEX2 = (!Hex2_writen              )?   8'b1111_1111    :
+                    (dtube_Hex2Num[3:0] == 4'd0)?   ZERO_DISPLAY    :
+                    (dtube_Hex2Num[3:0] == 4'd1)?   ONE_DISPLAY     :
                     (dtube_Hex2Num[3:0] == 4'd2)?   TWO_DISPLAY     :
                     (dtube_Hex2Num[3:0] == 4'd3)?   THREE_DISPLAY   :
                     (dtube_Hex2Num[3:0] == 4'd4)?   FOUR_DISPLAY    :
@@ -250,7 +275,9 @@ assign DTUBE_HEX2 = (dtube_Hex2Num[3:0] == 4'd1)?   ONE_DISPLAY     :
                     (dtube_Hex2Num[3:0] == 4'd14)?  E_DISPLAY       :   
                     (dtube_Hex2Num[3:0] == 4'd15)?  F_DISPLAY       :   8'b1111_1111;
 
-assign DTUBE_HEX3 = (dtube_Hex3Num[3:0] == 4'd1)?   ONE_DISPLAY     :
+assign DTUBE_HEX3 = (!Hex3_writen              )?   8'b1111_1111    :
+                    (dtube_Hex3Num[3:0] == 4'd0)?   ZERO_DISPLAY    :
+                    (dtube_Hex3Num[3:0] == 4'd1)?   ONE_DISPLAY     :
                     (dtube_Hex3Num[3:0] == 4'd2)?   TWO_DISPLAY     :
                     (dtube_Hex3Num[3:0] == 4'd3)?   THREE_DISPLAY   :
                     (dtube_Hex3Num[3:0] == 4'd4)?   FOUR_DISPLAY    :
@@ -266,7 +293,9 @@ assign DTUBE_HEX3 = (dtube_Hex3Num[3:0] == 4'd1)?   ONE_DISPLAY     :
                     (dtube_Hex3Num[3:0] == 4'd14)?  E_DISPLAY       :   
                     (dtube_Hex3Num[3:0] == 4'd15)?  F_DISPLAY       :   8'b1111_1111;
 
-assign DTUBE_HEX4 = (dtube_Hex4Num[3:0] == 4'd1)?   ONE_DISPLAY     :
+assign DTUBE_HEX4 = (!Hex4_writen              )?   8'b1111_1111    :
+                    (dtube_Hex4Num[3:0] == 4'd0)?   ZERO_DISPLAY    :
+                    (dtube_Hex4Num[3:0] == 4'd1)?   ONE_DISPLAY     :
                     (dtube_Hex4Num[3:0] == 4'd2)?   TWO_DISPLAY     :
                     (dtube_Hex4Num[3:0] == 4'd3)?   THREE_DISPLAY   :
                     (dtube_Hex4Num[3:0] == 4'd4)?   FOUR_DISPLAY    :
@@ -282,7 +311,9 @@ assign DTUBE_HEX4 = (dtube_Hex4Num[3:0] == 4'd1)?   ONE_DISPLAY     :
                     (dtube_Hex4Num[3:0] == 4'd14)?  E_DISPLAY       :   
                     (dtube_Hex4Num[3:0] == 4'd15)?  F_DISPLAY       :   8'b1111_1111;
 
-assign DTUBE_HEX5 = (dtube_Hex5Num[3:0] == 4'd1)?   ONE_DISPLAY     :
+assign DTUBE_HEX5 = (!Hex5_writen              )?   8'b1111_1111    :
+                    (dtube_Hex5Num[3:0] == 4'd0)?   ZERO_DISPLAY    :
+                    (dtube_Hex5Num[3:0] == 4'd1)?   ONE_DISPLAY     :
                     (dtube_Hex5Num[3:0] == 4'd2)?   TWO_DISPLAY     :
                     (dtube_Hex5Num[3:0] == 4'd3)?   THREE_DISPLAY   :
                     (dtube_Hex5Num[3:0] == 4'd4)?   FOUR_DISPLAY    :

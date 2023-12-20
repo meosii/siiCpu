@@ -106,36 +106,46 @@ interrupt_handler:
     addi x11, x11, 0x7ff
     addi x11, x11, 0x7f9
     sw x14, 0(x11)      /*mtime_low(0x0200_bff8) = 0x0*/
-    addi x10,x0,0x10f
-    addi x11,x0,0x11f
-    addi x12,x0,0x12f
-    addi x13,x0,0x13f
-    addi x14,x0,0x14f
-    addi x15,x0,0x15f
-    addi x16,x0,0x16f
-    addi x17,x0,0x17f
-    addi x18,x0,0x18f
-    addi x19,x0,0x19f
-    addi x20,x0,0x20f
-    addi x21,x0,0x21f
-    addi x22,x0,0x22f
-    addi x23,x0,0x23f
-    addi x24,x0,0x24f
-    addi x25,x0,0x25f
-    addi x26,x0,0x26f
+    li x4, 1073741824 /*x4=0x4000_0000, (dtube_Hex0Num)*/
+    li x5, 1073741828 /*x5=0x4000_0004, (dtube_Hex1Num)*/
+    li x6, 1073741832 /*x6=0x4000_0008, (dtube_Hex2Num)*/
+    li x7, 1073741836 /*x7=0x4000_000c, (dtube_Hex3Num)*/
+    li x8, 1073741840 /*x8=0x4000_0010, (dtube_Hex4Num)*/
+    li x9, 1073741844 /*x9=0x4000_0014, (dtube_Hex5Num)*/
+    li x10, 1
+    li x11, 1
+    li x12, 1
+    li x13, 1
+    li x14, 1
+    li x15, 1
+    sw x10, 0(x4)
+    sw x11, 0(x5)
+    sw x12, 0(x6)
+    sw x13, 0(x7)
+    sw x14, 0(x8)
+    sw x15, 0(x9)
     j asynchronous_return
 
 .weak exception_handler
 exception_handler:
 2:
-    addi x10,x0,0x10e
-    addi x11,x0,0x11e
-    addi x12,x0,0x12e
-    addi x13,x0,0x13e
-    addi x14,x0,0x14e
-    addi x15,x0,0x15e
-    addi x16,x0,0x16e
-    addi x17,x0,0x17e
-    addi a1, a1, 4
+    li x4, 1073741824 /*x4=0x4000_0000, (dtube_Hex0Num)*/
+    li x5, 1073741828 /*x5=0x4000_0004, (dtube_Hex1Num)*/
+    li x6, 1073741832 /*x6=0x4000_0008, (dtube_Hex2Num)*/
+    li x7, 1073741836 /*x7=0x4000_000c, (dtube_Hex3Num)*/
+    li x8, 1073741840 /*x8=0x4000_0010, (dtube_Hex4Num)*/
+    li x9, 1073741844 /*x9=0x4000_0014, (dtube_Hex5Num)*/
+    li x10, 14
+    li x11, 14
+    li x12, 14
+    li x13, 14
+    li x14, 14
+    li x15, 14
+    sw x10, 0(x4)
+    sw x11, 0(x5)
+    sw x12, 0(x6)
+    sw x13, 0(x7)
+    sw x14, 0(x8)
+    sw x15, 0(x9)
     csrw mepc, a1
     j asynchronous_return

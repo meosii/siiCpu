@@ -17,3 +17,17 @@ _dtube:
     sw x13, 0(x7)
     sw x14, 0(x8)
     sw x15, 0(x9)
+
+_four_bit_dtube:
+	slli x10, x31,28
+	srli x10, x10,28 /* x31[3:0] */
+	slli x11, x31,24
+	srli x11, x11,28 /* x31[7:4] */
+	slli x12, x31,20
+	srli x12, x12,28 /* x31[11:8] */
+	slli x13, x31,16
+	srli x13, x13,28 /* x31[15:12] */
+	slli x14, x31,12
+	srli x14, x14,28 /* x31[19:16] */
+	slli x15, x31,0
+	srli x15, x15,28 /* x31[24:20] */
