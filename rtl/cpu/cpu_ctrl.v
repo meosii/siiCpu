@@ -11,6 +11,8 @@ module cpu_ctrl (
     input wire                                  load_hazard_in_id_ex,
     input wire                                  load_hazard_in_ex_mem,
     input wire                                  contral_hazard,
+    // div in alu
+    input wire                                  div_in_alu,
     // ahb bus
     input wire                                  ahb_bus_wait,
     // exception excuted in the mem stage
@@ -186,9 +188,9 @@ always @(*) begin
 end
 
 // stall and flush
-assign pc_stall = load_hazard_in_id_ex || load_hazard_in_ex_mem || ahb_bus_wait; 
-assign if_stall = load_hazard_in_id_ex || load_hazard_in_ex_mem || ahb_bus_wait; 
-assign id_stall = ahb_bus_wait; 
+assign pc_stall = load_hazard_in_id_ex || load_hazard_in_ex_mem || ahb_bus_wait || div_in_alu; 
+assign if_stall = load_hazard_in_id_ex || load_hazard_in_ex_mem || ahb_bus_wait || div_in_alu; 
+assign id_stall = ahb_bus_wait || div_in_alu; 
 assign ex_stall = ahb_bus_wait; 
 assign mem_stall = ahb_bus_wait; 
 
@@ -201,7 +203,8 @@ assign id_flush =   load_hazard_in_id_ex || load_hazard_in_ex_mem ||    // hazar
                     trap_happened;                                      // pc jump after mem_stage
 
 assign ex_flush =   exp_in_alu || exp_in_mem_ctrl ||                    // exception happened in each stage
-                    trap_happened;                                      // pc jump after mem_stage
+                    trap_happened ||                                    // pc jump after mem_stage
+                    div_in_alu;                                         // division in alu
 
 assign mem_flush =  exp_in_mem_ctrl ||                                  // exception happened in each stage
                     exception_mem_en;                                   // exception happened: pc jump after mem_stage

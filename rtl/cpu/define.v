@@ -55,6 +55,15 @@
 `define FUNCT3_SUB          3'b000
 `define FUNCT3_SRA          3'b101
 
+`define FUNCT3_MUL          3'b000
+`define FUNCT3_MULH         3'b001
+`define FUNCT3_MULHSU       3'b010
+`define FUNCT3_MULHU        3'b011
+`define FUNCT3_DIV          3'b100
+`define FUNCT3_DIVU         3'b101
+`define FUNCT3_REM          3'b110
+`define FUNCT3_REMU         3'b111
+
 `define FUNCT3_BEQ          3'b000
 `define FUNCT3_BNE          3'b001
 `define FUNCT3_BLT          3'b100
@@ -80,6 +89,8 @@
 `define FUNCT3_CSRRCI       3'b111
 
 `define FUNCT3_ECALL_EBREAK 3'b000
+
+`define FUNCT7_MULDIV       7'b0000001
 
 `define EBREAK_INSN         32'b000000000001_00000_000_00000_1110011
 `define ECALL_INSN          32'b000000000000_00000_000_00000_1110011
@@ -108,6 +119,14 @@
 `define ALU_OP_SRL          5'd19
 `define ALU_OP_SUB          5'd20
 `define ALU_OP_SRA          5'd21
+`define ALU_OP_MUL          5'd22
+`define ALU_OP_MULH         5'd23
+`define ALU_OP_MULHSU       5'd24
+`define ALU_OP_MULHU        5'd25
+`define ALU_OP_DIV          5'd26
+`define ALU_OP_DIVU         5'd27
+`define ALU_OP_REM          5'd28
+`define ALU_OP_REMU         5'd29
 
 `define MEM_OP_NOP          4'd0
 `define MEM_OP_LOAD_LW      4'd1
@@ -118,6 +137,16 @@
 `define MEM_OP_SW           4'd6
 `define MEM_OP_SH           4'd7
 `define MEM_OP_SB           4'd8
+
+`define MUL_OP_NOP          3'd0
+`define MUL_OP_MUL          3'd1
+`define MUL_OP_MULH         3'd2
+`define MUL_OP_MULHU        3'd3
+`define MUL_OP_MULHSU       3'd4
+
+`define DIV_OP_NOP          3'd0
+`define DIV_OP_DIV          3'd1
+`define DIV_OP_DIVU         3'd2
 
 `define ISA_EXP_NO_EXP              5'd0 // No exceptions
 `define ISA_EXP_PC_MISALIGNED       5'd1 // pc addr is not aligned
@@ -200,6 +229,7 @@
 `define J_TYPE_RD               11 : 7 // imm[11 : 7]
 //data width
 `define J_TYPE_DATA_WIDTH_OFFSET    20 // imm data width
+
 
 //csr addr
 `define CSR_ADDR_WIDTH      12

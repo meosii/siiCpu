@@ -112,6 +112,7 @@ wire [`DATA_WIDTH_ALU_OP - 1 : 0]       alu_op;
 wire [`WORD_WIDTH - 1 : 0]              alu_in_0;
 wire [`WORD_WIDTH - 1 : 0]              alu_in_1;
 wire [`WORD_WIDTH - 1 : 0]              alu_out;
+wire                                    div_in_alu;
 // exe
 wire [`WORD_WIDTH - 1 : 0]              ex_insn;
 wire [`GPR_ADDR_WIDTH - 1 : 0]          ex_dst_addr;
@@ -423,10 +424,13 @@ gpr u_gpr(
 );
 
 alu u_alu(
+    .clk                    (clk                    ),
+    .rst_n                  (rst_n                  ),
     .alu_op                 (id_alu_op              ),
     .alu_in_0               (id_alu_in_0            ),
     .alu_in_1               (id_alu_in_1            ),
-    .alu_out                (alu_out                )
+    .alu_out                (alu_out                ),
+    .div_in_alu             (div_in_alu             )
 );
 
 ex_reg u_ex_reg(
@@ -612,6 +616,7 @@ cpu_ctrl u_cpu_ctrl(
     .load_hazard_in_id_ex   (load_hazard_in_id_ex   ),
     .load_hazard_in_ex_mem  (load_hazard_in_ex_mem  ),
     .contral_hazard         (contral_hazard         ),
+    .div_in_alu             (div_in_alu             ),
     .ahb_bus_wait           (ahb_bus_wait           ),
     // exp
     .exp_code               (exp_code               ),
