@@ -19,6 +19,9 @@ module id_reg (
     input wire [`GPR_ADDR_WIDTH - 1 : 0]        dst_addr,
     // csr to gpr
     input wire [`WORD_WIDTH - 1 : 0]            csr_to_gpr_data,
+    // rem after div
+    input wire [`GPR_ADDR_WIDTH - 1 : 0]        gpr_rd_addr_0,
+    input wire [`GPR_ADDR_WIDTH - 1 : 0]        gpr_rd_addr_1,
     // to alu
     input wire [`DATA_WIDTH_ALU_OP - 1 : 0]     alu_op,
     input wire [`WORD_WIDTH - 1 : 0]            alu_in_0,
@@ -53,12 +56,21 @@ module id_reg (
     output reg                                  id_ecall_en,
     output wire                                 load_in_id_ex,
     output wire                                 alu2gpr_in_id_ex,
-    output wire                                 csr2gpr_in_id_ex
+    output wire                                 csr2gpr_in_id_ex,
+    output wire                                 rem_after_div       // div in alu, rem in decoder
 );
+
+reg [`GPR_ADDR_WIDTH - 1 : 0] id_gpr_rd_addr_0;
+reg [`GPR_ADDR_WIDTH - 1 : 0] id_gpr_rd_addr_1;
 
 assign load_in_id_ex        = (id_insn[`ALL_TYPE_OPCODE] == `OP_LOAD) && id_en && (id_gpr_we_n == `GPR_WRITE);
 assign alu2gpr_in_id_ex     = (id_insn[`ALL_TYPE_OPCODE] != `OP_LOAD) && (id_insn[`ALL_TYPE_OPCODE] != `OP_SYSTEM) && id_en && (id_gpr_we_n == `GPR_WRITE);
 assign csr2gpr_in_id_ex     = (id_insn[`ALL_TYPE_OPCODE] != `OP_LOAD) && id_en && (id_gpr_we_n == `GPR_WRITE) && (id_insn[`ALL_TYPE_OPCODE] == `OP_SYSTEM);
+
+assign rem_after_div    =   (   id_en && (id_gpr_we_n == `GPR_WRITE) && if_en && (gpr_we_n == `GPR_WRITE)   )
+                        &&  (   ((id_alu_op == `ALU_OP_DIV) && (alu_op == `ALU_OP_REM)) ||  
+                                ((id_alu_op == `ALU_OP_DIVU) && (alu_op == `ALU_OP_REMU))                   )
+                        &&  (   (gpr_rd_addr_0 == id_gpr_rd_addr_0) && (gpr_rd_addr_1 == id_gpr_rd_addr_1)  );
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -77,6 +89,8 @@ always @(posedge clk or negedge rst_n) begin
         id_store_data       <= `WORD_WIDTH'b0;
         id_store_byteena    <= 4'b0;
         id_exp_code         <= `DATA_WIDTH_ISA_EXP'b0;
+        id_gpr_rd_addr_0    <= `WORD_WIDTH'b0;
+        id_gpr_rd_addr_1    <= `WORD_WIDTH'b0;
     end else if (cpu_en) begin
         if (id_flush) begin
             id_pc               <= `PC_WIDTH'b0;
@@ -94,6 +108,8 @@ always @(posedge clk or negedge rst_n) begin
             id_store_data       <= `WORD_WIDTH'b0;
             id_store_byteena    <= 4'b0;
             id_exp_code         <= `DATA_WIDTH_ISA_EXP'b0;
+            id_gpr_rd_addr_0    <= `WORD_WIDTH'b0;
+            id_gpr_rd_addr_1    <= `WORD_WIDTH'b0;
         end else if (!id_stall) begin
             id_pc               <= if_pc;
             id_insn             <= if_insn;
@@ -110,6 +126,8 @@ always @(posedge clk or negedge rst_n) begin
             id_store_data       <= store_data;
             id_store_byteena    <= store_byteena;
             id_exp_code         <= exp_code;
+            id_gpr_rd_addr_0    <= gpr_rd_addr_0;
+            id_gpr_rd_addr_1    <= gpr_rd_addr_1;
         end
     end
 end
