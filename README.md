@@ -4,11 +4,15 @@
 
 Here is an introduction to siiCpu
 
-- The CPU supports the complete rv32i instruction set, which can execute basic arithmetic, logic, shift, branch, jump, and other instructions.
+- The CPU supports the complete rv32im instruction set, which can execute basic arithmetic, logic, shift, branch, jump, integer multiplication, integer division and other instructions.
 
 - The CPU supports privileged instructions, which can implement system calls and exception handling, and only supports machine mode here.
 
 - The CPU supports the processing of interrupts and exceptions, can respond to external interrupts and internal exceptions, and when an interrupt exception occurs, the hardware is responsible for recording the cause of the exception, the `pc` at the time of the exception, etc, and automatically jumps to the TRAP entry program pointed to by `mtvec`. Software is responsible for context protection, and hardware returns to continue executing the original program after receiving the mret instruction.
+
+- The multiplier is structured using Radix-4 Booth Algorithm and Wallace tree. Radix-4 Booth Algorithm reduces partial products generation to 1/2. The wallace tree uses a carry save-adders (CSA), which compresses the partial product terms by a ratio of 3:2 to speed up the addition process.
+
+- The number of cycles required by the multi-cycle divider is determined by the divisor and dividend. In RISC-V, dividing by zero or overflowing does not produce an exception, and the division operation is finished in a single cycle. In other cases, the first nonzero value of the dividend is judged, and then the first quotient is calculated.
 
 - The CPU includes 32 general-purpose registers for storing operands and results, with the x0 register fixed at 0.
 
@@ -18,7 +22,7 @@ Here is an introduction to siiCpu
 
 - The CPU uses simple static branch prediction. For conditional branch instructions, the immediate number in the instruction is used to determine whether to jump. If the jump address is after the instruction, the jump occurs. For unconditional jump instructions, it is predicted that they always jump. Since the `jr ra` instruction is a function return instruction and occurs frequently, an interface is directly designed to read the `ra` register in the general-purpose register.(deleted)
 
-- The CPU adopts the Harvard architecture, and the instruction and data storage are separated and accessed by itcm and spm, respectively. Single-cycle reading improves memory access efficiency.
+- The CPU adopts the Harvard architecture, and the instruction and data storage are separated and accessed by `itcm` and `spm`, respectively. Single-cycle reading improves memory access efficiency.
 
 - The data width of itcm and spm is 32 bits, and one word of data can be read or written at a time. The capacity of itcm and spm can be configured as needed.
 

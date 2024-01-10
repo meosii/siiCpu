@@ -29,5 +29,5 @@ _four_bit_dtube:
 	srli x13, x13,28 /* x31[15:12] */
 	slli x14, x31,12
 	srli x14, x14,28 /* x31[19:16] */
-	slli x15, x31,0
+	slli x15, x31,8
 	srli x15, x15,28 /* x31[24:20] */

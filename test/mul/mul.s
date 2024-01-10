@@ -18,35 +18,33 @@ _int_en:
     lw t0, 8(sp)
     addi sp, sp, 12
 main:
-	addi	sp,sp,-32
-	sw	s0,28(sp)
-	addi	s0,sp,32
-	sw	zero,-24(s0)
-	li	a5,1
-	sw	a5,-32(s0)
-	sw	zero,-28(s0)
-	li	a5,28672
-	addi	a5,a5,1328
-	sw	a5,-20(s0)
-	lw	a4,-24(s0)
-	lw	a5,-32(s0)
-	add	a5,a4,a5
-	sw	a5,-28(s0)
-	j	.L2
-.L3:
-	lw	a5,-32(s0)
-	sw	a5,-24(s0)
-	lw	a5,-28(s0)
-	sw	a5,-32(s0)
-	lw	a4,-24(s0)
-	lw	a5,-32(s0)
-	add	a5,a4,a5
-	sw	a5,-28(s0)
-.L2:
-	lw	a4,-28(s0)
-	lw	a5,-20(s0)
-	bleu	a4,a5,.L3
-	addi x31,a4,0
+	li a5, 10
+	li a4, 20
+	mul	a6,a4,a5
+	li a5, 30
+	li a4, 40
+	mul	a6,a4,a5
+	li a5, 50
+	li a4, 60
+	mul	a6,a4,a5
+	li a5, -10
+	li a4, -20
+	mul	a6,a4,a5
+	li a5, -10
+	li a4, 20
+	mul	a6,a4,a5
+	li a5, 10
+	li a4, -20
+	mul	a6,a4,a5
+	li a5, 10000
+	li a4, 20000
+	mul	a6,a4,a5
+	li a5, 1000000000
+	li a4, 200000000
+	mulhu a6,a4,a5
+	li a5, 1000000000
+	li a4, 200000000
+	mulh x31,a4,a5
 _four_bit_dtube:
 	slli x10, x31,28
 	srli x10, x10,28 /* x31[3:0] */
@@ -82,4 +80,3 @@ _empty:
     addi x0,x0,0
     j _empty
 	jr	ra
-

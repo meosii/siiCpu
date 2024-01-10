@@ -106,7 +106,7 @@ always @(*) begin
             dst_addr        = if_insn[`U_TYPE_RD];
             imm             = {if_insn[`U_TYPE_IMM], 12'b0};
         end
-        `OP: begin
+        `OP: begin // mul, div
             gpr_we_n        = (if_en) ? `GPR_WRITE : `DIS_GPR_WRITE;
             gpr_rd_en       = (if_en)?  `GPR_READ  : `DISABLE;
             gpr_rd_addr_0   = if_insn[`R_TYPE_RS1];
@@ -304,6 +304,14 @@ assign alu_op = (!if_en)? `ALU_OP_NOP :
                 ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == 7'b0000000) && (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_SRL)             )? `ALU_OP_SRL      :
                 ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == 7'b0100000) && (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_SUB)             )? `ALU_OP_SUB      :
                 ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == 7'b0100000) && (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_SRA)             )? `ALU_OP_SRA      :
+                ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == `FUNCT7_MULDIV) && (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_MUL)         )? `ALU_OP_MUL      :
+                ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == `FUNCT7_MULDIV) && (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_MULH)        )? `ALU_OP_MULH     :
+                ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == `FUNCT7_MULDIV) && (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_MULHSU)      )? `ALU_OP_MULHSU   :
+                ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == `FUNCT7_MULDIV) && (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_MULHU)       )? `ALU_OP_MULHU    :
+                ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == `FUNCT7_MULDIV) && (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_DIV)         )? `ALU_OP_DIV      :
+                ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == `FUNCT7_MULDIV) && (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_DIVU)        )? `ALU_OP_DIVU     :
+                ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == `FUNCT7_MULDIV) && (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_REM)         )? `ALU_OP_REM      :
+                ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == `FUNCT7_MULDIV) && (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_REMU)        )? `ALU_OP_REMU     :
                 ((opcode == `OP_JAL) || (opcode == `OP_JALR) || (opcode == `OP_LOAD) || (opcode == `OP_STORE)                       )? `ALU_OP_ADD      : `ALU_OP_NOP;
 
 // ebreak ecall
@@ -313,16 +321,14 @@ assign ecall_en  = ((if_en) && (if_insn == `ECALL_INSN) )?  `ENABLE : `DISABLE;
 assign mret_en   = ((if_en) && (if_insn == `MRET_INSN))?  `ENABLE : `DISABLE;
 
 assign exp_code = (!if_en)? `ISA_EXP_NO_EXP :
-                (((opcode == `OP_IMM) && ((if_insn[`I_TYPE_FUNCT3] == `FUNCT3_ADDI    ) ||
+                (((opcode == `OP_IMM) && (  (if_insn[`I_TYPE_FUNCT3] == `FUNCT3_ADDI    ) ||
                                             (if_insn[`I_TYPE_FUNCT3] == `FUNCT3_SLTI    ) ||
                                             (if_insn[`I_TYPE_FUNCT3] == `FUNCT3_SLTIU   ) ||
                                             (if_insn[`I_TYPE_FUNCT3] == `FUNCT3_ANDI    ) ||
                                             (if_insn[`I_TYPE_FUNCT3] == `FUNCT3_ORI     ) ||
                                             (if_insn[`I_TYPE_FUNCT3] == `FUNCT3_XORI    ) ||
                                             (if_insn[`I_TYPE_FUNCT3] == `FUNCT3_SLLI    ) ||
-                                            ((if_insn[`I_TYPE_FUNCT3] == `FUNCT3_SRLI_SRAI) && ((if_insn[`I_TYPE_IMM_11_5] == 7'b0000000) || (if_insn[`I_TYPE_IMM_11_5] == 7'b0100000)))
-                                            )
-                    )
+                                            ((if_insn[`I_TYPE_FUNCT3] == `FUNCT3_SRLI_SRAI) && ((if_insn[`I_TYPE_IMM_11_5] == 7'b0000000) || (if_insn[`I_TYPE_IMM_11_5] == 7'b0100000)))))
                 ||  ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == 7'b0000000) && ((if_insn[`R_TYPE_FUNCT3] == `FUNCT3_ADD  ) ||
                                                                                    (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_SLT  ) ||
                                                                                    (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_SLTU ) ||
@@ -330,11 +336,10 @@ assign exp_code = (!if_en)? `ISA_EXP_NO_EXP :
                                                                                    (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_OR   ) ||
                                                                                    (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_XOR  ) ||
                                                                                    (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_SLL  ) ||
-                                                                                   (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_SRL  ))  
-                    )
+                                                                                   (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_SRL  ))      )
                 ||  ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == 7'b0100000) && ((if_insn[`R_TYPE_FUNCT3] == `FUNCT3_SUB) ||
-                                                                                    (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_SRA))   
-                    )
+                                                                                    (if_insn[`R_TYPE_FUNCT3] == `FUNCT3_SRA))       )
+                ||  ((opcode == `OP) && (if_insn[`R_TYPE_FUNCT7] == `FUNCT7_MULDIV))
                 ||  (opcode == `OP_LUI      )
                 ||  (opcode == `OP_AUIPC    )
                 ||  (opcode == `OP_JAL      )
@@ -361,11 +366,14 @@ assign br_taken_tmp =   if_en &&
                                 ((if_insn[`B_TYPE_FUNCT3] == `FUNCT3_BGE)   && ($signed(rs1_data) >= $signed(rs2_data)) ) ||
                                 ((if_insn[`B_TYPE_FUNCT3] == `FUNCT3_BGEU)  && (rs1_data >= rs2_data)                   )   )   );
 
-assign jr_target    =   (opcode == `OP_JAL)?    $signed({1'b0,if_pc})       + $signed(imm)  :
-                        (opcode == `OP_JALR)?   $signed({1'b0,rs1_data})    + $signed(imm)  :
-                        (opcode == `OP_BRANCH)? $signed({1'b0, if_pc})      + $signed(imm)  :   {SIGN_PC_WIDTH{1'b0}};
+wire [`WORD_WIDTH-1 : 0] jr_target_add_data1;
 
-assign br_addr_tmp  =   (opcode == `OP_JALR)?   {jr_target[`PC_WIDTH-1 : 1], 1'b0}          :   jr_target[`PC_WIDTH-1 : 0];
+assign jr_target_add_data1  =   ((opcode == `OP_JAL) || (opcode == `OP_BRANCH)  )?  if_pc       :
+                                (opcode == `OP_JALR                             )?  rs1_data    :   `WORD_WIDTH'b0;
+
+assign jr_target    =   ((opcode == `OP_JAL) || (opcode == `OP_BRANCH) || (opcode == `OP_JALR))? ($signed({1'b0,jr_target_add_data1}) + $signed(imm)) : {SIGN_PC_WIDTH{1'b0}};
+
+assign br_addr_tmp  =   (opcode == `OP_JALR)?   {jr_target[`PC_WIDTH-1 : 1], 1'b0}  :   jr_target[`PC_WIDTH-1 : 0];
 
 //assign predt_br_success =   ((if_predt_br_taken && br_taken_tmp) && (pc == br_addr_tmp)) || (!if_predt_br_taken && !br_taken_tmp);
 //assign predt_br_error   =   (if_predt_br_taken && !br_taken_tmp) || (!if_predt_br_taken && br_taken_tmp);

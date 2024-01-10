@@ -18,35 +18,38 @@ _int_en:
     lw t0, 8(sp)
     addi sp, sp, 12
 main:
-	addi	sp,sp,-32
-	sw	s0,28(sp)
-	addi	s0,sp,32
-	sw	zero,-24(s0)
-	li	a5,1
-	sw	a5,-32(s0)
-	sw	zero,-28(s0)
-	li	a5,28672
-	addi	a5,a5,1328
-	sw	a5,-20(s0)
-	lw	a4,-24(s0)
-	lw	a5,-32(s0)
-	add	a5,a4,a5
-	sw	a5,-28(s0)
-	j	.L2
-.L3:
-	lw	a5,-32(s0)
-	sw	a5,-24(s0)
-	lw	a5,-28(s0)
-	sw	a5,-32(s0)
-	lw	a4,-24(s0)
-	lw	a5,-32(s0)
-	add	a5,a4,a5
-	sw	a5,-28(s0)
-.L2:
-	lw	a4,-28(s0)
-	lw	a5,-20(s0)
-	bleu	a4,a5,.L3
-	addi x31,a4,0
+	li a5, 10000
+	li a4, 20
+	div	x16,a5,a4
+    rem x17,a5,a4
+	li a5, -30
+	li a4, 6
+	div	x18,a5,a4
+    rem x19,a5,a4
+	li a5, -50
+	li a4, -3
+	div	x20,a5,a4
+    rem x21,a5,a4
+	li a5, -1000
+	li a4, 3
+	div	x22,a5,a4
+    rem x23,a5,a4
+	li a5, 4290000000
+	li a4, 20000000
+	divu x24,a5,a4
+    remu x25,a5,a4
+	li a5, 100
+	li a4, 0
+	divu x26,a5,a4
+    remu x27,a5,a4
+	li a5, -2147483648
+	li a4, 1
+	div	x28,a5,a4
+    rem x29,a5,a4
+	li a5, 1000000000
+	li a4, 3650
+	divu x30,a5,a4
+    remu x31,a5,a4
 _four_bit_dtube:
 	slli x10, x31,28
 	srli x10, x10,28 /* x31[3:0] */
@@ -82,4 +85,3 @@ _empty:
     addi x0,x0,0
     j _empty
 	jr	ra
-

@@ -43,6 +43,9 @@ riscv64-linux-gnu-objdump main.o -d > out
 ```
 riscv64-unknown-elf-c++ -nostdlib -nostdinc -static -g -Ttext 0x80000000 sum.s -o sum.elf -march=rv32i -mabi=ilp32
 ```
+```
+riscv64-linux-gnu-gcc -nostdlib -nostdinc -static -g -Ttext 0x80000000 sum.s -o sum.elf -march=rv32i -mabi=ilp32
+```
 2. 将二进制文件反汇编查看内容
 ```
 riscv64-linux-gnu-objdump main.o -d > out
