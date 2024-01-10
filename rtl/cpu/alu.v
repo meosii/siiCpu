@@ -7,6 +7,7 @@ module alu (
     input wire [`DATA_WIDTH_ALU_OP - 1:0]       alu_op,
     input wire [`WORD_WIDTH - 1:0]              alu_in_0,
     input wire [`WORD_WIDTH - 1:0]              alu_in_1,
+    input wire                                  rem_after_div,
     output reg [`WORD_WIDTH - 1:0]              alu_out,
     output wire                                 div_in_alu  // stall and flush the pipeline
 );
@@ -21,10 +22,12 @@ wire [PARTIAL_PRODUCT_WIDTH-1 : 0]  mul_result;
 
 wire                                div_start;
 wire [2:0]                          div_opcode;
-wire [`WORD_WIDTH-1 : 0]            div_quotient; // from div
+wire [`WORD_WIDTH-1 : 0]            div_quotient;   // from div
 wire [`WORD_WIDTH-1 : 0]            div_remainder;  // from div
 wire                                div_finish;
 reg                                 diving_in_alu;
+reg                                 remAdiv_in_alu; // No division required
+reg [`WORD_WIDTH-1 : 0]             remAdiv_div_remainder;
 
 // mul
 assign mul_opcode = (alu_op == `ALU_OP_MUL      )? `MUL_OP_MUL      : 
@@ -38,8 +41,23 @@ assign mul_result = mul_add_a + mul_add_b;
 assign div_opcode = ((alu_op == `ALU_OP_DIV) || (alu_op == `ALU_OP_REM)     )? `DIV_OP_DIV  : 
                     ((alu_op == `ALU_OP_DIVU) || (alu_op == `ALU_OP_REMU)   )? `DIV_OP_DIVU : `DIV_OP_NOP;
 
-assign div_start = ((div_opcode == `DIV_OP_DIV) || (div_opcode == `DIV_OP_DIVU)) && !diving_in_alu;
+assign div_start = ((div_opcode == `DIV_OP_DIV) || (div_opcode == `DIV_OP_DIVU)) && !diving_in_alu 
+                && !remAdiv_in_alu; // div-rem; divu-remu
+
 assign div_in_alu = (diving_in_alu || div_start) && !div_finish; // stall and flush the pipeline
+
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        remAdiv_in_alu          <= 1'b0;
+        remAdiv_div_remainder   <= `WORD_WIDTH'b0;
+    end else if (div_finish && rem_after_div) begin
+        remAdiv_in_alu          <= 1'b1;
+        remAdiv_div_remainder   <= div_remainder;
+    end else begin
+        remAdiv_in_alu          <= 1'b0;
+        remAdiv_div_remainder   <= `WORD_WIDTH'b0;
+    end
+end
 
 mul #(
     .SIGNED_WORD_WIDTH      (SIGNED_WORD_WIDTH      ),
@@ -149,7 +167,8 @@ always @(*) begin
         alu_out = (div_finish)? div_quotient : `WORD_WIDTH'b0;
     end
     `ALU_OP_REM, `ALU_OP_REMU: begin
-        alu_out = (div_finish)? div_remainder : `WORD_WIDTH'b0;
+        alu_out =   (remAdiv_in_alu )? remAdiv_div_remainder :
+                    (div_finish     )? div_remainder : `WORD_WIDTH'b0;
     end
     default: alu_out = `WORD_WIDTH'b0;
    endcase 

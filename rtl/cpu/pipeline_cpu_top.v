@@ -171,6 +171,7 @@ wire                                    alu2gpr_in_ex_mem;
 wire                                    csr2gpr_in_ex_mem;
 wire                                    load_after_storing_en;
 wire                                    loading_after_store_en_r1;
+wire                                    rem_after_div;
 //
 wire                                    mstatus_mie_clear_en;
 wire                                    mstatus_mie_set_en;
@@ -372,6 +373,8 @@ id_reg u_id_reg(
     .gpr_we_n               (gpr_we_n               ),
     .dst_addr               (dst_addr               ), 
     .csr_to_gpr_data        (csr_to_gpr_data        ),
+    .gpr_rd_addr_0          (gpr_rd_addr_0          ),
+    .gpr_rd_addr_1          (gpr_rd_addr_1          ),
     .alu_op                 (alu_op                 ),
     .alu_in_0               (alu_in_0               ),
     .alu_in_1               (alu_in_1               ),
@@ -404,7 +407,8 @@ id_reg u_id_reg(
     // outputs
     .load_in_id_ex          (load_in_id_ex          ),
     .alu2gpr_in_id_ex       (alu2gpr_in_id_ex       ),
-    .csr2gpr_in_id_ex       (csr2gpr_in_id_ex       )
+    .csr2gpr_in_id_ex       (csr2gpr_in_id_ex       ),
+    .rem_after_div          (rem_after_div          )
 );
 
 wire [`GPR_ADDR_WIDTH - 1 : 0]   gpr_rd_addr_1_in;
@@ -429,6 +433,7 @@ alu u_alu(
     .alu_op                 (id_alu_op              ),
     .alu_in_0               (id_alu_in_0            ),
     .alu_in_1               (id_alu_in_1            ),
+    .rem_after_div          (rem_after_div          ),
     .alu_out                (alu_out                ),
     .div_in_alu             (div_in_alu             )
 );
